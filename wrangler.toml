@@ -1,0 +1,19 @@
+name = "nexio-crm"
+main = "api/worker.ts"
+compatibility_date = "2024-12-01"
+compatibility_flags = ["nodejs_compat"]
+
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "nexio-crm"
+database_id = "local-nexio-crm"
+migrations_dir = "migrations"
+
+[vars]
+ENVIRONMENT = "development"
+APP_NAME = "Nexio CRM"

@@ -1,0 +1,101 @@
+@import "tailwindcss";
+
+/*
+  Nexio CRM design system.
+  Canonical tokens from the approved design blueprint v2.0 — white/blue, light-first.
+  Do not substitute glassmorphism / neon / dark variants for these.
+*/
+@theme {
+  --color-bg: #f8fafc;
+  --color-surface: #ffffff;
+  --color-subtle: #eff6ff;
+  --color-primary: #2563eb;
+  --color-primary-dark: #1d4ed8;
+  --color-primary-soft: #dbeafe;
+  --color-ink: #0f172a;
+  --color-muted: #64748b;
+  --color-line: #e2e8f0;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-ai: #8b5cf6;
+
+  --font-sans: Inter, "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+
+  --radius-card: 16px;
+  --radius-chip: 10px;
+
+  --shadow-card: 0 1px 2px rgba(15, 23, 42, .04), 0 8px 24px -12px rgba(15, 23, 42, .10);
+  --shadow-pop: 0 12px 40px -12px rgba(15, 23, 42, .22);
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Focus visibility is required for keyboard accessibility. */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+::selection { background: var(--color-primary-soft); }
+
+/* Scrollbars: thin and neutral, matching the light surface. */
+* { scrollbar-width: thin; scrollbar-color: #cbd5e1 transparent; }
+*::-webkit-scrollbar { width: 8px; height: 8px; }
+*::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 8px; }
+*::-webkit-scrollbar-track { background: transparent; }
+
+@utility card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* Skeleton shimmer used by every loading state. */
+@keyframes nexio-shimmer {
+  0% { background-position: -420px 0; }
+  100% { background-position: 420px 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, #eef2f7 0%, #f8fafc 40%, #eef2f7 80%);
+  background-size: 420px 100%;
+  animation: nexio-shimmer 1.2s ease-in-out infinite;
+  border-radius: 8px;
+}
+
+@keyframes nexio-fade-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+.animate-in { animation: nexio-fade-up .22s ease-out both; }
+
+@keyframes nexio-toast-in {
+  from { opacity: 0; transform: translateY(-8px) scale(.98); }
+  to { opacity: 1; transform: none; }
+}
+.toast-in { animation: nexio-toast-in .18s ease-out both; }
+
+/* Kanban column drop target while dragging a deal card. */
+.drop-target { background: var(--color-subtle); outline: 2px dashed var(--color-primary); outline-offset: -4px; }
+
+@media print { .no-print { display: none !important; } }
