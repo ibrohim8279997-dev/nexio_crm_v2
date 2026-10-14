@@ -156,6 +156,18 @@ class H
         }
     }
 
+    /** Non-throwing permission probe, used to shape API responses (never to enforce access). */
+    public static function can(Ctx $ctx, string $permission): bool
+    {
+        if (!$ctx->user) {
+            return false;
+        }
+        if (!empty($ctx->user['is_platform_admin'])) {
+            return true;
+        }
+        return Rbac::can($ctx->role, $permission);
+    }
+
     public static function requirePlatform(Ctx $ctx): void
     {
         $ctx->auth();

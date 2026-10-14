@@ -1,0 +1,76 @@
+{
+  "id": "nexio.delivery",
+  "name": "Nexio Delivery",
+  "display_name": "Nexio Delivery",
+  "version": "1.0.0",
+  "type": "official",
+  "author": "Nexio Lab",
+  "category": "delivery",
+  "tagline": "Универсальный слой доставки: расчёт, создание, статусы, отмена",
+  "description": "Универсальный слой доставки Nexio CRM. Предоставляет единый интерфейс создания доставки, расчёта стоимости, отслеживания и отмены, а также нормализацию статусов конкретных провайдеров в универсальные статусы Nexio. Конкретные провайдеры (Uzum, Yandex) подключаются отдельными плагинами-адаптерами, которые зависят от этого плагина.",
+  "api_version": "1.0",
+  "min_nexio_version": "1.0.0",
+  "dependencies": [],
+  "permissions": [
+    "crm.orders.read",
+    "crm.clients.read",
+    "delivery.read",
+    "delivery.create",
+    "delivery.update",
+    "delivery.cancel",
+    "delivery.track",
+    "events.subscribe",
+    "settings.write"
+  ],
+  "hooks": [
+    "order.created",
+    "order.completed"
+  ],
+  "usage_metrics": [
+    "delivery_orders",
+    "delivery_quotes",
+    "delivery_cancellations",
+    "connected_accounts"
+  ],
+  "data_tables": [
+    "delivery_shipments",
+    "delivery_status_map"
+  ],
+  "settings_schema": {
+    "default_provider": {
+      "type": "string",
+      "default": "sandbox",
+      "label": "Провайдер доставки по умолчанию",
+      "description": "Код провайдера, например sandbox, uzum или yandex."
+    },
+    "default_currency": {
+      "type": "string",
+      "default": "UZS",
+      "label": "Валюта расчётов"
+    },
+    "origin_address": {
+      "type": "string",
+      "default": "",
+      "label": "Адрес отправления по умолчанию"
+    },
+    "origin_contact": {
+      "type": "string",
+      "default": "",
+      "label": "Контакт отправителя"
+    },
+    "auto_create_on_order": {
+      "type": "boolean",
+      "default": false,
+      "label": "Создавать доставку автоматически при заказе"
+    }
+  },
+  "feature_flags": [
+    "delivery_quote",
+    "delivery_create",
+    "delivery_cancel",
+    "delivery_tracking"
+  ],
+  "runtime": {
+    "entry": "Nexio\\Delivery\\Plugin@Plugin.php"
+  }
+}

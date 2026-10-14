@@ -1,0 +1,79 @@
+{
+  "id": "nexio.telephony",
+  "name": "Nexio Telephony",
+  "display_name": "Nexio Telephony",
+  "version": "1.0.0",
+  "type": "official",
+  "author": "Nexio Lab",
+  "category": "telephony",
+  "tagline": "Входящие и исходящие звонки, номера, история и учёт минут",
+  "description": "Плагин телефонии Nexio CRM. Реализует абстракцию SIP-провайдера, историю звонков, связь звонка с клиентом и заказом, учёт минут и событий звонков. Архитектурно готов к подключению Voice AI как отдельного потребителя через Nexio AI Gateway. Реальный провайдер подключается через credentials; без них плагин работает в sandbox-режиме и не утверждает, что звонок был совершён оператором связи.",
+  "api_version": "1.0",
+  "min_nexio_version": "1.0.0",
+  "dependencies": [],
+  "permissions": [
+    "crm.contacts.read",
+    "crm.orders.read",
+    "telephony.calls.read",
+    "telephony.calls.create",
+    "telephony.calls.update",
+    "telephony.numbers.manage",
+    "events.subscribe",
+    "settings.write"
+  ],
+  "hooks": [
+    "order.created",
+    "client.created"
+  ],
+  "data_tables": [
+    "telephony_calls",
+    "telephony_numbers"
+  ],
+  "usage_metrics": [
+    "telephony_minutes",
+    "incoming_calls",
+    "outgoing_calls",
+    "completed_calls",
+    "phone_numbers",
+    "connected_accounts"
+  ],
+  "settings_schema": {
+    "default_country_code": {
+      "type": "string",
+      "default": "+998",
+      "label": "Код страны по умолчанию",
+      "description": "Используется для нормализации номеров перед звонком."
+    },
+    "record_calls": {
+      "type": "boolean",
+      "default": false,
+      "label": "Записывать разговоры",
+      "description": "Включайте только при наличии законного основания и информировании участников."
+    },
+    "recording_notice": {
+      "type": "string",
+      "default": "Разговор записывается",
+      "label": "Уведомление о записи"
+    },
+    "default_provider": {
+      "type": "string",
+      "default": "sandbox",
+      "label": "SIP-провайдер по умолчанию"
+    },
+    "max_call_minutes": {
+      "type": "number",
+      "default": 30,
+      "label": "Максимальная длительность звонка, мин"
+    }
+  },
+  "feature_flags": [
+    "inbound_calls",
+    "outbound_calls",
+    "call_recordings",
+    "call_transfer",
+    "voice_ai_ready"
+  ],
+  "runtime": {
+    "entry": "Nexio\\Telephony\\Plugin@Plugin.php"
+  }
+}
