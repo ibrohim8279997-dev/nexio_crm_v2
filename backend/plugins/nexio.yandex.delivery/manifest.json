@@ -1,0 +1,80 @@
+{
+  "id": "nexio.yandex.delivery",
+  "name": "Nexio Yandex Delivery",
+  "display_name": "Nexio Yandex Delivery",
+  "version": "1.0.0",
+  "type": "official",
+  "author": "Nexio Lab",
+  "category": "delivery",
+  "tagline": "Адаптер Yandex Delivery (OAuth-токен, подтверждённый host и путь)",
+  "description": "Адаптер интеграции Nexio Delivery с Yandex Delivery. Транспорт, аутентификация, allowlist хостов и разбор ответа реализованы; схема тела запроса НЕ выдумана, а задаётся оператором из официальной документации Yandex через настройку request_template. Подтверждено по документации: host b2b-authproxy.taxi.yandex.net (продакшн) или b2b.taxi.tst.yandex.net (тест), путь /api/b2b/platform/offers/create, авторизация Authorization: Bearer <OAuth-токен>. Токен хранится как секрет и никогда не возвращается через API.",
+  "api_version": "1.0",
+  "min_nexio_version": "1.0.0",
+  "dependencies": [
+    {
+      "plugin_id": "nexio.delivery",
+      "constraint": ">=1.0.0",
+      "optional": false
+    }
+  ],
+  "permissions": [
+    "delivery.read",
+    "delivery.create",
+    "delivery.update",
+    "delivery.cancel",
+    "delivery.track",
+    "settings.write"
+  ],
+  "hooks": [],
+  "usage_metrics": [
+    "yandex_delivery_orders",
+    "connected_accounts"
+  ],
+  "settings_schema": {
+    "use_test_host": {
+      "type": "boolean",
+      "default": false,
+      "label": "Использовать тестовый контур",
+      "description": "Тестовый host b2b.taxi.tst.yandex.net. Обработка адресов ограничена Москвой."
+    },
+    "create_path": {
+      "type": "string",
+      "default": "/api/b2b/platform/offers/create",
+      "label": "Путь создания заявки"
+    },
+    "request_template": {
+      "type": "json",
+      "default": {},
+      "label": "Шаблон тела запроса",
+      "description": "Заполняется из официальной документации. Плейсхолдеры: {{address_from}}, {{address_to}}, {{recipient_name}}, {{recipient_phone}}, {{weight_kg}}, {{declared_value}}, {{order_id}}."
+    },
+    "response_shipment_id_path": {
+      "type": "string",
+      "default": "id",
+      "label": "Путь к идентификатору заявки в ответе",
+      "description": "Точечный путь, например id или offer_id."
+    },
+    "response_tracking_path": {
+      "type": "string",
+      "default": "",
+      "label": "Путь к ссылке отслеживания в ответе"
+    },
+    "status_map": {
+      "type": "json",
+      "default": {},
+      "label": "Сопоставление статусов",
+      "description": "{\"статус_провайдера\":\"универсальный_статус\"}. Универсальные: pending, accepted, courier_assigned, picked_up, in_transit, delivered, cancelled, failed."
+    },
+    "request_timeout_seconds": {
+      "type": "number",
+      "default": 15,
+      "label": "Таймаут запроса, с"
+    }
+  },
+  "feature_flags": [
+    "delivery_create"
+  ],
+  "runtime": {
+    "entry": "Nexio\\YandexDelivery\\Plugin@Plugin.php"
+  }
+}
