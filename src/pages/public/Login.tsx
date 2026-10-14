@@ -223,7 +223,6 @@ export default function Login() {
             <div className="mt-2.5 flex flex-wrap gap-1.5">
               {[
                 ['Владелец компании', 'admin@acmecorp.uz', Users],
-                ['Оператор Nexio Lab', 'owner@nexio.uz', ShieldCheck],
                 ['Менеджер продаж', 'lead@acmecorp.uz', BarChart3],
                 ['Только чтение', 'analyst@acmecorp.uz', LineChart],
                 ['Портал заказчика', 'client@acmecorp.uz', Building2],

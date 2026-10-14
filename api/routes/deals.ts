@@ -242,7 +242,11 @@ export const dealRoutes = {
     const c = cfg[kind]
     if (!c) throw notFound('Неизвестный тип экспорта')
     const rows = await ctx.env.DB.prepare(c.sql).bind(t).all<any>()
-    const esc = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`
+    const esc = (v: unknown) => {
+      let value = String(v ?? '')
+      if (/^[=+\-@]/.test(value)) value = `'${value}`
+      return `"${value.replace(/"/g, '""')}"`
+    }
     const csv = '\uFEFF' + [c.headers.map(esc).join(','), ...rows.results.map((r) => Object.values(r).map(esc).join(','))].join('\n')
     await audit(ctx, 'export.csv', kind, null, { rows: rows.results.length })
     return new Response(csv, { headers: { 'content-type': 'text/csv; charset=utf-8', 'content-disposition': `attachment; filename="nexio-${kind}.csv"`, 'cache-control': 'no-store' } })

@@ -1,0 +1,56 @@
+
+> nexio-crm@2.0.0 dev
+> vite
+
+
+  [32m[1mVITE[22m v6.4.4[39m  [2mready in [0m[1m4737[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m3000[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://192.168.31.15:[1m3000[22m/[39m
+[2m[32m  ➜[39m[22m[2m  press [22m[1mh + enter[22m[2m to show help[22m
+[2m12:06:18[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/v1/auth/me[39m
+Error: connect ECONNREFUSED 127.0.0.1:8787
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1864:16)
+[2m12:06:18[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/v1/auth/me[39m
+Error: connect ECONNREFUSED 127.0.0.1:8787
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1864:16)
+[2m12:06:26[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/v1/auth/login[39m
+Error: connect ECONNREFUSED 127.0.0.1:8787
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1864:16)
+[2m12:06:29[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/v1/auth/login[39m
+Error: connect ECONNREFUSED 127.0.0.1:8787
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1864:16)
+[2m12:22:28[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mapi/core.ts[22m
+[2m12:22:49[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mapi/routes/auth.ts[22m
+[2m12:23:09[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mapi/worker.ts[22m
+[2m12:23:55[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/layout/Protected.tsx, /src/styles/index.css[22m
+[2m12:23:57[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/public/Register.tsx, /src/styles/index.css[22m
+[2m12:25:35[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mapi/routes/ai.ts[22m
+[2m12:25:37[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mapi/worker.ts[22m
+[2m12:25:40[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mwrangler.toml[22m
+[2m12:25:56[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mapi/routes/aiCalls.ts[22m
+[2m12:26:14[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mapi/routes/billing.ts[22m
+[2m12:26:33[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mapi/routes/ops2.ts[22m
+[2m12:26:47[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mapi/routes/deals.ts[22m
+[2m12:26:59[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/layout/Protected.tsx, /src/styles/index.css[22m
+[2m12:27:00[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/public/Login.tsx, /src/styles/index.css[22m
+[2m12:33:51[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mpackage.json[22m
+[2m12:33:51[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mpackage.json[22m
+[2m12:35:06[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/app/AiAgents.tsx, /src/styles/index.css[22m
+[2m12:35:23[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mpackage.json[22m
+[2m12:36:03[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/app/AiAgents.tsx, /src/styles/index.css[22m
+[2m12:38:48[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mwrangler.toml[22m
+[2m12:48:17[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mwrangler.toml[22m
+[2m13:05:15[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mapi/core.ts[22m
+[2m13:05:18[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mapi/routes/platform.ts[22m
+[2m13:05:20[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mapi/worker.ts[22m
+[2m13:05:21[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mapi/routes/ai.ts[22m
+[2m13:06:47[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/platform/Plans.tsx, /src/styles/index.css[22m
+[2m13:06:49[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/platform/Plans.tsx[22m
+[2m13:06:50[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/platform/PlatformSettings.tsx, /src/styles/index.css[22m
+[2m13:06:52[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/platform/PlatformSettings.tsx[22m
+[2m13:07:22[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mapi/routes/platform.ts[22m
+[2m13:08:51[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mapi/routes/platform.ts[22m
+[2m13:08:53[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mapi/worker.ts[22m
+[2m13:08:54[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/platform/Plans.tsx, /src/styles/index.css[22m
+[2m13:09:10[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mapi/routes/platform.ts[22m

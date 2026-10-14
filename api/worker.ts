@@ -142,6 +142,7 @@ const routes: Route[] = [
   R('POST', '/api/v1/ai/campaigns', agentRoutes.createCampaign),
   R('POST', '/api/v1/ai/campaigns/:id/start', agentRoutes.startCampaign),
   R('POST', '/api/v1/ai/campaigns/:id/stop', agentRoutes.stopCampaign),
+  R('POST', '/api/v1/ai/complete', agentRoutes.complete),
   R('POST', '/api/v1/ai/calls/simulate', callRoutes.simulateCall),
   R('GET', '/api/v1/ai/calls', callRoutes.list),
   R('GET', '/api/v1/ai/calls/:id', callRoutes.getCall),
@@ -163,7 +164,10 @@ const routes: Route[] = [
   R('GET', '/api/v1/platform/tenants/:id', platformRoutes.tenantDetail),
   R('POST', '/api/v1/platform/tenants/:id/status', platformRoutes.setTenantStatus),
   R('GET', '/api/v1/platform/plans', platformRoutes.plans),
+  R('POST', '/api/v1/platform/plans', platformRoutes.createPlan),
   R('PATCH', '/api/v1/platform/plans/:id', platformRoutes.updatePlan),
+  R('GET', '/api/v1/platform/providers', platformRoutes.providerConfigs),
+  R('PATCH', '/api/v1/platform/providers/:provider', platformRoutes.updateProviderConfig),
   R('GET', '/api/v1/platform/subscriptions', platformRoutes.subscriptions),
   R('GET', '/api/v1/platform/usage', platformRoutes.usage),
   R('GET', '/api/v1/platform/service-orders', platformRoutes.serviceOrders),
@@ -202,6 +206,16 @@ const SECURITY_HEADERS: Record<string, string> = {
   'x-frame-options': 'DENY',
   'referrer-policy': 'strict-origin-when-cross-origin',
   'permissions-policy': 'camera=(), microphone=(), geolocation=()',
+  'content-security-policy': "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
+  'strict-transport-security': 'max-age=31536000; includeSubDomains',
+  'cross-origin-opener-policy': 'same-origin',
+  'cross-origin-resource-policy': 'same-origin',
+}
+
+function secure(response: Response): Response {
+  const secured = new Response(response.body, response)
+  for (const [key, value] of Object.entries(SECURITY_HEADERS)) if (!secured.headers.has(key)) secured.headers.set(key, value)
+  return secured
 }
 
 export default {
@@ -214,8 +228,8 @@ export default {
     }
 
     if (!url.pathname.startsWith('/api/')) {
-      if (env.ASSETS) return env.ASSETS.fetch(request)
-      return new Response('Nexio CRM API', { status: 200 })
+      if (env.ASSETS) return secure(await env.ASSETS.fetch(request))
+      return secure(new Response('Nexio CRM API', { status: 200 }))
     }
 
     const method = request.method.toUpperCase()
@@ -238,6 +252,21 @@ export default {
       const ctx: Ctx = { env, req: request, url, user: null, tenantId: null, role: null, params: {}, sessionId: null }
       await loadSession(ctx)
 
+      if (isMutation && ctx.sessionId) {
+        const origin = request.headers.get('Origin')
+        const fetchSite = request.headers.get('Sec-Fetch-Site')
+        if (!origin || origin !== url.origin || (fetchSite && !['same-origin', 'same-site', 'none'].includes(fetchSite))) {
+          throw forbidden('CSRF validation failed')
+        }
+      }
+
+      if (ctx.user?.is_platform_admin) {
+        const allowed = url.pathname.startsWith('/api/v1/platform') || url.pathname.startsWith('/api/v1/auth')
+        if (!allowed) throw forbidden('Platform administrators are isolated from tenant CRM data')
+      } else if (url.pathname.startsWith('/api/v1/platform')) {
+        throw forbidden('Platform area is hidden from tenant users')
+      }
+
       // A client-portal session is confined to the portal surface. Enforced before
       // routing so no internal endpoint can leak supplier data to a customer account.
       if (ctx.role === 'client_portal_user') {
@@ -251,8 +280,7 @@ export default {
         if (!params) continue
         ctx.params = params
         const res = await route.handler(ctx)
-        for (const [k, v] of Object.entries(SECURITY_HEADERS)) if (!res.headers.has(k)) res.headers.set(k, v)
-        return res
+        return secure(res)
       }
       throw new ApiError(404, 'Метод API не найден', 'not_found')
     } catch (err) {

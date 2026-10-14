@@ -1,0 +1,53 @@
+{
+  "agents": {
+    "telephony-integrations": {
+      "agentId": "telephony-integrations",
+      "agentType": "integration-auditor",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "readOnly": true,
+        "workspace": "C:\\Users\\Ibrohim\\nexio_crm_v2",
+        "model": "inherit"
+      },
+      "createdAt": "2026-10-13T07:01:05.689Z",
+      "domain": "telephony",
+      "model": "inherit",
+      "modelRoutedBy": "explicit"
+    },
+    "appsec-pass-2": {
+      "agentId": "appsec-pass-2",
+      "agentType": "red-team",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "readOnly": true,
+        "workspace": "C:\\Users\\Ibrohim\\nexio_crm_v2",
+        "model": "inherit"
+      },
+      "createdAt": "2026-10-13T07:02:24.622Z",
+      "domain": "abuse-resilience",
+      "model": "inherit",
+      "modelRoutedBy": "explicit"
+    },
+    "privacy-cookie": {
+      "agentId": "privacy-cookie",
+      "agentType": "privacy-auditor",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "readOnly": true,
+        "workspace": "C:\\Users\\Ibrohim\\nexio_crm_v2",
+        "model": "inherit"
+      },
+      "createdAt": "2026-10-13T07:03:10.203Z",
+      "domain": "privacy",
+      "model": "inherit",
+      "modelRoutedBy": "explicit"
+    }
+  },
+  "version": "3.0.0"
+}

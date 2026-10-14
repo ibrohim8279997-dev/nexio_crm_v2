@@ -27,6 +27,8 @@ export default function AiAgents() {
   const [createOpen, setCreateOpen] = useState(false)
   const [stopTarget, setStopTarget] = useState<Campaign | null>(null)
   const [tab, setTab] = useState<'agents' | 'campaigns' | 'approvals'>('agents')
+  const [assistantPrompt, setAssistantPrompt] = useState('')
+  const [assistantAnswer, setAssistantAnswer] = useState('')
   const can = useCan()
   const toast = useToast()
 
@@ -44,6 +46,9 @@ export default function AiAgents() {
   })
   const decide = useApiMutation(({ id, status }: { id: string; status: string }) => api.post(`/api/v1/ai/approvals/${id}`, { status }), {
     invalidate: [['ai-approvals'], ['ai-agents']], success: 'Решение сохранено',
+  })
+  const complete = useApiMutation((prompt: string) => api.post<{ content: string; model: string }>('/api/v1/ai/complete', { prompt }), {
+    onDone: (result) => setAssistantAnswer(result.content),
   })
 
   const agents = q.data?.data ?? []
@@ -78,6 +83,18 @@ export default function AiAgents() {
           <StatCard label="Ошибки сессий" value={num(totals.errors)} hint="неуспешные соединения" icon={<AlertTriangle className="size-4" />} tone={totals.errors > 0 ? 'danger' : 'neutral'} />
         </Grid>
       </QueryState>
+
+      <SectionCard title="Nexio AI Assistant" subtitle="Groq Free Tier · OpenAI GPT-OSS 120B · faqat o‘qish rejimi">
+        <div className="space-y-3">
+          <Textarea value={assistantPrompt} onChange={(event) => setAssistantPrompt(event.target.value)} maxLength={4000} rows={4} placeholder="CRM bo‘yicha savol yoki tahlil vazifasini yozing…" />
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-[11px] text-muted">Maxfiy kalit serverda saqlanadi. AI mijoz ma’lumotlarini o‘zgartira olmaydi.</p>
+            <Button disabled={!assistantPrompt.trim()} loading={complete.isPending} onClick={() => complete.mutate(assistantPrompt.trim())}><Sparkles className="size-4" /> So‘rash</Button>
+          </div>
+          {complete.error && <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-[12px] text-amber-800">{complete.error.message}</div>}
+          {assistantAnswer && <div className="whitespace-pre-wrap rounded-xl border border-violet-100 bg-violet-50 p-4 text-[13px] leading-relaxed text-ink">{assistantAnswer}</div>}
+        </div>
+      </SectionCard>
 
       <SectionCard padded={false}>
         <div className="border-b border-line px-4 py-3">

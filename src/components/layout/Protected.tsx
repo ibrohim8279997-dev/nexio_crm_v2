@@ -19,10 +19,11 @@ function Booting() {
 
 /** Requires an authenticated session; otherwise returns to login preserving the target. */
 export function RequireAuth({ children }: { children: ReactNode }) {
-  const { user, loading } = useAuth()
+  const { user, isPlatformAdmin, loading } = useAuth()
   const location = useLocation()
   if (loading) return <Booting />
   if (!user) return <Navigate to="/login" replace state={{ from: location.pathname }} />
+  if (isPlatformAdmin && location.pathname.startsWith('/app')) return <Navigate to="/platform" replace />
   return <>{children}</>
 }
 
@@ -31,15 +32,6 @@ export function RequirePlatform({ children }: { children: ReactNode }) {
   const { user, isPlatformAdmin, loading } = useAuth()
   if (loading) return <Booting />
   if (!user) return <Navigate to="/login" replace state={{ from: '/platform' }} />
-  if (!isPlatformAdmin) {
-    return (
-      <div className="mx-auto max-w-lg p-8 text-center">
-        <h1 className="text-xl font-bold text-ink">403 · Доступ запрещён</h1>
-        <p className="mt-2 text-[13px] text-muted">
-          Раздел доступен только операторам платформы Nexio Lab. Ваша сессия не имеет прав <code>platform_superadmin</code>.
-        </p>
-      </div>
-    )
-  }
+  if (!isPlatformAdmin) return <Navigate to="/app" replace />
   return <>{children}</>
 }

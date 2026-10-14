@@ -90,7 +90,6 @@ export default function PlatformTenants() {
             {detail.data.tenant.status !== 'active'
               ? <Button size="sm" loading={setTenantStatus.isPending} onClick={() => setTenantStatus.mutate({ tid: detail.data!.tenant.id, next: 'active' })}><Play className="size-3.5" /> Активировать</Button>
               : <Button size="sm" variant="danger" loading={setTenantStatus.isPending} onClick={() => setTenantStatus.mutate({ tid: detail.data!.tenant.id, next: 'suspended' })}><Pause className="size-3.5" /> Приостановить</Button>}
-            <a href={`/app`}><Button size="sm" variant="secondary">Открыть CRM этой компании</Button></a>
           </div>
         )}>
         <QueryState loading={detail.isLoading} error={detail.error} onRetry={() => detail.refetch()} skeleton={<Card className="h-80 animate-pulse" />}>

@@ -101,7 +101,7 @@ export const communicationRoutes = {
     if (channel) { where.push('c.channel = ?'); binds.push(channel) }
     const rows = await ctx.env.DB.prepare(
       `SELECT c.*, org.name AS org_name, u.name AS user_name FROM communications c
-         LEFT JOIN organizations org ON org.id=c.org_id LEFT JOIN users u ON u.id=c.user_id
+         LEFT JOIN organizations org ON org.id=c.org_id AND org.tenant_id=c.tenant_id LEFT JOIN users u ON u.id=c.user_id
         WHERE ${where.join(' AND ')} ORDER BY c.created_at DESC LIMIT ? OFFSET ?`
     ).bind(...binds, limit, offset).all<any>()
     const total = await ctx.env.DB.prepare(`SELECT COUNT(*) AS c FROM communications c WHERE ${where.join(' AND ')}`).bind(...binds).first<any>()
@@ -111,6 +111,8 @@ export const communicationRoutes = {
   async send(ctx: Ctx) {
     requireAuth(ctx); requirePermission(ctx, 'crm.write')
     const b = await body<any>(ctx)
+    if (b.org_id && !(await owned(ctx, 'organizations', b.org_id))) throw notFound('Organization not found')
+    if (b.contact_id && !(await owned(ctx, 'contacts', b.contact_id))) throw notFound('Contact not found')
     const id = newId('com')
     // No outbound provider is configured in this environment: the message is recorded
     // as queued/sandbox rather than reported as actually delivered.
@@ -130,7 +132,7 @@ export const documentRoutes = {
     if (kind) { where.push('d.kind = ?'); binds.push(kind) }
     const rows = await ctx.env.DB.prepare(
       `SELECT d.*, org.name AS org_name, u.name AS created_by_name FROM documents d
-         LEFT JOIN organizations org ON org.id=d.org_id LEFT JOIN users u ON u.id=d.created_by
+         LEFT JOIN organizations org ON org.id=d.org_id AND org.tenant_id=d.tenant_id LEFT JOIN users u ON u.id=d.created_by
         WHERE ${where.join(' AND ')} ORDER BY d.created_at DESC LIMIT 200`
     ).bind(...binds).all<any>()
     const stats = await ctx.env.DB.prepare("SELECT COUNT(*) AS total, SUM(CASE WHEN status='signed' THEN 1 ELSE 0 END) AS signed, SUM(CASE WHEN status='draft' THEN 1 ELSE 0 END) AS draft FROM documents WHERE tenant_id = ?").bind(t).first<any>()
@@ -139,6 +141,8 @@ export const documentRoutes = {
   async create(ctx: Ctx) {
     requireAuth(ctx); requirePermission(ctx, 'crm.write')
     const b = await body<any>(ctx)
+    if (b.org_id && !(await owned(ctx, 'organizations', b.org_id))) throw notFound('Organization not found')
+    if (b.order_id && !(await owned(ctx, 'orders', b.order_id))) throw notFound('Order not found')
     const id = newId('doc')
     await ctx.env.DB.prepare('INSERT INTO documents (id,tenant_id,name,kind,org_id,order_id,version,size_kb,status,created_by,created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)')
       .bind(id, ctx.tenantId, str(b.name, 'name', { max: 250 }), oneOf(b.kind, 'kind', ['proposal', 'contract', 'invoice', 'act', 'other'] as const, 'proposal'), b.org_id ?? null, b.order_id ?? null, 1, 0, 'draft', ctx.user!.id, now()).run()

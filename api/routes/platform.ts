@@ -1,5 +1,5 @@
 import {
-  audit, body, forbidden, json, newId, notFound, now, num, oneOf, paginate, requireAuth, str,
+  ApiError, audit, body, forbidden, json, newId, notFound, now, num, oneOf, paginate, requireAuth, sealSecret, str,
 } from '../core'
 import type { Ctx } from '../core'
 
@@ -7,6 +7,11 @@ import type { Ctx } from '../core'
 function requirePlatform(ctx: Ctx) {
   requireAuth(ctx)
   if (!ctx.user!.is_platform_admin) throw forbidden('Доступ только для операторов платформы Nexio Lab')
+}
+
+function requireSuperadmin(ctx: Ctx) {
+  requirePlatform(ctx)
+  if (ctx.user!.platform_role !== 'platform_superadmin') throw forbidden('Only the platform superadmin can change this setting')
 }
 
 export const platformRoutes = {
@@ -160,15 +165,71 @@ export const platformRoutes = {
   },
 
   async updatePlan(ctx: Ctx) {
-    requirePlatform(ctx)
+    requireSuperadmin(ctx)
     const b = await body<any>(ctx)
     const plan = await ctx.env.DB.prepare('SELECT id FROM plans WHERE id = ?').bind(ctx.params.id).first()
     if (!plan) throw notFound('Тариф не найден')
-    await ctx.env.DB.prepare(
-      'UPDATE plans SET name=COALESCE(?,name), tagline=?, price_monthly=COALESCE(?,price_monthly), price_yearly=COALESCE(?,price_yearly), seats=COALESCE(?,seats), api_requests=COALESCE(?,api_requests), ai_minutes=COALESCE(?,ai_minutes), storage_gb=COALESCE(?,storage_gb), is_public=COALESCE(?,is_public) WHERE id=?'
-    ).bind(str(b.name, 'name', { required: false, max: 80 }), str(b.tagline, 'tagline', { required: false, max: 200 }), num(b.price_monthly, 'price_monthly', { min: 0 }), num(b.price_yearly, 'price_yearly', { min: 0 }), num(b.seats, 'seats', { min: 0 }), num(b.api_requests, 'api_requests', { min: 0 }), num(b.ai_minutes, 'ai_minutes', { min: 0 }), num(b.storage_gb, 'storage_gb', { min: 0 }), b.is_public === undefined ? null : (b.is_public ? 1 : 0), ctx.params.id).run()
-    await audit(ctx, 'platform.plan_updated', 'plan', ctx.params.id, null)
+    const modules = b.modules === undefined ? undefined : Array.from(new Set((Array.isArray(b.modules) ? b.modules : []).map((v: unknown) => String(v).trim()).filter((v: string) => /^[a-z0-9_-]{2,40}$/i.test(v)))).slice(0, 30)
+    const features = b.features === undefined ? undefined : (Array.isArray(b.features) ? b.features : []).slice(0, 50).map((feature: any, position: number) => ({
+      id: typeof feature.id === 'string' && feature.id ? feature.id : newId('pft'),
+      label: str(feature.label, 'feature.label', { max: 160 })!,
+      included: feature.included ? 1 : 0,
+      position,
+    }))
+    const statements = [ctx.env.DB.prepare(
+      'UPDATE plans SET name=COALESCE(?,name), tagline=COALESCE(?,tagline), price_monthly=COALESCE(?,price_monthly), price_yearly=COALESCE(?,price_yearly), seats=COALESCE(?,seats), api_requests=COALESCE(?,api_requests), ai_minutes=COALESCE(?,ai_minutes), storage_gb=COALESCE(?,storage_gb), modules=COALESCE(?,modules), is_public=COALESCE(?,is_public) WHERE id=?'
+    ).bind(str(b.name, 'name', { required: false, max: 80 }), b.tagline === undefined ? null : str(b.tagline, 'tagline', { required: false, max: 200 }), num(b.price_monthly, 'price_monthly', { min: 0 }), num(b.price_yearly, 'price_yearly', { min: 0 }), num(b.seats, 'seats', { min: 0 }), num(b.api_requests, 'api_requests', { min: 0 }), num(b.ai_minutes, 'ai_minutes', { min: 0 }), num(b.storage_gb, 'storage_gb', { min: 0 }), modules === undefined ? null : JSON.stringify(modules), b.is_public === undefined ? null : (b.is_public ? 1 : 0), ctx.params.id)]
+    if (features !== undefined) {
+      statements.push(ctx.env.DB.prepare('DELETE FROM plan_features WHERE plan_id=?').bind(ctx.params.id))
+      statements.push(...features.map((feature: { id: string; label: string; included: number; position: number }) => ctx.env.DB.prepare('INSERT INTO plan_features (id,plan_id,label,included,position) VALUES (?,?,?,?,?)').bind(feature.id, ctx.params.id, feature.label, feature.included, feature.position)))
+    }
+    await ctx.env.DB.batch(statements)
+    await audit(ctx, 'platform.plan_updated', 'plan', ctx.params.id, { modules, featureCount: features?.length })
     return json({ ok: true })
+  },
+
+  async createPlan(ctx: Ctx) {
+    requireSuperadmin(ctx)
+    const b = await body<any>(ctx)
+    const code = str(b.code, 'code', { max: 40 })!.toLowerCase()
+    if (!/^[a-z0-9_-]+$/.test(code)) throw new ApiError(400, 'Plan code may contain only letters, numbers, dash and underscore', 'bad_request')
+    if (await ctx.env.DB.prepare('SELECT 1 FROM plans WHERE code=?').bind(code).first()) throw new ApiError(409, 'A plan with this code already exists', 'conflict')
+    const id = newId('pln')
+    const modules = Array.from(new Set((Array.isArray(b.modules) ? b.modules : []).map((v: unknown) => String(v).trim()).filter((v: string) => /^[a-z0-9_-]{2,40}$/i.test(v)))).slice(0, 30)
+    const features = (Array.isArray(b.features) ? b.features : []).slice(0, 50).map((feature: any, position: number) => ({ label: str(feature.label, 'feature.label', { max: 160 })!, included: feature.included ? 1 : 0, position }))
+    await ctx.env.DB.batch([
+      ctx.env.DB.prepare('INSERT INTO plans (id,code,name,tagline,price_monthly,price_yearly,currency,seats,api_requests,ai_minutes,storage_gb,modules,is_public,position) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)')
+        .bind(id, code, str(b.name, 'name', { max: 80 }), str(b.tagline, 'tagline', { required: false, max: 200 }), num(b.price_monthly, 'price_monthly', { min: 0 }) ?? 0, num(b.price_yearly, 'price_yearly', { min: 0 }) ?? 0, 'USD', num(b.seats, 'seats', { min: 0 }) ?? 3, num(b.api_requests, 'api_requests', { min: 0 }) ?? 10000, num(b.ai_minutes, 'ai_minutes', { min: 0 }) ?? 0, num(b.storage_gb, 'storage_gb', { min: 0 }) ?? 5, JSON.stringify(modules), b.is_public === false ? 0 : 1, 100),
+      ...features.map((feature: { label: string; included: number; position: number }) => ctx.env.DB.prepare('INSERT INTO plan_features (id,plan_id,label,included,position) VALUES (?,?,?,?,?)').bind(newId('pft'), id, feature.label, feature.included, feature.position)),
+    ])
+    await audit(ctx, 'platform.plan_created', 'plan', id, { code })
+    return json({ id }, 201)
+  },
+
+  async providerConfigs(ctx: Ctx) {
+    requireSuperadmin(ctx)
+    const rows = await ctx.env.DB.prepare('SELECT provider, secret_hint, model, enabled, updated_at FROM platform_provider_configs ORDER BY provider').all<any>()
+    return json({ data: rows.results })
+  },
+
+  async updateProviderConfig(ctx: Ctx) {
+    requireSuperadmin(ctx)
+    const provider = oneOf(ctx.params.provider, 'provider', ['groq', 'telephony', 'payment', 'email'] as const)
+    const b = await body<any>(ctx)
+    const secret = str(b.secret, 'secret', { required: false, max: 500 })
+    const model = str(b.model, 'model', { required: false, max: 120 })
+    if (secret && !ctx.env.PLATFORM_SECRETS_KEY) throw new ApiError(503, 'PLATFORM_SECRETS_KEY is not configured', 'secret_store_not_configured')
+    const encrypted = secret ? await sealSecret(secret, String(ctx.env.PLATFORM_SECRETS_KEY)) : null
+    const hint = secret ? `••••${secret.slice(-4)}` : null
+    await ctx.env.DB.prepare(
+      `INSERT INTO platform_provider_configs (provider,encrypted_secret,secret_hint,model,enabled,updated_by,created_at,updated_at)
+       VALUES (?,?,?,?,?,?,?,?) ON CONFLICT(provider) DO UPDATE SET
+       encrypted_secret=COALESCE(excluded.encrypted_secret,platform_provider_configs.encrypted_secret),
+       secret_hint=COALESCE(excluded.secret_hint,platform_provider_configs.secret_hint), model=COALESCE(excluded.model,platform_provider_configs.model),
+       enabled=excluded.enabled, updated_by=excluded.updated_by, updated_at=excluded.updated_at`
+    ).bind(provider, encrypted, hint, model, b.enabled === false ? 0 : 1, ctx.user!.id, now(), now()).run()
+    await audit(ctx, 'platform.provider_config_updated', 'provider', provider, { provider, secretChanged: !!secret, enabled: b.enabled !== false })
+    return json({ ok: true, provider, secretHint: hint })
   },
 
   async subscriptions(ctx: Ctx) {
