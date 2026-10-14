@@ -1,6 +1,6 @@
 import {
   ApiError, body, clearCookie, conflict, createSession, forbidden, json, newId, newToken, now,
-  randomColor, requireAuth, sessionCookie, str, SESSION_TTL, unauthorized, verifyPassword, hashPassword,
+  randomColor, requireAuth, sessionCookie, str, SESSION_TTL, unauthorized, verifyPassword, hashPassword, hashToken,
 } from '../core'
 import type { Ctx, Env, Role } from '../core'
 
@@ -56,6 +56,7 @@ export const authRoutes = {
     const email = str(b.email, 'email', { max: 190 })!.toLowerCase()
     const password = str(b.password, 'password', { max: 200 })!
     const company = str(b.company, 'company', { max: 160 })!
+    if (b.accepted_terms !== true || b.accepted_privacy !== true) throw new ApiError(400, 'Terms and Privacy Policy must be accepted', 'consent_required')
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw new ApiError(400, 'Некорректный email', 'bad_request')
     if (password.length < 8) throw new ApiError(400, 'Пароль должен содержать минимум 8 символов', 'bad_request')
     const exists = await ctx.env.DB.prepare('SELECT 1 FROM users WHERE email = ?').bind(email).first()
@@ -67,6 +68,8 @@ export const authRoutes = {
       .bind(userId, email, await hashPassword(password), name, randomColor(email), ts, ts).run()
 
     const tenantId = await provisionTenant(ctx.env, company, userId, name)
+    await ctx.env.DB.prepare('INSERT INTO policy_acceptances (id,user_id,policy_version,terms_accepted,privacy_accepted,ip,user_agent,accepted_at) VALUES (?,?,?,?,?,?,?,?)')
+      .bind(newId('pac'), userId, '2026-10-13', 1, 1, ctx.req.headers.get('CF-Connecting-IP'), (ctx.req.headers.get('User-Agent') ?? '').slice(0, 250), now()).run()
     const sid = await createSession(ctx.env, userId, tenantId, ctx.req)
     return json({ user: { id: userId, email, name, avatar_color: randomColor(email), is_platform_admin: 0 }, tenantId, role: 'tenant_owner' },
       201, { 'set-cookie': sessionCookie(sid, SESSION_TTL, ctx.url.protocol === 'https:') })
@@ -76,11 +79,11 @@ export const authRoutes = {
     const b = await body<any>(ctx)
     const email = str(b.email, 'email', { max: 190 })!.toLowerCase()
     const password = str(b.password, 'password', { max: 200 })!
-    const u = await ctx.env.DB.prepare('SELECT id, email, name, password_hash, avatar_color, is_platform_admin FROM users WHERE email = ?').bind(email).first<any>()
+    const u = await ctx.env.DB.prepare('SELECT id, email, name, password_hash, avatar_color, is_platform_admin, platform_role FROM users WHERE email = ?').bind(email).first<any>()
     // Uniform failure message so the endpoint does not reveal which emails exist.
     if (!u || !(await verifyPassword(password, u.password_hash))) throw unauthorized('Неверный email или пароль')
 
-    const membership = await ctx.env.DB.prepare("SELECT tenant_id, role FROM tenant_memberships WHERE user_id = ? AND status = 'active' ORDER BY created_at LIMIT 1")
+    const membership = u.is_platform_admin ? null : await ctx.env.DB.prepare("SELECT tenant_id, role FROM tenant_memberships WHERE user_id = ? AND status = 'active' ORDER BY created_at LIMIT 1")
       .bind(u.id).first<{ tenant_id: string; role: Role }>()
     const sid = await createSession(ctx.env, u.id, membership?.tenant_id ?? null, ctx.req)
     await ctx.env.DB.prepare('UPDATE users SET last_login_at = ? WHERE id = ?').bind(now(), u.id).run()
@@ -88,18 +91,19 @@ export const authRoutes = {
       await ctx.env.DB.prepare('INSERT INTO audit_logs (id,tenant_id,actor_id,actor_name,action,target,created_at) VALUES (?,?,?,?,?,?,?)')
         .bind(newId('aud'), membership.tenant_id, u.id, u.name, 'login.success', 'session', now()).run()
     }
-    return json({ user: { id: u.id, email: u.email, name: u.name, avatar_color: u.avatar_color, is_platform_admin: u.is_platform_admin }, tenantId: membership?.tenant_id ?? null, role: membership?.role ?? null },
+    return json({ user: { id: u.id, email: u.email, name: u.name, avatar_color: u.avatar_color, is_platform_admin: u.is_platform_admin, platform_role: u.platform_role }, tenantId: membership?.tenant_id ?? null, role: membership?.role ?? null },
       200, { 'set-cookie': sessionCookie(sid, SESSION_TTL, ctx.url.protocol === 'https:') })
   },
 
   async logout(ctx: Ctx) {
     if (ctx.sessionId) await ctx.env.DB.prepare('DELETE FROM sessions WHERE id = ?').bind(ctx.sessionId).run()
-    return json({ ok: true }, 200, { 'set-cookie': clearCookie() })
+    return json({ ok: true }, 200, { 'set-cookie': clearCookie(ctx.url.protocol === 'https:') })
   },
 
   /** Current user + every tenant they belong to, for the company switcher. */
   async me(ctx: Ctx) {
     if (!ctx.user) return json({ user: null, tenants: [], tenant: null, role: null, isPlatformAdmin: false })
+    if (ctx.user.is_platform_admin) return json({ user: ctx.user, tenants: [], tenant: null, role: null, isPlatformAdmin: true })
     const tenants = await ctx.env.DB.prepare(
       `SELECT t.id, t.name, t.slug, t.brand_color, t.logo_text, t.status, t.currency, t.timezone, t.locale,
               m.role, s.status AS subscription_status
@@ -118,12 +122,12 @@ export const authRoutes = {
 
   async switchTenant(ctx: Ctx) {
     requireAuth(ctx)
+    if (ctx.user.is_platform_admin) throw forbidden('Platform administrators cannot enter tenant CRM workspaces')
     const b = await body<any>(ctx)
     const tenantId = str(b.tenantId, 'tenantId')!
     const m = await ctx.env.DB.prepare("SELECT role FROM tenant_memberships WHERE tenant_id = ? AND user_id = ? AND status = 'active'")
       .bind(tenantId, ctx.user.id).first<{ role: Role }>()
-    // Platform operators may switch into any tenant for audited support work.
-    if (!m && !ctx.user.is_platform_admin) throw forbidden('У вас нет доступа к этой компании')
+    if (!m) throw forbidden('У вас нет доступа к этой компании')
     if (ctx.sessionId) await ctx.env.DB.prepare('UPDATE sessions SET tenant_id = ? WHERE id = ?').bind(tenantId, ctx.sessionId).run()
     await ctx.env.DB.prepare('INSERT INTO audit_logs (id,tenant_id,actor_id,actor_name,action,target,created_at) VALUES (?,?,?,?,?,?,?)')
       .bind(newId('aud'), tenantId, ctx.user.id, ctx.user.name, 'tenant.switched', 'session', now()).run()
@@ -139,8 +143,9 @@ export const authRoutes = {
     if (u) {
       const token = newToken()
       devToken = token
+      await ctx.env.DB.prepare("UPDATE invitations SET status='revoked' WHERE email=? AND role='password_reset' AND status='pending'").bind(email).run()
       await ctx.env.DB.prepare('INSERT INTO invitations (id,tenant_id,email,role,token,status,expires_at,created_at) VALUES (?,?,?,?,?,?,?,?)')
-        .bind(newId('inv'), null, email, 'password_reset', token, 'pending', new Date(Date.now() + 36e5).toISOString().slice(0, 19).replace('T', ' '), now()).run()
+        .bind(newId('inv'), null, email, 'password_reset', await hashToken(token), 'pending', new Date(Date.now() + 36e5).toISOString().slice(0, 19).replace('T', ' '), now()).run()
     }
     // Production would email this token. With no mail provider configured we return it
     // explicitly marked as a development affordance instead of pretending to send mail.
@@ -152,7 +157,7 @@ export const authRoutes = {
     const token = str(b.token, 'token')!
     const password = str(b.password, 'password', { max: 200 })!
     if (password.length < 8) throw new ApiError(400, 'Пароль должен содержать минимум 8 символов', 'bad_request')
-    const inv = await ctx.env.DB.prepare("SELECT id, email FROM invitations WHERE token = ? AND role = 'password_reset' AND status = 'pending'").bind(token).first<any>()
+    const inv = await ctx.env.DB.prepare("SELECT id, email FROM invitations WHERE token = ? AND role = 'password_reset' AND status = 'pending' AND expires_at > ?").bind(await hashToken(token), now()).first<any>()
     if (!inv) throw new ApiError(400, 'Ссылка недействительна или истекла', 'bad_request')
     const u = await ctx.env.DB.prepare('SELECT id FROM users WHERE email = ?').bind(inv.email).first<any>()
     if (!u) throw new ApiError(400, 'Ссылка недействительна или истекла', 'bad_request')

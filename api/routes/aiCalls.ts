@@ -6,7 +6,7 @@ import { CALL_STATES, complianceCheck } from './ai'
 
 export const callRoutes = {
   async list(ctx: Ctx) {
-    requireAuth(ctx)
+    requireAuth(ctx); requirePermission(ctx, 'ai.read')
     const t = ctx.tenantId!
     const { limit, page, offset } = paginate(ctx.url)
     const status = ctx.url.searchParams.get('status'); const outcome = ctx.url.searchParams.get('outcome')
@@ -40,7 +40,7 @@ export const callRoutes = {
   },
 
   async getCall(ctx: Ctx) {
-    requireAuth(ctx)
+    requireAuth(ctx); requirePermission(ctx, 'ai.read')
     const t = ctx.tenantId!
     const call = await ctx.env.DB.prepare(
       `SELECT c.*, a.name AS agent_name, o.name AS org_name, ct.first_name || ' ' || COALESCE(ct.last_name,'') AS contact_name
@@ -127,7 +127,7 @@ export const callRoutes = {
   },
 
   async approvals(ctx: Ctx) {
-    requireAuth(ctx)
+    requireAuth(ctx); requirePermission(ctx, 'ai.read')
     const rows = await ctx.env.DB.prepare(
       `SELECT ap.*, a.name AS agent_name, c.outcome, c.duration_sec FROM ai_approvals ap
          LEFT JOIN ai_agents a ON a.id=ap.agent_id LEFT JOIN ai_calls c ON c.id=ap.call_id
@@ -148,7 +148,7 @@ export const callRoutes = {
   },
 
   async suppression(ctx: Ctx) {
-    requireAuth(ctx)
+    requireAuth(ctx); requirePermission(ctx, 'ai.read')
     const rows = await ctx.env.DB.prepare('SELECT * FROM suppression_list WHERE tenant_id = ? ORDER BY created_at DESC LIMIT 100').bind(ctx.tenantId).all<any>()
     return json({ data: rows.results })
   },
@@ -169,7 +169,7 @@ export const callRoutes = {
 
   /** AI analytics. Observations, hypotheses and explicit non-causality notes are kept separate. */
   async analytics(ctx: Ctx) {
-    requireAuth(ctx)
+    requireAuth(ctx); requirePermission(ctx, 'ai.read')
     const t = ctx.tenantId!
     const calls = await ctx.env.DB.prepare(
       `SELECT COALESCE(outcome,'unknown') AS outcome, COUNT(*) AS count, COALESCE(AVG(duration_sec),0) AS avg_seconds,

@@ -111,22 +111,17 @@ export const billingRoutes = {
     const invoiceNumber = `INV-${year}-${newId('n').slice(-5).toUpperCase()}`
 
     await ctx.env.DB.batch([
-      ctx.env.DB.prepare("UPDATE subscriptions SET status='cancelled', cancelled_at=?, cancel_at_period_end=0 WHERE tenant_id=? AND status IN ('active','trialing','grace','past_due')").bind(now(), t),
-      ctx.env.DB.prepare('INSERT INTO subscriptions (id,tenant_id,plan_id,status,seats,amount,currency,interval,period_start,period_end,created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)')
-        .bind(newId('sub'), t, plan.id, 'active', plan.seats, price, plan.currency, interval, now(), periodEnd, now()),
       ctx.env.DB.prepare('INSERT INTO invoices (id,tenant_id,number,amount,tax,total,currency,status,line_items,issued_at,due_at,created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)')
         .bind(invoiceId, t, invoiceNumber, price + (proration > 0 ? proration : 0), 0, Math.round((price + (proration > 0 ? proration : 0)) * 100) / 100, plan.currency, 'open', JSON.stringify([
           { label: `${plan.name} · ${interval === 'year' ? 'годовая' : 'месячная'} подписка`, qty: 1, amount: price },
           ...(proration !== 0 ? [{ label: 'Пропорциональный пересчёт', qty: 1, amount: proration }] : []),
         ]), now(), new Date(Date.now() + 7 * 864e5).toISOString().slice(0, 19).replace('T', ' '), now()),
-      ctx.env.DB.prepare("UPDATE tenants SET plan_id = ?, status='active', updated_at = ? WHERE id = ?").bind(plan.id, now(), t),
     ])
-    await applyEntitlements(ctx, t, code)
-    await audit(ctx, 'billing.plan_changed', 'subscription', t, { from: current?.current_code ?? null, to: code, interval, proration })
+    await audit(ctx, 'billing.plan_change_requested', 'invoice', invoiceId, { from: current?.current_code ?? null, to: code, interval, proration })
     return json({
       ok: true, invoiceId, invoiceNumber, proration, plan: plan.name, interval,
-      sandbox: true,
-      note: 'Платёжный провайдер не подключён: платёж не списан, счёт выставлен в режиме sandbox.',
+      pendingPayment: true,
+      note: 'Тариф не изменён. Счёт ожидает подтверждённого платежа от подключённого провайдера.',
     })
   },
 
@@ -166,21 +161,22 @@ export const billingRoutes = {
     const invoice = await ctx.env.DB.prepare('SELECT * FROM invoices WHERE id = ? AND tenant_id = ?').bind(ctx.params.id, t).first<any>()
     if (!invoice) throw notFound('Счёт не найден')
     if (invoice.status === 'paid') return json({ ok: true, alreadyPaid: true })
+    if (ctx.env.PAYMENT_PROVIDER !== 'live') throw new ApiError(503, 'Payment provider is not configured; sandbox payments cannot activate subscriptions', 'payment_provider_unavailable')
     const b = await body<any>(ctx)
     const key = str(b.idempotency_key, 'idempotency_key', { required: false, max: 120 })
     if (key) {
-      const dup = await ctx.env.DB.prepare('SELECT id FROM payments WHERE idempotency_key = ?').bind(key).first<any>()
+      const dup = await ctx.env.DB.prepare('SELECT id FROM payments WHERE tenant_id = ? AND provider = ? AND idempotency_key = ?').bind(t, 'live', key).first<any>()
       if (dup) return json({ ok: true, duplicate: true, message: 'Платёж уже был обработан (идемпотентность)' })
     }
     await ctx.env.DB.batch([
       ctx.env.DB.prepare("UPDATE invoices SET status='paid', paid_at=? WHERE id=? AND tenant_id=?").bind(now(), ctx.params.id, t),
       ctx.env.DB.prepare('INSERT INTO payments (id,tenant_id,invoice_id,provider,provider_ref,amount,currency,status,idempotency_key,created_at) VALUES (?,?,?,?,?,?,?,?,?,?)')
-        .bind(newId('pay'), t, ctx.params.id, 'sandbox', newId('sbx'), invoice.total, invoice.currency, 'succeeded', key, now()),
+        .bind(newId('pay'), t, ctx.params.id, 'live', newId('payref'), invoice.total, invoice.currency, 'succeeded', key, now()),
       ctx.env.DB.prepare('INSERT INTO billing_events (id,tenant_id,kind,detail,created_at) VALUES (?,?,?,?,?)')
         .bind(newId('bev'), t, 'invoice.paid', `${invoice.number} · sandbox`, now()),
     ])
     await audit(ctx, 'invoice.paid', 'invoice', ctx.params.id, { amount: invoice.total })
-    return json({ ok: true, sandbox: true, note: 'Оплата проведена в sandbox-режиме, реальные средства не списаны.' })
+    return json({ ok: true })
   },
 }
 

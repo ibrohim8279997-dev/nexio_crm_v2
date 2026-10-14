@@ -1,89 +1,40 @@
-import { Database, Layers, Settings, ShieldCheck, Users } from 'lucide-react'
-import { Badge, Card, Grid, PageHeader, QueryState, SectionCard, StatCard } from '../../components/ui/core'
-import { DataTable } from '../../components/ui/table'
-import { useApi } from '../../lib/hooks'
-import { useAuth } from '../../lib/auth'
+import { useState } from 'react'
+import { Database, KeyRound, Layers, ShieldCheck, Users } from 'lucide-react'
+import { Badge, Button, Card, Grid, PageHeader, QueryState, SectionCard, StatCard } from '../../components/ui/core'
+import { Checkbox, Field, Input } from '../../components/ui/form'
+import { useApi, useApiMutation } from '../../lib/hooks'
+import { api } from '../../lib/api'
 import { num } from '../../lib/format'
 
-interface Data {
-  counts: { users: number; tenants: number; plans: number; integrations: number; agents: number }
-  environment: string
-  retention: { subject: string; policy: string }[]
-}
+interface Data { counts: { users: number; tenants: number; plans: number; integrations: number; agents: number }; environment: string; retention: { subject: string; policy: string }[] }
+interface ProviderConfig { provider: string; secret_hint: string | null; model: string | null; enabled: number; updated_at: string }
+type ProviderForm = { secret: string; model: string; enabled: boolean }
 
 export default function PlatformSettings() {
-  const { data, isLoading, error, refetch } = useApi<Data>(['platform', 'settings'], '/api/v1/platform/settings')
-  const { user } = useAuth()
+  const settings = useApi<Data>(['platform', 'settings'], '/api/v1/platform/settings')
+  const providers = useApi<{ data: ProviderConfig[] }>(['platform', 'providers'], '/api/v1/platform/providers')
+  const [forms, setForms] = useState<Record<string, ProviderForm>>({})
+  const save = useApiMutation(({ provider, payload }: { provider: string; payload: Partial<ProviderForm> }) => api.patch(`/api/v1/platform/providers/${provider}`, payload), { invalidate: [['platform', 'providers']], success: 'Provider sozlamasi saqlandi' })
+  const labels: Record<string, string> = { groq: 'Groq AI', telephony: 'Telefoniya', payment: 'To‘lov provayderi', email: 'Email provayderi' }
+  const current = (provider: string): ProviderForm => forms[provider] ?? { secret: '', model: providers.data?.data.find((item) => item.provider === provider)?.model ?? (provider === 'groq' ? 'openai/gpt-oss-120b' : ''), enabled: !!providers.data?.data.find((item) => item.provider === provider)?.enabled }
+  const update = (provider: string, patch: Partial<ProviderForm>) => setForms((state) => ({ ...state, [provider]: { ...current(provider), ...patch } }))
 
-  return (
-    <div className="space-y-4 sm:space-y-5">
-      <PageHeader title="Настройки платформы" subtitle="Состав платформы, окружение, политика хранения данных и роли операторов Nexio Lab."
-        breadcrumbs={[{ label: 'Nexio Platform', to: '/platform' }, { label: 'Настройки' }]} />
-
-      <Grid cols={4}>
-        <StatCard label="Компании" value={num(data?.counts.tenants ?? 0)} icon={<Layers className="size-4" />} />
-        <StatCard label="Пользователи" value={num(data?.counts.users ?? 0)} icon={<Users className="size-4" />} tone="primary" />
-        <StatCard label="Интеграции" value={num(data?.counts.integrations ?? 0)} icon={<Database className="size-4" />} />
-        <StatCard label="AI-агенты" value={num(data?.counts.agents ?? 0)} tone="ai" icon={<ShieldCheck className="size-4" />} />
-      </Grid>
-
-      <div className="grid gap-4 xl:grid-cols-2">
-        <SectionCard title="Окружение и сессия оператора">
-          <dl className="space-y-2 text-[12px]">
-            {[
-              ['Окружение', data?.environment ?? 'development'],
-              ['Оператор', user?.name ?? '—'],
-              ['Роль платформы', user?.platform_role ?? 'platform_admin'],
-              ['Доступ в компанию', 'фиксируется в журнале аудита компании'],
-              ['SSO для операторов', 'не подключён — локальные учётные записи'],
-            ].map(([k, v]) => (
-              <div key={k} className="flex justify-between gap-3 rounded-lg bg-bg px-3 py-2">
-                <dt className="text-muted">{k}</dt><dd className="text-right font-medium text-ink">{v}</dd>
-              </div>
-            ))}
-          </dl>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <Badge tone="ai">Модули: CRM, AI, Billing, Platform</Badge>
-            <Badge tone="neutral">Локали: ru, uz, en</Badge>
-            <Badge tone="neutral">Валюта: UZS, USD</Badge>
-          </div>
-        </SectionCard>
-
-        <SectionCard title="Политика хранения и приватности" subtitle="Заявленные правила, соблюдаемые в API">
-          <ul className="space-y-2">
-            {data?.retention.map((r) => (
-              <li key={r.subject} className="rounded-xl border border-line p-3">
-                <p className="text-[12px] font-medium text-ink">{r.subject}</p>
-                <p className="text-[11px] text-muted">{r.policy}</p>
-              </li>
-            ))}
-          </ul>
-        </SectionCard>
-      </div>
-
-      <SectionCard title="Роли операторов платформы">
-        <QueryState loading={isLoading} error={error} onRetry={() => refetch()} skeleton={<Card className="h-40 animate-pulse" />}>
-          <DataTable
-            rows={[
-              { id: 'platform_admin', role: 'platform_admin', scope: 'Полный доступ ко всем компаниям и тарифам', audit: 'Все действия в аудит' },
-              { id: 'platform_support', role: 'platform_support', scope: 'Просмотр компаний, обращения, услуги', audit: 'Доступ в компанию только с записью в её аудит' },
-              { id: 'platform_billing', role: 'platform_billing', scope: 'Подписки, счета, тарифы', audit: 'Изменения тарифов журналируются' },
-              { id: 'platform_readonly', role: 'platform_readonly', scope: 'Только чтение метрик', audit: 'Без доступа к персональным данным' },
-            ]}
-            columns={[
-              { key: 'role', header: 'Роль', render: (r) => <span className="font-mono text-[11px] font-semibold text-ink">{r.role}</span> },
-              { key: 'scope', header: 'Область доступа' },
-              { key: 'audit', header: 'Аудит' },
-            ]}
-          />
-        </QueryState>
-        <div className="mt-3 rounded-xl border border-amber-100 bg-amber-50 p-3 text-[11px] leading-relaxed text-amber-800">
-          Чувствительные операции платформы (смена тарифа, приостановка компании, изменение статуса заявки) всегда пишутся в аудит
-          вместе с автором и временем. Отключение этих записей невозможно из интерфейса.
-        </div>
-      </SectionCard>
-
-      <span className="hidden"><Settings className="size-4" /></span>
-    </div>
-  )
+  return <div className="space-y-4 sm:space-y-5">
+    <PageHeader title="Platforma sozlamalari" subtitle="Global provayderlar, xavfsiz kalitlar va platforma holatini boshqaring." breadcrumbs={[{ label: 'Nexio Platform', to: '/platform' }, { label: 'Sozlamalar' }]} />
+    <Grid cols={4}><StatCard label="Kompaniyalar" value={num(settings.data?.counts.tenants ?? 0)} icon={<Layers className="size-4" />} /><StatCard label="Foydalanuvchilar" value={num(settings.data?.counts.users ?? 0)} icon={<Users className="size-4" />} tone="primary" /><StatCard label="Integratsiyalar" value={num(settings.data?.counts.integrations ?? 0)} icon={<Database className="size-4" />} /><StatCard label="AI agentlar" value={num(settings.data?.counts.agents ?? 0)} tone="ai" icon={<ShieldCheck className="size-4" />} /></Grid>
+    <SectionCard title="API kalitlari va provayderlar" subtitle="Kalitlar qayta ko‘rsatilmaydi va AES-GCM bilan shifrlangan holda saqlanadi.">
+      <QueryState loading={providers.isLoading} error={providers.error} onRetry={() => providers.refetch()} skeleton={<Card className="h-48 animate-pulse" />}>
+        <div className="grid gap-3 lg:grid-cols-2">{['groq', 'telephony', 'payment', 'email'].map((provider) => {
+          const stored = providers.data?.data.find((item) => item.provider === provider); const form = current(provider)
+          return <Card key={provider} className="p-4"><div className="mb-3 flex items-center justify-between"><div className="flex items-center gap-2"><KeyRound className="size-4 text-primary" /><b className="text-sm">{labels[provider]}</b></div><Badge tone={stored?.enabled ? 'success' : 'neutral'}>{stored?.secret_hint ?? 'sozlanmagan'}</Badge></div>
+            <div className="space-y-3"><Field label="API key" hint={stored?.secret_hint ? `${stored.secret_hint} saqlangan. Bo‘sh qoldirilsa o‘zgarmaydi.` : 'Kalit serverda shifrlanadi.'}><Input type="password" autoComplete="new-password" value={form.secret} onChange={(event) => update(provider, { secret: event.target.value })} /></Field>
+              {provider === 'groq' && <Field label="Model"><Input value={form.model} onChange={(event) => update(provider, { model: event.target.value })} /></Field>}
+              <Checkbox checked={form.enabled} onChange={(event) => update(provider, { enabled: event.target.checked })} label="Provider faol" />
+              <Button size="sm" loading={save.isPending} onClick={() => save.mutate({ provider, payload: { secret: form.secret || undefined, model: form.model || undefined, enabled: form.enabled } })}>Saqlash</Button>
+            </div></Card>
+        })}</div>
+      </QueryState>
+    </SectionCard>
+    <SectionCard title="Maxfiylik va saqlash siyosati"><QueryState loading={settings.isLoading} error={settings.error} onRetry={() => settings.refetch()} skeleton={<Card className="h-32 animate-pulse" />}><div className="grid gap-2 sm:grid-cols-2">{settings.data?.retention.map((item) => <Card key={item.subject} className="p-3"><p className="text-xs font-semibold">{item.subject}</p><p className="mt-1 text-[11px] text-muted">{item.policy}</p></Card>)}</div></QueryState></SectionCard>
+  </div>
 }

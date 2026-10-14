@@ -1,0 +1,27 @@
+{
+  "swarms": {
+    "swarm-1791874771310-8im4el": {
+      "swarmId": "swarm-1791874771310-8im4el",
+      "topology": "hierarchical-mesh",
+      "maxAgents": 6,
+      "status": "terminated",
+      "agents": [
+        "telephony-integrations",
+        "appsec-pass-2",
+        "privacy-cookie"
+      ],
+      "tasks": [],
+      "config": {
+        "topology": "hierarchical-mesh",
+        "maxAgents": 6,
+        "strategy": "specialized",
+        "communicationProtocol": "message-bus",
+        "autoScaling": true,
+        "consensusMechanism": "majority"
+      },
+      "createdAt": "2026-10-13T06:59:31.310Z",
+      "updatedAt": "2026-10-13T07:08:04.457Z"
+    }
+  },
+  "version": "3.0.0"
+}

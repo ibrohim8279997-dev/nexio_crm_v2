@@ -13,6 +13,10 @@ export interface Env {
   ASSETS?: Fetcher
   ENVIRONMENT?: string
   APP_NAME?: string
+  AI_PROVIDER?: string
+  GROQ_API_KEY?: string
+  GROQ_MODEL?: string
+  PLATFORM_SECRETS_KEY?: string
   [key: string]: unknown
 }
 
@@ -66,6 +70,24 @@ const bytesToB64 = (b: ArrayBuffer) => btoa(String.fromCharCode(...new Uint8Arra
 const b64ToBytes = (s: string) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0))
 const hex = (b: ArrayBuffer) => [...new Uint8Array(b)].map((x) => x.toString(16).padStart(2, '0')).join('')
 
+async function secretKey(master: string) {
+  const digest = await crypto.subtle.digest('SHA-256', enc.encode(master))
+  return crypto.subtle.importKey('raw', digest, 'AES-GCM', false, ['encrypt', 'decrypt'])
+}
+
+export async function sealSecret(value: string, master: string): Promise<string> {
+  const iv = crypto.getRandomValues(new Uint8Array(12))
+  const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, await secretKey(master), enc.encode(value))
+  return `${bytesToB64(iv.buffer)}.${bytesToB64(encrypted)}`
+}
+
+export async function openSecret(value: string, master: string): Promise<string> {
+  const [iv, encrypted] = value.split('.')
+  if (!iv || !encrypted) throw new Error('Invalid encrypted secret')
+  const clear = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64ToBytes(iv) }, await secretKey(master), b64ToBytes(encrypted))
+  return new TextDecoder().decode(clear)
+}
+
 export async function hashPassword(password: string): Promise<string> {
   const salt = crypto.getRandomValues(new Uint8Array(16))
   const saltHex = [...salt].map((x) => x.toString(16).padStart(2, '0')).join('')
@@ -93,6 +115,10 @@ export const newId = (prefix: string) =>
   `${prefix}_${hex(crypto.getRandomValues(new Uint8Array(8)).buffer)}`
 
 export const newToken = () => hex(crypto.getRandomValues(new Uint8Array(32)).buffer).slice(0, 48)
+
+export async function hashToken(token: string): Promise<string> {
+  return hex(await crypto.subtle.digest('SHA-256', enc.encode(token)))
+}
 
 export function randomColor(seed: string) {
   const palette = ['#2563EB', '#8B5CF6', '#0EA5E9', '#10B981', '#F59E0B', '#EC4899', '#14B8A6', '#F97316']
@@ -135,22 +161,24 @@ export function can(role: Role | null, permission: Permission): boolean {
 }
 
 export function requirePermission(ctx: Ctx, permission: Permission): void {
-  if (ctx.user?.is_platform_admin) return // platform operators keep a global read/write audit-logged path
   if (!can(ctx.role, permission)) throw forbidden(`Требуется разрешение «${permission}»`)
 }
 
 // ── session ─────────────────────────────────────────────────────────────────
-const COOKIE = 'nexio_session'
+const COOKIE = '__Host-nexio_session'
+const DEV_COOKIE = 'nexio_session_dev'
 
 export function sessionCookie(id: string, maxAgeSec: number, secure: boolean) {
-  return `${COOKIE}=${id}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAgeSec}${secure ? '; Secure' : ''}`
+  const name = secure ? COOKIE : DEV_COOKIE
+  return `${name}=${id}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${maxAgeSec}${secure ? '; Secure' : ''}`
 }
-export function clearCookie() {
-  return `${COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0`
+export function clearCookie(secure = false) {
+  const name = secure ? COOKIE : DEV_COOKIE
+  return `${name}=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0${secure ? '; Secure' : ''}`
 }
 export function readCookie(req: Request): string | null {
   const raw = req.headers.get('Cookie') || ''
-  const m = raw.match(new RegExp(`(?:^|;\\s*)${COOKIE}=([^;]+)`))
+  const m = raw.match(new RegExp(`(?:^|;\\s*)(?:${COOKIE}|${DEV_COOKIE})=([^;]+)`))
   return m ? m[1] : null
 }
 
@@ -179,6 +207,7 @@ export async function loadSession(ctx: Ctx): Promise<void> {
   if (new Date(row.expires_at.replace(' ', 'T') + 'Z').getTime() < Date.now()) return
   ctx.sessionId = row.sid
   ctx.user = { id: row.id, email: row.email, name: row.name, avatar_color: row.avatar_color, is_platform_admin: row.is_platform_admin, platform_role: row.platform_role }
+  if (row.is_platform_admin) return
   // Resolve tenant context: session tenant must still be an active membership.
   if (row.session_tenant) {
     const m = await ctx.env.DB.prepare(
@@ -210,7 +239,17 @@ export async function audit(ctx: Ctx, action: string, target: string, targetId: 
 export async function body<T = Record<string, unknown>>(ctx: Ctx): Promise<T> {
   const ct = ctx.req.headers.get('content-type') || ''
   if (!ct.includes('application/json')) return {} as T
-  try { return (await ctx.req.json()) as T } catch { throw badRequest('Некорректный JSON в теле запроса') }
+  const maxBytes = 1_000_000
+  const declared = Number(ctx.req.headers.get('content-length') || 0)
+  if (declared > maxBytes) throw new ApiError(413, 'Request body is too large', 'payload_too_large')
+  try {
+    const raw = await ctx.req.text()
+    if (new TextEncoder().encode(raw).byteLength > maxBytes) throw new ApiError(413, 'Request body is too large', 'payload_too_large')
+    return (raw ? JSON.parse(raw) : {}) as T
+  } catch (error) {
+    if (error instanceof ApiError) throw error
+    throw badRequest('Некорректный JSON в теле запроса')
+  }
 }
 
 /** Reads a required string field with a max length guard. */
