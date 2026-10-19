@@ -21,11 +21,21 @@ interface NavGroup { label: string; items: NavItem[] }
 
 const ICON = 'size-[18px]'
 
+function LanguageSwitcher() {
+  const { locale, setLocale, t } = useI18n()
+  return <label className="inline-flex h-9 items-center rounded-xl border border-line bg-surface px-2 text-[11px] font-semibold text-muted">
+    <span className="sr-only">{t('language')}</span>
+    <select value={locale} onChange={(e) => setLocale(e.target.value as 'en' | 'ru' | 'uz')} className="cursor-pointer bg-transparent text-ink outline-none">
+      <option value="uz">UZ</option><option value="ru">RU</option><option value="en">EN</option>
+    </select>
+  </label>
+}
+
 function navKey(path: string) {
   const keys: Record<string, string> = {
     '/app': 'dashboard', '/app/leads': 'leads', '/app/deals': 'deals', '/app/companies': 'companies', '/app/contacts': 'contacts', '/app/orders': 'orders', '/app/catalog': 'catalog',
-    '/app/projects': 'projects', '/app/tasks': 'tasks', '/app/communications': 'communications', '/app/documents': 'documents', '/app/finance': 'financePage', '/app/analytics': 'analytics', '/app/automations': 'automations', '/app/integrations': 'integrations',
-    '/app/team': 'team', '/app/nexio-services': 'services', '/app/billing': 'billing', '/app/settings': 'settings', '/app/ai-calls': 'aiCalls', '/app/ai-analytics': 'aiAnalytics',
+    '/app/projects': 'projects', '/app/tasks': 'tasks', '/app/my-day': 'myDay', '/app/communications': 'communications', '/app/helpdesk': 'helpdesk', '/app/documents': 'documents', '/app/finance': 'financePage', '/app/analytics': 'analytics', '/app/automations': 'automations', '/app/integrations': 'integrations', '/app/marketplace': 'marketplace', '/app/plugins': 'plugins',
+    '/app/team': 'team', '/app/nexio-services': 'services', '/app/billing': 'billing', '/app/settings': 'settings', '/app/ai-agents': 'aiControl', '/app/ai-calls': 'aiCalls', '/app/ai-analytics': 'aiAnalytics',
   }
   return keys[path] ?? ''
 }
@@ -100,7 +110,7 @@ const GROUPS: NavGroup[] = [
 function Logo({ text, logoUrl: customLogo, name }: { text?: string | null; logoUrl?: string | null; name?: string }) {
   return (
     <div className="flex items-center gap-2.5">
-      <img src={customLogo || logoUrl} alt={name ?? 'Nexio Lab'} title={text ?? undefined} className="h-10 w-10 rounded-xl bg-white p-1 object-contain" />
+      <img src={customLogo || logoUrl} alt={name ?? 'Nexio Lab'} title={text ?? undefined} className="h-14 w-[150px] rounded-xl bg-white p-1 object-contain object-left" />
       <span className="min-w-0">
         <span className="block truncate text-[15px] font-bold leading-tight tracking-tight text-ink">{name ?? 'Nexio CRM'}</span>
         <span className="block text-[10px] font-medium uppercase tracking-wider text-muted">Nexio Lab · CRM</span>
@@ -408,6 +418,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
             <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
               <IconButton className="sm:hidden" onClick={() => setPalette(true)} title="Поиск"><Search className="size-[18px]" /></IconButton>
+              <LanguageSwitcher />
               <ThemeToggle />
               <CompanySwitcher />
               <PersistentNotificationsMenu />

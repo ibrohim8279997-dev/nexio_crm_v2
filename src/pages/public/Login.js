@@ -9,7 +9,7 @@ import { api, ApiError } from '../../lib/api';
 import { useAuth } from '../../lib/auth';
 import logoUrl from '../../assets/nexio-lab-logo.svg';
 export function BrandMark({ dark }) {
-    return (_jsxs(Link, { to: "/", className: "flex items-center gap-2.5", children: [_jsx("img", { src: logoUrl, alt: "Nexio Lab", className: "h-10 w-10 rounded-xl object-cover" }), _jsxs("span", { children: [_jsx("span", { className: `block text-[17px] font-extrabold leading-tight tracking-tight ${dark ? 'text-white' : 'text-ink'}`, children: "Nexio CRM" }), _jsx("span", { className: `block text-[10px] font-semibold uppercase tracking-wider ${dark ? 'text-blue-200' : 'text-muted'}`, children: "Nexio Lab" })] })] }));
+    return (_jsxs(Link, { to: "/", className: "flex items-center gap-2.5", children: [_jsx("img", { src: logoUrl, alt: "Nexio Lab", className: "h-14 w-[150px] rounded-xl bg-white p-1 object-contain object-left" }), _jsxs("span", { children: [_jsx("span", { className: `block text-[17px] font-extrabold leading-tight tracking-tight ${dark ? 'text-white' : 'text-ink'}`, children: "Nexio CRM" }), _jsx("span", { className: `block text-[10px] font-semibold uppercase tracking-wider ${dark ? 'text-blue-200' : 'text-muted'}`, children: "Nexio Lab" })] })] }));
 }
 const FEATURES = [
     { icon: PenTool, title: 'Unify Your Business', text: 'Все клиенты, сделки, задачи и проекты в одном рабочем пространстве.' },
@@ -43,6 +43,8 @@ export default function Login() {
                 navigate(from, { replace: true });
             else if (res.user?.is_platform_admin)
                 navigate('/platform', { replace: true });
+            else if (res.role === 'client_portal_user')
+                navigate('/portal', { replace: true });
             else
                 navigate('/app', { replace: true });
         }

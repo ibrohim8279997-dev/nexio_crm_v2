@@ -7,7 +7,7 @@ function Booting() {
 }
 /** Requires an authenticated session; otherwise returns to login preserving the target. */
 export function RequireAuth({ children }) {
-    const { user, isPlatformAdmin, loading } = useAuth();
+    const { user, role, isPlatformAdmin, loading } = useAuth();
     const location = useLocation();
     if (loading)
         return _jsx(Booting, {});
@@ -15,6 +15,18 @@ export function RequireAuth({ children }) {
         return _jsx(Navigate, { to: "/login", replace: true, state: { from: location.pathname } });
     if (isPlatformAdmin && location.pathname.startsWith('/app'))
         return _jsx(Navigate, { to: "/platform", replace: true });
+    if (role === 'client_portal_user' && !location.pathname.startsWith('/portal'))
+        return _jsx(Navigate, { to: "/portal", replace: true });
+    return _jsx(_Fragment, { children: children });
+}
+export function RequirePortal({ children }) {
+    const { user, role, loading } = useAuth();
+    if (loading)
+        return _jsx(Booting, {});
+    if (!user)
+        return _jsx(Navigate, { to: "/login", replace: true, state: { from: '/portal' } });
+    if (role !== 'client_portal_user')
+        return _jsx(Navigate, { to: "/app", replace: true });
     return _jsx(_Fragment, { children: children });
 }
 /** Requires a platform operator role — tenant users get an explicit 403 screen. */

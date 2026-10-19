@@ -6,6 +6,7 @@ import { useAuth } from '../../lib/auth'
 import { PlanCards } from './Marketing'
 import { useI18n, type Locale } from '../../lib/i18n'
 import { ThemeToggle } from '../../components/ui/ThemeToggle'
+import logoUrl from '../../assets/nexio-lab-logo.svg'
 
 function LanguageSwitcher() {
   const { locale, setLocale } = useI18n()
@@ -18,7 +19,7 @@ function LanguageSwitcher() {
 }
 
 export function PublicHeader() {
-  const { user } = useAuth()
+  const { user, role } = useAuth()
   const { t } = useI18n()
   const [open, setOpen] = useState(false)
   return (
@@ -26,7 +27,7 @@ export function PublicHeader() {
       <span className="sr-only">{t('features')}</span>
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
         <Link to="/" className="flex items-center gap-2.5">
-          <span className="inline-flex size-9 items-center justify-center rounded-xl bg-primary text-[15px] font-extrabold text-white shadow-sm">N</span>
+          <img src={logoUrl} alt="Nexio CRM" className="h-14 w-[150px] rounded-xl bg-white p-1 object-contain object-left" />
           <span>
             <span className="block text-[16px] font-extrabold leading-tight tracking-tight text-ink">Nexio CRM</span>
             <span className="block text-[10px] font-semibold uppercase tracking-wider text-muted">Nexio Lab</span>
@@ -41,7 +42,7 @@ export function PublicHeader() {
           <LanguageSwitcher />
           <ThemeToggle />
           {user ? (
-            <Link to="/app"><Button size="sm">В рабочее пространство <ArrowRight className="size-3.5" /></Button></Link>
+            <Link to={role === 'client_portal_user' ? '/portal' : '/app'}><Button size="sm">{role === 'client_portal_user' ? 'Mijoz portalini ochish' : t('workspace')} <ArrowRight className="size-3.5" /></Button></Link>
           ) : (
             <>
               <Link to="/login" className="hidden sm:block"><Button variant="ghost" size="sm">Войти</Button></Link>

@@ -73,6 +73,7 @@ CREATE TABLE invitations (
   tenant_id  TEXT REFERENCES tenants(id) ON DELETE CASCADE,  -- nullable: password-reset tokens are tenant-less
   email      TEXT NOT NULL,
   role       TEXT NOT NULL,
+  org_id     TEXT,                          -- customer organization for client_portal_user
   token      TEXT NOT NULL UNIQUE,
   invited_by TEXT REFERENCES users(id),
   status     TEXT NOT NULL DEFAULT 'pending',  -- pending | accepted | revoked | expired

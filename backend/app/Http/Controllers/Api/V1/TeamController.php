@@ -17,12 +17,12 @@ class TeamController
         H::requirePermission($ctx, 'team.read');
         $t = $ctx->tenantId;
         $rows = DB::select(
-            "SELECT m.id AS membership_id, m.role, m.department, m.title, m.status AS member_status, m.created_at AS joined_at,
+            "SELECT m.id AS membership_id, m.role, m.org_id, o.name AS org_name, m.department, m.title, m.status AS member_status, m.created_at AS joined_at,
                     u.id, u.name, u.email, u.avatar_color, u.last_login_at, u.mfa_enabled,
                     (SELECT COUNT(*) FROM deals d WHERE d.owner_id = u.id AND d.tenant_id = m.tenant_id AND d.status='open') AS open_deals,
                     (SELECT COUNT(*) FROM tasks k WHERE k.assignee_id = u.id AND k.tenant_id = m.tenant_id AND k.status!='done') AS open_tasks,
                     (SELECT COALESCE(SUM(d.amount),0) FROM deals d WHERE d.owner_id = u.id AND d.tenant_id = m.tenant_id AND d.status='won') AS won_value
-               FROM tenant_memberships m JOIN users u ON u.id = m.user_id
+               FROM tenant_memberships m JOIN users u ON u.id = m.user_id LEFT JOIN organizations o ON o.id = m.org_id
               WHERE m.tenant_id = ? ORDER BY m.role, u.name",
             [$t]
         );
@@ -61,6 +61,13 @@ class TeamController
         $email = strtolower(H::str($b['email'] ?? null, 'email', true, 190));
         $telegramChatId = H::str($b['telegram_chat_id'] ?? null, 'telegram_chat_id', false, 80);
         $role = H::oneOf($b['role'] ?? null, 'role', Rbac::ROLES);
+        $orgId = $role === 'client_portal_user' ? H::str($b['org_id'] ?? null, 'org_id', true, 64) : null;
+        if ($role === 'client_portal_user' && !$orgId) {
+            throw new ApiException(400, 'Portal klienti uchun kompaniyani tanlang', 'bad_request');
+        }
+        if ($orgId && !DB::selectOne('SELECT id FROM organizations WHERE id = ? AND tenant_id = ?', [$orgId, $t])) {
+            throw new ApiException(404, 'Kompaniya topilmadi', 'not_found');
+        }
         if ($role === 'tenant_owner' && $ctx->role !== 'tenant_owner') {
             throw new ApiException(400, 'Только владелец компании может назначить роль владельца', 'bad_request');
         }
@@ -79,11 +86,11 @@ class TeamController
         $token = H::newToken();
         $id = H::newId('inv');
         DB::table('invitations')->insert([
-            'id' => $id, 'tenant_id' => $t, 'email' => $email, 'role' => $role, 'token' => $token,
+            'id' => $id, 'tenant_id' => $t, 'email' => $email, 'role' => $role, 'org_id' => $orgId, 'token' => $token,
             'invited_by' => $user['id'], 'status' => 'pending',
             'expires_at' => gmdate('Y-m-d H:i:s', time() + 7 * 86400), 'created_at' => H::now(),
         ]);
-        H::audit($ctx, 'user.invited', 'invitation', $id, ['email' => $email, 'role' => $role]);
+        H::audit($ctx, 'user.invited', 'invitation', $id, ['email' => $email, 'role' => $role, 'org_id' => $orgId]);
         $inviteUrl = rtrim((string) config('nexio.frontend_url'), '/') . "/invite/{$token}";
         $dispatcher = new NotificationDispatcher();
         $emailed = $dispatcher->email($email, 'Nexio CRM taklifi', "Siz Nexio CRMga taklif qilindingiz: {$inviteUrl}");
@@ -110,7 +117,7 @@ class TeamController
         H::requirePermission($ctx, 'roles.write');
         $t = $ctx->tenantId;
         $b = H::body($ctx);
-        $member = DB::selectOne('SELECT id, user_id, role FROM tenant_memberships WHERE id = ? AND tenant_id = ?', [$ctx->params['id'], $t]);
+        $member = DB::selectOne('SELECT id, user_id, role, org_id FROM tenant_memberships WHERE id = ? AND tenant_id = ?', [$ctx->params['id'], $t]);
         if (!$member) throw new ApiException(404, 'Участник не найден', 'not_found');
         $owners = DB::selectOne("SELECT COUNT(*) AS c FROM tenant_memberships WHERE tenant_id = ? AND role = 'tenant_owner'", [$t]);
         if ($member->role === 'tenant_owner' && $owners->c <= 1 && !empty($b['role']) && $b['role'] !== 'tenant_owner') {
@@ -118,8 +125,13 @@ class TeamController
         }
         $role = !empty($b['role']) ? H::oneOf($b['role'], 'role', Rbac::ROLES) : null;
         $status = !empty($b['status']) ? H::oneOf($b['status'], 'status', ['active', 'suspended']) : null;
-        DB::update('UPDATE tenant_memberships SET role=COALESCE(?,role), department=?, title=?, status=COALESCE(?,status) WHERE id=? AND tenant_id=?', [
+        $finalRole = $role ?? $member->role;
+        $orgId = $finalRole === 'client_portal_user' ? (H::str($b['org_id'] ?? null, 'org_id', false, 64) ?: $member->org_id) : null;
+        if ($finalRole === 'client_portal_user' && !$orgId) throw new ApiException(400, 'Portal klienti uchun kompaniyani tanlang', 'bad_request');
+        if ($orgId && !DB::selectOne('SELECT id FROM organizations WHERE id = ? AND tenant_id = ?', [$orgId, $t])) throw new ApiException(404, 'Kompaniya topilmadi', 'not_found');
+        DB::update('UPDATE tenant_memberships SET role=COALESCE(?,role), org_id=?, department=?, title=?, status=COALESCE(?,status) WHERE id=? AND tenant_id=?', [
             $role,
+            $orgId,
             H::str($b['department'] ?? null, 'department', false, 80),
             H::str($b['title'] ?? null, 'title', false, 80),
             $status, $ctx->params['id'], $t,

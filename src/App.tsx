@@ -2,7 +2,7 @@ import { lazy, Suspense } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { AppShell } from './components/layout/AppShell'
 import { PlatformShell } from './components/layout/PlatformShell'
-import { RequireAuth, RequirePlatform } from './components/layout/Protected'
+import { RequireAuth, RequirePlatform, RequirePortal } from './components/layout/Protected'
 import { Card, Skeleton } from './components/ui/core'
 
 const Landing = lazy(() => import('./pages/public/Landing'))
@@ -88,7 +88,7 @@ export function App() {
         <Route path="/legal/:slug" element={<Legal />} />
 
         {/* Client portal */}
-        <Route path="/portal/*" element={<RequireAuth><Portal /></RequireAuth>} />
+        <Route path="/portal/*" element={<RequirePortal><Portal /></RequirePortal>} />
 
         {/* Platform superadmin */}
         <Route path="/platform/*" element={<RequirePlatform><PlatformShell><Routes>

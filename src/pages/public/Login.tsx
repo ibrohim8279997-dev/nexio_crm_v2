@@ -11,7 +11,7 @@ import logoUrl from '../../assets/nexio-lab-logo.svg'
 export function BrandMark({ dark }: { dark?: boolean }) {
   return (
     <Link to="/" className="flex items-center gap-2.5">
-      <img src={logoUrl} alt="Nexio Lab" className="h-10 w-10 rounded-xl object-cover" />
+      <img src={logoUrl} alt="Nexio Lab" className="h-14 w-[150px] rounded-xl bg-white p-1 object-contain object-left" />
       <span>
         <span className={`block text-[17px] font-extrabold leading-tight tracking-tight ${dark ? 'text-white' : 'text-ink'}`}>Nexio CRM</span>
         <span className={`block text-[10px] font-semibold uppercase tracking-wider ${dark ? 'text-blue-200' : 'text-muted'}`}>Nexio Lab</span>
@@ -83,6 +83,7 @@ export default function Login() {
       toast.success('Добро пожаловать', 'Вы вошли в Nexio CRM')
       if (from) navigate(from, { replace: true })
       else if (res.user?.is_platform_admin) navigate('/platform', { replace: true })
+      else if (res.role === 'client_portal_user') navigate('/portal', { replace: true })
       else navigate('/app', { replace: true })
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Не удалось войти')

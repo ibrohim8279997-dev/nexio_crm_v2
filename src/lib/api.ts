@@ -1,4 +1,4 @@
-/** Thin fetch client. Every call is same-origin and carries the session cookie. */
+/** Thin fetch client. Every call carries the session cookie. */
 export class ApiError extends Error {
   constructor(public status: number, message: string, public code = 'error', public details?: unknown) {
     super(message)
@@ -6,7 +6,11 @@ export class ApiError extends Error {
 }
 
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
-  const res = await fetch(path, {
+  const configuredBase = String(import.meta.env.VITE_API_BASE_URL ?? '').trim().replace(/\/$/, '')
+  const url = configuredBase && configuredBase !== '/api'
+    ? `${configuredBase}${path.startsWith('/api') && configuredBase.endsWith('/api') ? path.slice(4) : path}`
+    : path
+  const res = await fetch(url, {
     method,
     // Works both through the Vite same-origin proxy and when the frontend is
     // deployed against the Laravel API origin directly.
