@@ -26,6 +26,7 @@ import { num, shortDate, dateTime, label } from '../../lib/format'
 interface PortalData {
   org: { id: string; name: string; industry: string | null; tier: string; status: string; city: string | null; country: string | null }
   supplier: { name: string; currency: string }
+  deals: { id: string; title: string; status: string; amount: number; currency: string; probability: number; expected_close_at: string | null; created_at: string }[]
   orders: { id: string; number: string; status: string; amount: number; currency: string; payment_status: string; created_at: string; confirmed_at: string | null }[]
   projects: { id: string; name: string; status: string; progress: number; priority: string; budget: number; currency: string; start_date: string | null; due_date: string | null; description: string | null }[]
   milestones: { project_id: string; name: string; status: string; due_date: string | null; position: number }[]
@@ -33,7 +34,7 @@ interface PortalData {
   tickets: { id: string; number: string; subject: string; priority: string; status: string; channel: string; sla_due_at: string | null; created_at: string; updated_at: string }[]
   messages: { id: string; channel: string; direction: string; subject: string | null; body: string | null; status: string; created_at: string }[]
   serviceRequests: { id: string; service: string; title: string; description: string | null; budget: number; currency: string; status: string; priority: string; created_at: string; updated_at: string }[]
-  summary: { ordersTotal: number; outstanding: number; activeProjects: number; openTickets: number; orders: number; projects: number }
+  summary: { deals?: number; ordersTotal: number; outstanding: number; activeProjects: number; openTickets: number; orders: number; projects: number }
   services: { code: string; label: string }[]
   note: string
 }
@@ -42,7 +43,7 @@ export default function Portal() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const toast = useToast()
-  const [tab, setTab] = useState<'overview' | 'orders' | 'projects' | 'documents' | 'support' | 'services'>('overview')
+  const [tab, setTab] = useState<'overview' | 'deals' | 'orders' | 'projects' | 'documents' | 'support' | 'services'>('overview')
   const [msgOpen, setMsgOpen] = useState(false)
   const [ticketOpen, setTicketOpen] = useState(false)
   const [serviceOpen, setServiceOpen] = useState(false)

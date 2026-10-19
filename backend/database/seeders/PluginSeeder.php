@@ -32,6 +32,7 @@ class PluginSeeder extends Seeder
 {
     /** Marketplace taxonomy. Managed afterwards through Super Admin. */
     private const CATEGORIES = [
+        ['inventory', 'Inventory', 'Warehouse inventory and stock control', 'Warehouse'],
         ['telephony', 'Telephony', 'Телефония и звонки', 'PhoneCall'],
         ['delivery', 'Delivery', 'Доставка и логистика', 'Truck'],
         ['ai', 'AI', 'Искусственный интеллект', 'Sparkles'],
@@ -50,6 +51,7 @@ class PluginSeeder extends Seeder
         'nexio.delivery' => 'Truck',
         'nexio.uzum.delivery' => 'Package',
         'nexio.yandex.delivery' => 'Package',
+        'nexio.inventory' => 'Warehouse',
     ];
 
     public function run(): void
@@ -234,6 +236,9 @@ class PluginSeeder extends Seeder
     {
         $now = H::now();
         $rows = [
+            ['nexio.inventory', 'starter', 'inventory_movements', 'monthly', 'company', 1000, 'BLOCK', 'movements', 'Starter warehouse movement limit.'],
+            ['nexio.inventory', 'business', 'inventory_movements', 'monthly', 'company', 10000, 'WARN', 'movements', 'Business warehouse movement warning.'],
+            ['nexio.inventory', 'enterprise', 'inventory_movements', 'monthly', 'company', null, 'ALLOW_OVERAGE', 'movements', 'Enterprise has no hard movement limit.'],
             // [plugin, plan, metric, period, scope, limit|null, policy, unit, note]
             ['nexio.telephony', 'starter', 'telephony_minutes', 'monthly', 'company', 0, 'BLOCK', 'минут', 'Пример: на Starter телефонные минуты не входят в тариф (лимит 0 = операция запрещена).'],
             ['nexio.telephony', 'business', 'telephony_minutes', 'monthly', 'company', 300, 'BLOCK', 'минут', 'Пример коммерческого лимита.'],

@@ -11,7 +11,7 @@ import { useCan } from '../../lib/auth'
 import { useToast } from '../../components/ui/toast'
 
 interface Member {
-  membership_id: string; id: string; name: string; email: string; avatar_color: string; role: string; org_id: string | null; org_name: string | null
+  membership_id: string; id: string; name: string; email: string; avatar_color: string; role: string; org_id: string | null; org_name: string | null; contact_id: string | null; contact_name: string | null
   department: string | null; title: string | null; member_status: string; last_login_at: string | null
   open_deals: number; open_tasks: number; won_value: number; joined_at: string
 }
@@ -26,6 +26,7 @@ const ROLE_LABELS: Record<string, string> = {
   finance_manager: 'Финансовый менеджер', analyst: 'Аналитик', employee: 'Сотрудник', read_only: 'Только чтение', client_portal_user: 'Клиент портала',
 }
 interface OrganizationsResponse { data: { id: string; name: string; status: string }[] }
+interface ContactsResponse { data: { id: string; first_name: string; last_name?: string | null; org_id: string | null }[] }
 const PERMISSION_LABELS: Record<string, string> = {
   'crm.read': 'Mijozlar va CRMni ko‘rish', 'crm.write': 'CRM ma’lumotlarini tahrirlash', 'crm.delete': 'CRM ma’lumotlarini o‘chirish',
   'deals.write': 'Bitimlarni boshqarish', 'orders.write': 'Buyurtmalarni boshqarish', 'tasks.write': 'Vazifalarni boshqarish',
@@ -49,9 +50,10 @@ export default function Team() {
 
   const team = useApi<TeamResponse>(['team'], '/api/v1/team')
   const organizations = useApi<OrganizationsResponse>(['portal-organizations'], '/api/v1/organizations?limit=100&page=1')
+  const contacts = useApi<ContactsResponse>(['portal-contacts'], '/api/v1/contacts?limit=500&page=1')
   const matrix = useApi<{ permissions: string[]; matrix: { role: string; permissions: string[] }[] }>(['permissions'], '/api/v1/team/permissions', { enabled: tab === 'permissions' })
 
-  const updateMember = useApiMutation(({ id, role, status, org_id }: { id: string; role?: string; status?: string; org_id?: string }) => api.patch(`/api/v1/team/members/${id}`, { role, status, org_id }), {
+  const updateMember = useApiMutation(({ id, role, status, org_id, contact_id }: { id: string; role?: string; status?: string; org_id?: string; contact_id?: string }) => api.patch(`/api/v1/team/members/${id}`, { role, status, org_id, contact_id }), {
     invalidate: [['team']], success: 'Данные участника обновлены',
   })
   const removeMember = useApiMutation((id: string) => api.del(`/api/v1/team/members/${id}`), {
@@ -76,6 +78,9 @@ export default function Team() {
         </Select>
         {m.role === 'client_portal_user' && <Select value={m.org_id ?? ''} className="w-48" onChange={(e) => updateMember.mutate({ id: m.membership_id, org_id: e.target.value })} aria-label={`Kompaniya ${m.name}`}>
           <option value="">Kompaniyani tanlang</option>{organizations.data?.data.map((org) => <option key={org.id} value={org.id}>{org.name}</option>)}
+        </Select>}
+        {m.role === 'client_portal_user' && <Select value={m.contact_id ?? ''} className="w-52" onChange={(e) => updateMember.mutate({ id: m.membership_id, contact_id: e.target.value })} aria-label={`Client ${m.name}`}>
+          <option value="">Clientni tanlang</option>{contacts.data?.data.filter((c) => c.org_id === m.org_id).map((c) => <option key={c.id} value={c.id}>{c.first_name} {c.last_name ?? ''}</option>)}
         </Select>}
       </div>
     ) : <Badge tone="primary">{ROLE_LABELS[m.role] ?? m.role}{m.org_name ? ` · ${m.org_name}` : ''}</Badge> },
@@ -186,7 +191,7 @@ export default function Team() {
         )}
       </SectionCard>
 
-      <InviteModal open={inviteOpen} onClose={() => setInviteOpen(false)} roles={team.data?.roles ?? []} organizations={organizations.data?.data ?? []} onCopied={(url) => toast.success('Ссылка приглашения готова', url)} />
+      <InviteModal open={inviteOpen} onClose={() => setInviteOpen(false)} roles={team.data?.roles ?? []} organizations={organizations.data?.data ?? []} contacts={contacts.data?.data ?? []} onCopied={(url) => toast.success('Ссылка приглашения готова', url)} />
       <ConfirmDialog open={!!removeTarget} onClose={() => setRemoveTarget(null)} onConfirm={() => removeTarget && removeMember.mutate(removeTarget.membership_id)}
         loading={removeMember.isPending} danger title="Удалить участника?"
         description={<>Сотрудник «{removeTarget?.name}» потеряет доступ к пространству компании. Историю сделок и задач это не удаляет.</>}
@@ -195,10 +200,11 @@ export default function Team() {
   )
 }
 
-function InviteModal({ open, onClose, roles, organizations, onCopied }: { open: boolean; onClose: () => void; roles: string[]; organizations: { id: string; name: string }[]; onCopied: (url: string) => void }) {
+function InviteModal({ open, onClose, roles, organizations, contacts, onCopied }: { open: boolean; onClose: () => void; roles: string[]; organizations: { id: string; name: string }[]; contacts: { id: string; first_name: string; last_name?: string | null; org_id: string | null }[]; onCopied: (url: string) => void }) {
   const [email, setEmail] = useState('')
   const [role, setRole] = useState('sales_agent')
   const [orgId, setOrgId] = useState('')
+  const [contactId, setContactId] = useState('')
   const [telegramChatId, setTelegramChatId] = useState('')
   const [inviteUrl, setInviteUrl] = useState<string | null>(null)
   const [telegramInviteUrl, setTelegramInviteUrl] = useState<string | null>(null)
@@ -214,6 +220,7 @@ function InviteModal({ open, onClose, roles, organizations, onCopied }: { open: 
       setEmail('')
       setTelegramChatId('')
       setOrgId('')
+      setContactId('')
     }
   }, [open])
 
@@ -221,7 +228,7 @@ function InviteModal({ open, onClose, roles, organizations, onCopied }: { open: 
     <Modal open={open} onClose={() => { onClose(); setInviteUrl(null); setEmail('') }} title="Пригласить сотрудника"
       description="Ссылка действует 7 дней и привязана к указанному email."
       footer={<><Button variant="secondary" size="sm" onClick={() => { onClose(); setInviteUrl(null) }}>Закрыть</Button>
-        <Button size="sm" loading={invite.isPending} onClick={() => invite.mutate({ email, role, org_id: role === 'client_portal_user' ? orgId : undefined, telegram_chat_id: telegramChatId || undefined })} disabled={!email || !!inviteUrl || (role === 'client_portal_user' && !orgId)}>
+        <Button size="sm" loading={invite.isPending} onClick={() => invite.mutate({ email, role, org_id: role === 'client_portal_user' ? orgId : undefined, contact_id: role === 'client_portal_user' ? contactId : undefined, telegram_chat_id: telegramChatId || undefined })} disabled={!email || !!inviteUrl || (role === 'client_portal_user' && (!orgId || !contactId))}>
           <UserPlus className="size-4" /> Создать приглашение
         </Button></>}>
       <div className="space-y-4">
@@ -234,14 +241,20 @@ function InviteModal({ open, onClose, roles, organizations, onCopied }: { open: 
         <Field label="Telegram chat ID" hint="Ixtiyoriy. Bot sozlangan bo‘lsa, taklif havolasi shu yerda ham chiqadi.">
           <Input value={telegramChatId} onChange={(e) => setTelegramChatId(e.target.value)} placeholder="123456789" disabled={!!inviteUrl} />
         </Field>
-        {role === 'client_portal_user' && (
+        {role === 'client_portal_user' && <>
           <Field label="Kompaniya" hint="Klient portali faqat shu kompaniyaning ma’lumotlarini ko‘rsatadi." required>
             <Select value={orgId} onChange={(e) => setOrgId(e.target.value)} disabled={!!inviteUrl}>
               <option value="">Kompaniyani tanlang</option>
               {organizations.map((org) => <option key={org.id} value={org.id}>{org.name}</option>)}
             </Select>
           </Field>
-        )}
+          <Field label="CRM Client" hint="Portal faqat shu clientga tegishli ma’lumotlarni ko‘rsatadi." required>
+            <Select value={contactId} onChange={(e) => setContactId(e.target.value)} disabled={!!inviteUrl}>
+              <option value="">Clientni tanlang</option>
+              {contacts.filter((contact) => contact.org_id === orgId).map((contact) => <option key={contact.id} value={contact.id}>{contact.first_name} {contact.last_name ?? ''}</option>)}
+            </Select>
+          </Field>
+        </>}
         {telegramInviteUrl && inviteUrl && (
           <div className="rounded-xl border border-sky-100 bg-sky-50 p-3">
             <p className="text-[12px] font-semibold text-sky-800">Telegram orqali yuborish</p>

@@ -13,15 +13,16 @@ async function portalOrg(ctx: Ctx) {
   requireAuth(ctx)
   if (!ctx.tenantId) throw forbidden('Портал доступен только пользователям, привязанным к компании')
   const m = await ctx.env.DB.prepare(
-    'SELECT org_id, role FROM tenant_memberships WHERE tenant_id = ? AND user_id = ? AND status = ?'
-  ).bind(ctx.tenantId, ctx.user!.id, 'active').first<{ org_id: string | null; role: string }>()
+    'SELECT org_id, contact_id, role FROM tenant_memberships WHERE tenant_id = ? AND user_id = ? AND status = ?'
+  ).bind(ctx.tenantId, ctx.user!.id, 'active').first<{ org_id: string | null; contact_id: string | null; role: string }>()
   if (!m) throw forbidden('Нет активного доступа к порталу')
   if (!m.org_id) throw forbidden('Учётная запись не привязана к организации заказчика')
+  if (!m.contact_id) throw forbidden('Portal akkaunti kompaniya va CRM clientiga biriktirilmagan')
   const org = await ctx.env.DB.prepare(
     'SELECT id, name, industry, tier, status, city, country FROM organizations WHERE id = ? AND tenant_id = ?'
   ).bind(m.org_id, ctx.tenantId).first<any>()
   if (!org) throw notFound('Организация не найдена')
-  return org as { id: string; name: string; industry: string | null; tier: string; status: string; city: string | null; country: string | null }
+  return { ...(org as { id: string; name: string; industry: string | null; tier: string; status: string; city: string | null; country: string | null }), contact_id: m.contact_id }
 }
 
 export const portalRoutes = {
@@ -29,33 +30,37 @@ export const portalRoutes = {
   async overview(ctx: Ctx) {
     const org = await portalOrg(ctx)
     const t = ctx.tenantId
-    const [orders, projects, milestones, docs, tickets, messages, requests, tenant] = await Promise.all([
+    const [deals, orders, projects, milestones, docs, tickets, messages, requests, tenant] = await Promise.all([
+      ctx.env.DB.prepare(
+        `SELECT d.id, d.title, d.status, d.amount, d.currency, d.probability, d.expected_close_at, d.created_at
+           FROM deals d WHERE d.tenant_id = ? AND d.org_id = ? AND d.contact_id = ? ORDER BY d.created_at DESC LIMIT 50`
+      ).bind(t, org.id, org.contact_id).all<any>(),
       ctx.env.DB.prepare(
         `SELECT id, number, status, amount, currency, payment_status, created_at, confirmed_at
-           FROM orders WHERE tenant_id = ? AND org_id = ? ORDER BY created_at DESC LIMIT 50`
-      ).bind(t, org.id).all<any>(),
+           FROM orders WHERE tenant_id = ? AND org_id = ? AND contact_id = ? ORDER BY created_at DESC LIMIT 50`
+      ).bind(t, org.id, org.contact_id).all<any>(),
       ctx.env.DB.prepare(
         `SELECT id, name, status, progress, priority, budget, currency, start_date, due_date, description
-           FROM projects WHERE tenant_id = ? AND org_id = ? ORDER BY created_at DESC LIMIT 30`
-      ).bind(t, org.id).all<any>(),
+           FROM projects WHERE tenant_id = ? AND org_id = ? AND order_id IN (SELECT id FROM orders WHERE tenant_id = ? AND contact_id = ?) ORDER BY created_at DESC LIMIT 30`
+      ).bind(t, org.id, t, org.contact_id).all<any>(),
       ctx.env.DB.prepare(
         `SELECT m.project_id, m.name, m.status, m.due_date, m.position
            FROM project_milestones m JOIN projects p ON p.id = m.project_id
-          WHERE m.tenant_id = ? AND p.org_id = ? ORDER BY m.position`
-      ).bind(t, org.id).all<any>(),
+          WHERE m.tenant_id = ? AND p.org_id = ? AND p.order_id IN (SELECT id FROM orders WHERE tenant_id = ? AND contact_id = ?) ORDER BY m.position`
+      ).bind(t, org.id, t, org.contact_id).all<any>(),
       ctx.env.DB.prepare(
         `SELECT id, name, kind, version, size_kb, status, created_at
-           FROM documents WHERE tenant_id = ? AND org_id = ? ORDER BY created_at DESC LIMIT 30`
-      ).bind(t, org.id).all<any>(),
+           FROM documents WHERE tenant_id = ? AND org_id = ? AND order_id IN (SELECT id FROM orders WHERE tenant_id = ? AND contact_id = ?) ORDER BY created_at DESC LIMIT 30`
+      ).bind(t, org.id, t, org.contact_id).all<any>(),
       ctx.env.DB.prepare(
         `SELECT id, number, subject, priority, status, channel, sla_due_at, created_at, updated_at
-           FROM tickets WHERE tenant_id = ? AND org_id = ? ORDER BY created_at DESC LIMIT 40`
-      ).bind(t, org.id).all<any>(),
+           FROM tickets WHERE tenant_id = ? AND org_id = ? AND requester = ? ORDER BY created_at DESC LIMIT 40`
+      ).bind(t, org.id, ctx.user!.email).all<any>(),
       ctx.env.DB.prepare(
         `SELECT id, channel, direction, subject, body, status, created_at
-           FROM communications WHERE tenant_id = ? AND org_id = ? AND channel = 'portal'
+           FROM communications WHERE tenant_id = ? AND org_id = ? AND contact_id = ? AND channel = 'portal'
           ORDER BY created_at DESC LIMIT 40`
-      ).bind(t, org.id).all<any>(),
+      ).bind(t, org.id, org.contact_id).all<any>(),
       ctx.env.DB.prepare(
         `SELECT id, service, title, description, budget, currency, status, priority, created_at, updated_at
            FROM nexio_service_requests WHERE tenant_id = ? AND created_by = ? ORDER BY created_at DESC LIMIT 30`
@@ -71,7 +76,7 @@ export const portalRoutes = {
     return json({
       org,
       supplier: { name: tenant?.name ?? 'Nexio CRM', currency: tenant?.currency ?? 'UZS' },
-      orders: orders.results, projects: projects.results, milestones: milestones.results,
+      deals: deals.results, orders: orders.results, projects: projects.results, milestones: milestones.results,
       documents: docs.results, tickets: tickets.results, messages: messages.results,
       serviceRequests: requests.results,
       summary: { ordersTotal: invoiceTotal, outstanding, activeProjects, openTickets, orders: orders.results.length, projects: projects.results.length },
@@ -102,7 +107,7 @@ export const portalRoutes = {
     ).bind(id, ctx.tenantId, service, title, description, budget, 'USD', 'submitted', 'normal', null, ctx.user!.id, now(), now()).run()
     await ctx.env.DB.prepare(
       'INSERT INTO communications (id, tenant_id, channel, direction, subject, body, org_id, contact_id, user_id, status, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)'
-    ).bind(newId('com'), ctx.tenantId, 'portal', 'inbound', `Новая заявка: ${title}`, description, org.id, null, ctx.user!.id, 'received', now()).run()
+    ).bind(newId('com'), ctx.tenantId, 'portal', 'inbound', `Новая заявка: ${title}`, description, org.id, org.contact_id, ctx.user!.id, 'received', now()).run()
     await audit(ctx, 'portal.service_requested', 'nexio_service_request', id, { service, title, org: org.id })
     return json({ ok: true, id, note: 'Заявка отправлена в Nexio Lab. Статус будет виден в портале.' }, 201)
   },
@@ -133,7 +138,7 @@ export const portalRoutes = {
     const id = newId('com')
     await ctx.env.DB.prepare(
       'INSERT INTO communications (id, tenant_id, channel, direction, subject, body, org_id, contact_id, user_id, status, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)'
-    ).bind(id, ctx.tenantId, 'portal', 'inbound', str(b.subject, 'subject', { required: false, max: 160 }), text, org.id, null, ctx.user!.id, 'received', now()).run()
+    ).bind(id, ctx.tenantId, 'portal', 'inbound', str(b.subject, 'subject', { required: false, max: 160 }), text, org.id, org.contact_id, ctx.user!.id, 'received', now()).run()
     await audit(ctx, 'portal.message_sent', 'communication', id, { org: org.id })
     return json({ ok: true, id }, 201)
   },

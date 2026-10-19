@@ -273,7 +273,7 @@ class AuthController
     public function inviteInfo(Ctx $ctx)
     {
         $inv = DB::selectOne(
-            "SELECT id, tenant_id, email, role, org_id FROM invitations WHERE token = ? AND status = 'pending' AND expires_at > ?",
+            "SELECT id, tenant_id, email, role, org_id, contact_id FROM invitations WHERE token = ? AND status = 'pending' AND expires_at > ?",
             [$ctx->params['token'], H::now()]
         );
         if (!$inv) throw new ApiException(410, 'Приглашение недействительно или истекло', 'gone');
@@ -284,7 +284,7 @@ class AuthController
     public function acceptInvite(Ctx $ctx)
     {
         $inv = DB::selectOne(
-            "SELECT id, tenant_id, email, role, org_id FROM invitations WHERE token = ? AND status = 'pending' AND expires_at > ?",
+            "SELECT id, tenant_id, email, role, org_id, contact_id FROM invitations WHERE token = ? AND status = 'pending' AND expires_at > ?",
             [$ctx->params['token'], H::now()]
         );
         if (!$inv) throw new ApiException(410, 'Приглашение недействительно или истекло', 'gone');
@@ -308,7 +308,7 @@ class AuthController
         if (!DB::selectOne('SELECT 1 FROM tenant_memberships WHERE tenant_id = ? AND user_id = ?', [$inv->tenant_id, $user->id])) {
             DB::table('tenant_memberships')->insert([
                 'id' => H::newId('mem'), 'tenant_id' => $inv->tenant_id, 'user_id' => $user->id,
-                'role' => $inv->role, 'status' => 'active', 'org_id' => $inv->org_id ?? null, 'created_at' => H::now(),
+                'role' => $inv->role, 'status' => 'active', 'org_id' => $inv->org_id ?? null, 'contact_id' => $inv->contact_id ?? null, 'created_at' => H::now(),
             ]);
         }
         DB::table('invitations')->where('id', $inv->id)->update(['status' => 'accepted']);

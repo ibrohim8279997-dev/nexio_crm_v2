@@ -36,6 +36,10 @@ abstract class PluginTestCase extends TestCase
             'nexio.plugins.secrets_key' => 'base64:' . base64_encode(str_repeat('t', 32)),
             'nexio.plugins.sandbox_available' => false,
             'nexio.plugins.nexio_version' => '2.0.0',
+            'nexio.plugins.allowed_outbound_hosts.nexio.yandex.delivery' => [
+                'b2b-authproxy.taxi.yandex.net',
+                'b2b.taxi.tst.yandex.net',
+            ],
         ]);
 
         PluginLoader::reset();

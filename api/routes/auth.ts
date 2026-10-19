@@ -170,7 +170,7 @@ export const authRoutes = {
   },
 
   async inviteInfo(ctx: Ctx) {
-    const inv = await ctx.env.DB.prepare("SELECT id, tenant_id, email, role, org_id FROM invitations WHERE token = ? AND status = 'pending' AND expires_at > ?")
+    const inv = await ctx.env.DB.prepare("SELECT id, tenant_id, email, role, org_id, contact_id FROM invitations WHERE token = ? AND status = 'pending' AND expires_at > ?")
       .bind(ctx.params.token, now()).first<any>()
     if (!inv) throw new ApiError(410, 'Приглашение недействительно или истекло', 'gone')
     const tenant = await ctx.env.DB.prepare('SELECT name FROM tenants WHERE id = ?').bind(inv.tenant_id).first<any>()
@@ -178,7 +178,7 @@ export const authRoutes = {
   },
 
   async acceptInvite(ctx: Ctx) {
-    const inv = await ctx.env.DB.prepare("SELECT id, tenant_id, email, role, org_id FROM invitations WHERE token = ? AND status = 'pending' AND expires_at > ?")
+    const inv = await ctx.env.DB.prepare("SELECT id, tenant_id, email, role, org_id, contact_id FROM invitations WHERE token = ? AND status = 'pending' AND expires_at > ?")
       .bind(ctx.params.token, now()).first<any>()
     if (!inv) throw new ApiError(410, 'Приглашение недействительно или истекло', 'gone')
     const b = await body<any>(ctx)
@@ -193,7 +193,7 @@ export const authRoutes = {
       user = { id, name, email: inv.email, avatar_color: randomColor(inv.email), is_platform_admin: 0 }
     }
     await ctx.env.DB.batch([
-      ctx.env.DB.prepare('INSERT OR IGNORE INTO tenant_memberships (id,tenant_id,user_id,role,status,org_id,created_at) VALUES (?,?,?,?,?,?,?)').bind(newId('mem'), inv.tenant_id, user.id, inv.role, 'active', inv.org_id ?? null, now()),
+      ctx.env.DB.prepare('INSERT OR IGNORE INTO tenant_memberships (id,tenant_id,user_id,role,status,org_id,contact_id,created_at) VALUES (?,?,?,?,?,?,?,?)').bind(newId('mem'), inv.tenant_id, user.id, inv.role, 'active', inv.org_id ?? null, inv.contact_id ?? null, now()),
       ctx.env.DB.prepare("UPDATE invitations SET status = 'accepted' WHERE id = ?").bind(inv.id),
     ])
     const sid = await createSession(ctx.env, user.id, inv.tenant_id, ctx.req)

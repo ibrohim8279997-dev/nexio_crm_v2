@@ -76,6 +76,11 @@ class Manifest
         'delivery.update' => false,
         'delivery.cancel' => false,
         'delivery.track' => false,
+        'inventory.read' => false,
+        'inventory.products.write' => false,
+        'inventory.warehouses.write' => false,
+        'inventory.movements.write' => false,
+        'inventory.reservations.write' => false,
         // Telephony
         'telephony.calls.read' => false,
         'telephony.calls.create' => false,

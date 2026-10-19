@@ -1,0 +1,28 @@
+{
+  "id": "nexio.inventory",
+  "name": "Nexio Inventory",
+  "display_name": "Nexio Inventory",
+  "version": "1.0.0",
+  "type": "official",
+  "author": "Nexio Lab",
+  "category": "inventory",
+  "tagline": "Точный учёт товаров, складов, движений и резервов",
+  "description": "Tenant-scoped складской модуль с транзакционными остатками, резервированием и аудируемыми движениями.",
+  "api_version": "1.0",
+  "min_nexio_version": "2.0.0",
+  "dependencies": [],
+  "permissions": [
+    "inventory.read", "inventory.products.write", "inventory.warehouses.write",
+    "inventory.movements.write", "inventory.reservations.write"
+  ],
+  "hooks": ["order.created", "order.completed"],
+  "usage_metrics": ["inventory_movements"],
+  "data_tables": ["inventory_products", "inventory_warehouses", "inventory_stock", "inventory_movements", "inventory_reservations"],
+  "settings_schema": {
+    "default_warehouse": {"type": "string", "default": "", "label": "Склад по умолчанию"},
+    "negative_stock_policy": {"type": "string", "default": "block", "label": "Политика отрицательных остатков"},
+    "autonomous_purchase_policy": {"type": "string", "default": "approval_required", "label": "Политика AI-закупок", "description": "AI не может самостоятельно утвердить закупку; утверждение выполняет уполномоченный сотрудник."}
+  },
+  "feature_flags": ["inventory", "reservations", "low_stock"],
+  "runtime": {"entry": "Nexio\\Inventory\\Plugin@Plugin.php"}
+}

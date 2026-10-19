@@ -33,7 +33,7 @@ function LanguageSwitcher() {
 
 function navKey(path: string) {
   const keys: Record<string, string> = {
-    '/app': 'dashboard', '/app/leads': 'leads', '/app/deals': 'deals', '/app/companies': 'companies', '/app/contacts': 'contacts', '/app/orders': 'orders', '/app/catalog': 'catalog',
+    '/app': 'dashboard', '/app/leads': 'leads', '/app/deals': 'deals', '/app/companies': 'companies', '/app/contacts': 'contacts', '/app/orders': 'orders', '/app/catalog': 'catalog', '/app/inventory': 'inventory',
     '/app/projects': 'projects', '/app/tasks': 'tasks', '/app/my-day': 'myDay', '/app/communications': 'communications', '/app/helpdesk': 'helpdesk', '/app/documents': 'documents', '/app/finance': 'financePage', '/app/analytics': 'analytics', '/app/automations': 'automations', '/app/integrations': 'integrations', '/app/marketplace': 'marketplace', '/app/plugins': 'plugins',
     '/app/team': 'team', '/app/nexio-services': 'services', '/app/billing': 'billing', '/app/settings': 'settings', '/app/ai-agents': 'aiControl', '/app/ai-calls': 'aiCalls', '/app/ai-analytics': 'aiAnalytics',
   }

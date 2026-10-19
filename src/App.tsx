@@ -23,6 +23,8 @@ const CompanyDetail = lazy(() => import('./pages/app/CompanyDetail'))
 const Contacts = lazy(() => import('./pages/app/Contacts'))
 const Orders = lazy(() => import('./pages/app/Orders'))
 const CatalogPage = lazy(() => import('./pages/app/Catalog'))
+const Inventory = lazy(() => import('./pages/app/Inventory'))
+const InventoryProcurement = lazy(() => import('./pages/app/InventoryProcurement'))
 const Projects = lazy(() => import('./pages/app/Projects'))
 const ProjectDetail = lazy(() => import('./pages/app/ProjectDetail'))
 const Tasks = lazy(() => import('./pages/app/Tasks'))
@@ -119,6 +121,8 @@ export function App() {
           <Route path="pipelines" element={<Navigate to="/app/deals" replace />} />
           <Route path="orders" element={<Orders />} />
           <Route path="catalog" element={<CatalogPage />} />
+          <Route path="inventory" element={<Inventory />} />
+          <Route path="inventory/procurement" element={<InventoryProcurement />} />
           <Route path="projects" element={<Projects />} />
           <Route path="projects/:id" element={<ProjectDetail />} />
           <Route path="tasks" element={<Tasks />} />
