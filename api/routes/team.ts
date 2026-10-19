@@ -110,7 +110,7 @@ export const settingsRoutes = {
   async get(ctx: Ctx) {
     requireAuth(ctx); requirePermission(ctx, 'settings.read')
     const t = ctx.tenantId!
-    const tenant = await ctx.env.DB.prepare('SELECT id,name,slug,legal_name,logo_text,brand_color,locale,timezone,currency,country,industry,status FROM tenants WHERE id = ?').bind(t).first<any>()
+    const tenant = await ctx.env.DB.prepare('SELECT id,name,slug,legal_name,logo_text,logo_url,brand_color,locale,timezone,currency,country,industry,status FROM tenants WHERE id = ?').bind(t).first<any>()
     const settings = await ctx.env.DB.prepare('SELECT settings FROM tenant_settings WHERE tenant_id = ?').bind(t).first<any>()
     const flags = await ctx.env.DB.prepare('SELECT key, enabled FROM feature_flags WHERE tenant_id = ?').bind(t).all<any>()
     const stages = await ctx.env.DB.prepare('SELECT id,key,name,position,probability,kind,color FROM pipeline_stages WHERE tenant_id = ? ORDER BY position').bind(t).all<any>()
@@ -128,8 +128,8 @@ export const settingsRoutes = {
     requireAuth(ctx); requirePermission(ctx, 'settings.write')
     const t = ctx.tenantId!
     const b = await body<any>(ctx)
-    await ctx.env.DB.prepare('UPDATE tenants SET name=COALESCE(?,name), legal_name=?, logo_text=?, brand_color=COALESCE(?,brand_color), locale=COALESCE(?,locale), timezone=COALESCE(?,timezone), currency=COALESCE(?,currency), industry=?, updated_at=? WHERE id=?')
-      .bind(str(b.name, 'name', { required: false, max: 160 }), str(b.legal_name, 'legal_name', { required: false, max: 200 }), str(b.logo_text, 'logo_text', { required: false, max: 20 }), str(b.brand_color, 'brand_color', { required: false, max: 9 }), b.locale ? oneOf(b.locale, 'locale', ['ru', 'uz', 'en'] as const) : null, str(b.timezone, 'timezone', { required: false, max: 60 }), str(b.currency, 'currency', { required: false, max: 8 }), str(b.industry, 'industry', { required: false, max: 120 }), now(), t).run()
+    await ctx.env.DB.prepare('UPDATE tenants SET name=COALESCE(?,name), legal_name=?, logo_text=?, logo_url=?, brand_color=COALESCE(?,brand_color), locale=COALESCE(?,locale), timezone=COALESCE(?,timezone), currency=COALESCE(?,currency), industry=?, updated_at=? WHERE id=?')
+      .bind(str(b.name, 'name', { required: false, max: 160 }), str(b.legal_name, 'legal_name', { required: false, max: 200 }), str(b.logo_text, 'logo_text', { required: false, max: 20 }), str(b.logo_url, 'logo_url', { required: false, max: 2_000_000 }), str(b.brand_color, 'brand_color', { required: false, max: 9 }), b.locale ? oneOf(b.locale, 'locale', ['ru', 'uz', 'en'] as const) : null, str(b.timezone, 'timezone', { required: false, max: 60 }), str(b.currency, 'currency', { required: false, max: 8 }), str(b.industry, 'industry', { required: false, max: 120 }), now(), t).run()
 
     if (b.settings && typeof b.settings === 'object') {
       const cur = await ctx.env.DB.prepare('SELECT settings FROM tenant_settings WHERE tenant_id = ?').bind(t).first<any>()

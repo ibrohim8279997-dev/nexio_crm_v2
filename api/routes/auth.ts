@@ -105,7 +105,7 @@ export const authRoutes = {
     if (!ctx.user) return json({ user: null, tenants: [], tenant: null, role: null, isPlatformAdmin: false })
     if (ctx.user.is_platform_admin) return json({ user: ctx.user, tenants: [], tenant: null, role: null, isPlatformAdmin: true })
     const tenants = await ctx.env.DB.prepare(
-      `SELECT t.id, t.name, t.slug, t.brand_color, t.logo_text, t.status, t.currency, t.timezone, t.locale,
+      `SELECT t.id, t.name, t.slug, t.brand_color, t.logo_text, t.logo_url, t.status, t.currency, t.timezone, t.locale,
               m.role, s.status AS subscription_status
          FROM tenant_memberships m
          JOIN tenants t ON t.id = m.tenant_id
@@ -115,7 +115,7 @@ export const authRoutes = {
     ).bind(ctx.user.id).all<any>()
 
     const current = ctx.tenantId
-      ? await ctx.env.DB.prepare('SELECT id, name, slug, brand_color, logo_text, locale, timezone, currency, status, legal_name FROM tenants WHERE id = ?').bind(ctx.tenantId).first<any>()
+      ? await ctx.env.DB.prepare('SELECT id, name, slug, brand_color, logo_text, logo_url, locale, timezone, currency, status, legal_name FROM tenants WHERE id = ?').bind(ctx.tenantId).first<any>()
       : null
     return json({ user: ctx.user, role: ctx.role, tenant: current, tenants: tenants.results, isPlatformAdmin: !!ctx.user.is_platform_admin })
   },

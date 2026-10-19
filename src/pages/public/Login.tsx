@@ -1,16 +1,17 @@
 import { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { ArrowRight, ArrowUpRight, BarChart3, Bot, Building2, Check, Database, Eye, EyeOff, LineChart, Lock, Mail, PenTool, ShieldCheck, TrendingUp, Users } from 'lucide-react'
-import { Button, Card } from '../../components/ui/core'
+import { ArrowRight, Bot, Database, Eye, EyeOff, Lock, Mail, PenTool, TrendingUp } from 'lucide-react'
+import { Button } from '../../components/ui/core'
 import { Input } from '../../components/ui/form'
 import { useToast } from '../../components/ui/toast'
 import { api, ApiError } from '../../lib/api'
 import { useAuth } from '../../lib/auth'
+import logoUrl from '../../assets/nexio-lab-logo.svg'
 
 export function BrandMark({ dark }: { dark?: boolean }) {
   return (
     <Link to="/" className="flex items-center gap-2.5">
-      <span className="inline-flex size-9 items-center justify-center rounded-xl bg-primary text-[15px] font-extrabold text-white shadow-sm">N</span>
+      <img src={logoUrl} alt="Nexio Lab" className="h-10 w-10 rounded-xl object-cover" />
       <span>
         <span className={`block text-[17px] font-extrabold leading-tight tracking-tight ${dark ? 'text-white' : 'text-ink'}`}>Nexio CRM</span>
         <span className={`block text-[10px] font-semibold uppercase tracking-wider ${dark ? 'text-blue-200' : 'text-muted'}`}>Nexio Lab</span>
@@ -67,7 +68,7 @@ export default function Login() {
   const navigate = useNavigate()
   const location = useLocation()
   const toast = useToast()
-  const { refresh } = useAuth()
+  const { refresh, acceptLogin } = useAuth()
 
   const from = (location.state as { from?: string } | null)?.from
 
@@ -76,8 +77,9 @@ export default function Login() {
     setError(null)
     setLoading(true)
     try {
-      const res = await api.post<{ role: string | null; isPlatformAdmin?: boolean; user: { is_platform_admin: number } }>('/api/v1/auth/login', { email, password })
-      await refresh()
+      const res = await api.post<{ role: string | null; isPlatformAdmin?: boolean; user: { id: string; email: string; name: string; avatar_color: string; is_platform_admin: number } }>('/api/v1/auth/login', { email, password })
+      acceptLogin(res)
+      void refresh()
       toast.success('Добро пожаловать', 'Вы вошли в Nexio CRM')
       if (from) navigate(from, { replace: true })
       else if (res.user?.is_platform_admin) navigate('/platform', { replace: true })
@@ -87,12 +89,6 @@ export default function Login() {
     } finally {
       setLoading(false)
     }
-  }
-
-  function fill(demoEmail: string) {
-    setEmail(demoEmail)
-    setPassword('nexio123')
-    setError(null)
   }
 
   return (
@@ -214,7 +210,8 @@ export default function Login() {
             Don't have an account? <Link to="/register" className="font-semibold text-primary hover:text-primary-dark">Create one</Link>
           </p>
 
-          <Card className="mt-6 border-dashed bg-bg p-3.5" >
+          {/* Demo credentials are intentionally not exposed in the production UI. */}
+          {/* Demo credentials removed from the rendered login surface. */}{/*
             <div className="flex items-center gap-2">
               <ShieldCheck className="size-4 text-primary" />
               <p className="text-[11px] font-semibold text-ink">Демо-доступ (локальная среда)</p>
@@ -240,7 +237,7 @@ export default function Login() {
               <Check className="size-3" /> Нажмите на роль, чтобы подставить учётные данные.
               <ArrowUpRight className="size-3" />
             </p>
-          </Card>
+          */}
         </div>
       </section>
     </div>

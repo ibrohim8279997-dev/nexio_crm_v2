@@ -60,9 +60,16 @@ class H
 
     public static function verifyPassword(string $password, string $stored): bool
     {
+        // Users created through Laravel's User model, Tinker or an external admin flow may use
+        // bcrypt/Argon hashes. Keep accepting them while new Nexio accounts continue using the
+        // Worker-compatible PBKDF2 format below.
+        if (str_starts_with($stored, '$2y$') || str_starts_with($stored, '$2b$') || str_starts_with($stored, '$argon2')) {
+            return password_verify($password, $stored);
+        }
         $parts = explode('$', $stored);
         if (count($parts) !== 4 || $parts[0] !== 'pbkdf2') return false;
         $iterations = (int) $parts[1];
+        if ($iterations < 10000 || strlen($parts[2]) !== 32) return false;
         $salt = hex2bin($parts[2]);
         if ($salt === false) return false;
         $bits = hash_pbkdf2('sha256', $password, $salt, $iterations, 32, true);

@@ -18,7 +18,9 @@ return [
     |
     */
 
-    'driver' => env('SESSION_DRIVER', 'database'),
+    // Nexio uses its own `sessions` table for API sessions; Laravel's database
+    // session handler expects payload/last_activity columns that table does not have.
+    'driver' => env('SESSION_DRIVER', 'file'),
 
     /*
     |--------------------------------------------------------------------------

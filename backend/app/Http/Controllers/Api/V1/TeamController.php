@@ -6,6 +6,7 @@ use App\Support\Ctx;
 use App\Support\H;
 use App\Support\Rbac;
 use Illuminate\Support\Facades\DB;
+use App\Services\NotificationDispatcher;
 
 /** Team & RBAC plus tenant settings, pipeline stages and the audit log. */
 class TeamController
@@ -58,6 +59,7 @@ class TeamController
         $t = $ctx->tenantId;
         $b = H::body($ctx);
         $email = strtolower(H::str($b['email'] ?? null, 'email', true, 190));
+        $telegramChatId = H::str($b['telegram_chat_id'] ?? null, 'telegram_chat_id', false, 80);
         $role = H::oneOf($b['role'] ?? null, 'role', Rbac::ROLES);
         if ($role === 'tenant_owner' && $ctx->role !== 'tenant_owner') {
             throw new ApiException(400, 'Только владелец компании может назначить роль владельца', 'bad_request');
@@ -82,8 +84,15 @@ class TeamController
             'expires_at' => gmdate('Y-m-d H:i:s', time() + 7 * 86400), 'created_at' => H::now(),
         ]);
         H::audit($ctx, 'user.invited', 'invitation', $id, ['email' => $email, 'role' => $role]);
-        // No mail provider configured: return the link so the admin can deliver it manually.
-        return H::json(['id' => $id, 'inviteUrl' => "/invite/{$token}", 'emailed' => false, 'note' => 'Почтовый провайдер не подключён — передайте ссылку вручную.'], 201);
+        $inviteUrl = rtrim((string) config('nexio.frontend_url'), '/') . "/invite/{$token}";
+        $dispatcher = new NotificationDispatcher();
+        $emailed = $dispatcher->email($email, 'Nexio CRM taklifi', "Siz Nexio CRMga taklif qilindingiz: {$inviteUrl}");
+        $telegramSent = false;
+        $bot = ltrim((string) config('telegram.bot_username', ''), '@');
+        if ($telegramChatId && $bot) {
+            $telegramSent = $dispatcher->telegram($telegramChatId, "Nexio CRM taklifi:\n{$inviteUrl}");
+        }
+        return H::json(['id' => $id, 'inviteUrl' => $inviteUrl, 'telegramInviteUrl' => $bot ? "https://t.me/{$bot}?start=invite_{$token}" : null, 'emailed' => $emailed, 'telegramSent' => $telegramSent], 201);
     }
 
     public function revokeInvite(Ctx $ctx)

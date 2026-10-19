@@ -1,0 +1,86 @@
+{
+  "totalDecisions": 0,
+  "modelDistribution": {
+    "haiku": 0,
+    "sonnet": 0,
+    "opus": 0,
+    "inherit": 0
+  },
+  "avgComplexity": 0.5,
+  "avgConfidence": 0.8,
+  "circuitBreakerTrips": 2,
+  "lastUpdated": "2026-10-14T16:37:26.598Z",
+  "learningHistory": [
+    {
+      "task": "Return your audit findings now in concise bullets.",
+      "model": "sonnet",
+      "complexity": 0.2835142857142857,
+      "outcome": "failure",
+      "timestamp": "2026-10-14T16:32:16.960Z"
+    },
+    {
+      "task": "Retry the AI integration audit using the configured free model provider, if available. If unavailabl",
+      "model": "sonnet",
+      "complexity": 0.42161020408163263,
+      "outcome": "failure",
+      "timestamp": "2026-10-14T16:37:26.598Z"
+    }
+  ],
+  "version": 2,
+  "priors": {
+    "low": {
+      "haiku": {
+        "alpha": 1,
+        "beta": 1
+      },
+      "sonnet": {
+        "alpha": 1,
+        "beta": 2
+      },
+      "opus": {
+        "alpha": 1,
+        "beta": 1
+      },
+      "inherit": {
+        "alpha": 1,
+        "beta": 1
+      }
+    },
+    "med": {
+      "haiku": {
+        "alpha": 1,
+        "beta": 1
+      },
+      "sonnet": {
+        "alpha": 1,
+        "beta": 2
+      },
+      "opus": {
+        "alpha": 1,
+        "beta": 1
+      },
+      "inherit": {
+        "alpha": 1,
+        "beta": 1
+      }
+    },
+    "high": {
+      "haiku": {
+        "alpha": 1,
+        "beta": 1
+      },
+      "sonnet": {
+        "alpha": 1,
+        "beta": 1
+      },
+      "opus": {
+        "alpha": 1,
+        "beta": 1
+      },
+      "inherit": {
+        "alpha": 1,
+        "beta": 1
+      }
+    }
+  }
+}

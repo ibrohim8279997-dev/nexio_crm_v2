@@ -329,7 +329,7 @@ class OpsController
         if ($projectId) { $where[] = 't.project_id = ?'; $binds[] = $projectId; }
         if ($q) { $where[] = 't.title LIKE ?'; $binds[] = "%{$q}%"; }
         if ($scope === 'mine') { $where[] = 't.assignee_id = ?'; $binds[] = $user['id']; }
-        if ($scope === 'overdue') { $where[] = "t.status != 'done' AND t.due_date < date('now')"; }
+        if ($scope === 'overdue') { $where[] = "t.status != 'done' AND t.due_date < CURRENT_DATE"; }
         $w = implode(' AND ', $where);
         $rows = DB::select(
             "SELECT t.*, u.name AS assignee_name, u.avatar_color AS assignee_color, p.name AS project_name
@@ -346,7 +346,7 @@ class OpsController
                     SUM(CASE WHEN status='in_progress' THEN 1 ELSE 0 END) AS in_progress,
                     SUM(CASE WHEN status='review' THEN 1 ELSE 0 END) AS review,
                     SUM(CASE WHEN status='done' THEN 1 ELSE 0 END) AS done,
-                    SUM(CASE WHEN status != 'done' AND due_date < date('now') THEN 1 ELSE 0 END) AS overdue,
+                    SUM(CASE WHEN status != 'done' AND due_date < CURRENT_DATE THEN 1 ELSE 0 END) AS overdue,
                     SUM(CASE WHEN assignee_id = ? AND status != 'done' THEN 1 ELSE 0 END) AS mine
                FROM tasks WHERE tenant_id = ?",
             [$user['id'], $t]

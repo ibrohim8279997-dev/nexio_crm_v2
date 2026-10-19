@@ -35,4 +35,15 @@ return [
         ],
     ],
 
+    'telephony' => [
+        // Credentials are tenant-scoped in plugin_connections/plugin_secrets.
+        'provider' => 'connection',
+    ],
+
+    'whatsapp' => [
+        'api_url' => env('WHATSAPP_API_URL', ''),
+        'access_token' => env('WHATSAPP_ACCESS_TOKEN', ''),
+        'phone_number_id' => env('WHATSAPP_PHONE_NUMBER_ID', ''),
+    ],
+
 ];

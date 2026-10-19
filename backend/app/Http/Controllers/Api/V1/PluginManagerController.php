@@ -89,6 +89,7 @@ class PluginManagerController
             'dependencies' => DependencyResolver::declared($pluginId),
             'dependents' => DependencyResolver::dependents((string) $ctx->tenantId, $pluginId),
             'subscriptions' => EventBus::subscriptions((string) $ctx->tenantId, $pluginId),
+            'can_manage' => H::can($ctx, 'settings.write'),
             'connections' => $this->connectionList($ctx, $pluginId),
             'health' => PluginRuntime::health($ctx, $pluginId),
         ]);

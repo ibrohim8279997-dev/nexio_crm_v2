@@ -170,6 +170,16 @@ class CrmController
         $user = $ctx->auth();
         H::requirePermission($ctx, 'crm.write');
         $b = H::body($ctx);
+        if (!$ctx->tenantId) {
+            throw new ApiException(422, 'CRM tenant tanlanmagan', 'tenant_required');
+        }
+        if (!empty($b['org_id']) && !DB::selectOne('SELECT 1 AS x FROM organizations WHERE id = ? AND tenant_id = ?', [$b['org_id'], $ctx->tenantId])) {
+            throw new ApiException(422, 'Tanlangan kompaniya ushbu CRMga tegishli emas', 'invalid_org');
+        }
+        $ownerId = $b['owner_id'] ?? $user['id'];
+        if (!DB::selectOne('SELECT 1 AS x FROM users WHERE id = ?', [$ownerId])) {
+            throw new ApiException(422, 'Tanlangan mas’ul foydalanuvchi topilmadi', 'invalid_owner');
+        }
         $id = H::newId('con');
         $phone = H::str($b['phone'] ?? null, 'phone', false, 40);
         DB::table('contacts')->insert([
@@ -185,7 +195,7 @@ class CrmController
             'is_primary' => !empty($b['is_primary']) ? 1 : 0,
             'consent_marketing' => !empty($b['consent_marketing']) ? 1 : 0,
             'consent_calls' => !empty($b['consent_calls']) ? 1 : 0,
-            'owner_id' => $b['owner_id'] ?? $user['id'],
+            'owner_id' => $ownerId,
             'tags' => json_encode(is_array($b['tags'] ?? null) ? $b['tags'] : [], JSON_UNESCAPED_UNICODE),
             'created_at' => H::now(), 'updated_at' => H::now(),
         ]);

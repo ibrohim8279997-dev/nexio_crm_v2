@@ -245,7 +245,20 @@ class PluginSeeder extends Seeder
             ['nexio.delivery', 'starter', 'delivery_quotes', 'daily', 'company', 20, 'BLOCK', 'расчётов', 'Пример дневного лимита.'],
         ];
 
+        $rows = array_merge($rows, [
+            ['nexio.ai.assistant', 'starter', 'ai_tokens', 'monthly', 'company', 10000, 'BLOCK', 'token', 'AI yordamchi uchun oylik token limiti.'],
+            ['nexio.ai.assistant', 'business', 'ai_tokens', 'monthly', 'company', 100000, 'BLOCK', 'token', 'AI yordamchi uchun oylik token limiti.'],
+            ['nexio.ai.assistant', 'enterprise', 'ai_tokens', 'monthly', 'company', null, 'WARN', 'token', 'Enterprise uchun token limiti yo‘q.'],
+        ]);
+
         foreach ($rows as $i => [$pluginId, $planCode, $metric, $period, $scope, $limit, $policy, $unit, $note]) {
+            // A limit references plugins.id. If a manifest is invalid or deliberately omitted in
+            // an environment, skip its example policy instead of violating the foreign key and
+            // making every fresh test/install fail. A later seed after the plugin is available is
+            // safe because this method is idempotent.
+            if (!DB::table('plugins')->where('id', $pluginId)->exists()) {
+                continue;
+            }
             $plan = DB::selectOne('SELECT id FROM plans WHERE code = ?', [$planCode]);
             if (!$plan) {
                 // Plan codes differ in another environment; skip rather than invent a plan.

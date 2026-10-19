@@ -60,12 +60,16 @@ class Manifest
         'crm.clients.write' => false,
         'crm.clients.delete' => true,
         'crm.clients.export' => true,
+        'crm.read' => false,
         'crm.contacts.read' => false,
         'crm.contacts.write' => false,
         'crm.orders.read' => false,
         'crm.orders.create' => false,
         'crm.orders.update' => false,
         'crm.products.read' => false,
+        // AI assistant
+        'ai.read' => false,
+        'ai.write' => false,
         // Delivery (universal layer)
         'delivery.read' => false,
         'delivery.create' => false,

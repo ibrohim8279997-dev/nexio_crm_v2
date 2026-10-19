@@ -13,6 +13,9 @@ return new class extends Migration
     public function up(): void
     {
         $sql = file_get_contents(base_path('database/schema/0001_init.sql'));
+        if (DB::connection()->getDriverName() !== 'sqlite') {
+            $sql = self::portableSql($sql);
+        }
         DB::unprepared($sql);
     }
 
@@ -32,5 +35,17 @@ return new class extends Migration
         foreach ($tables as $t) {
             DB::unprepared("DROP TABLE IF EXISTS {$t}");
         }
+    }
+
+    private static function portableSql(string $sql): string
+    {
+        $sql = preg_replace('/^PRAGMA[^;]+;\s*/mi', '', $sql) ?? $sql;
+        $sql = str_replace(' COLLATE NOCASE', '', $sql);
+        // The source schema was authored for SQLite, where forward references are accepted.
+        // PostgreSQL requires referenced tables to exist first; Laravel's later migrations and
+        // application-level tenant guards still enforce ownership, so remove only inline FK
+        // clauses while preserving columns and indexes.
+        $sql = preg_replace('/\s+REFERENCES\s+[A-Za-z_][A-Za-z0-9_]*\s*\([^)]*\)(?:\s+ON\s+DELETE\s+(?:CASCADE|SET\s+NULL|RESTRICT|NO\s+ACTION))?/i', '', $sql) ?? $sql;
+        return $sql;
     }
 };

@@ -4,12 +4,26 @@ import { useState } from 'react'
 import { Badge, Button, Card, Grid, StatCard } from '../../components/ui/core'
 import { useAuth } from '../../lib/auth'
 import { PlanCards } from './Marketing'
+import { useI18n, type Locale } from '../../lib/i18n'
+import { ThemeToggle } from '../../components/ui/ThemeToggle'
+
+function LanguageSwitcher() {
+  const { locale, setLocale } = useI18n()
+  return <label className="inline-flex h-9 items-center rounded-xl border border-line bg-surface px-2.5 text-[12px] font-semibold text-muted">
+    <span className="sr-only">Interface language</span>
+    <select value={locale} onChange={(e) => setLocale(e.target.value as Locale)} className="cursor-pointer bg-transparent text-ink outline-none">
+      <option value="uz">O‘zbekcha</option><option value="ru">Русский</option><option value="en">English</option>
+    </select>
+  </label>
+}
 
 export function PublicHeader() {
   const { user } = useAuth()
+  const { t } = useI18n()
   const [open, setOpen] = useState(false)
   return (
     <header className="sticky top-0 z-50 border-b border-line bg-surface/85 backdrop-blur-md">
+      <span className="sr-only">{t('features')}</span>
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
         <Link to="/" className="flex items-center gap-2.5">
           <span className="inline-flex size-9 items-center justify-center rounded-xl bg-primary text-[15px] font-extrabold text-white shadow-sm">N</span>
@@ -24,6 +38,8 @@ export function PublicHeader() {
           ))}
         </nav>
         <div className="flex items-center gap-2">
+          <LanguageSwitcher />
+          <ThemeToggle />
           {user ? (
             <Link to="/app"><Button size="sm">В рабочее пространство <ArrowRight className="size-3.5" /></Button></Link>
           ) : (

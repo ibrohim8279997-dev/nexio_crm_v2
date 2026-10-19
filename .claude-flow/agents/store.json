@@ -47,6 +47,76 @@
       "domain": "privacy",
       "model": "inherit",
       "modelRoutedBy": "explicit"
+    },
+    "agent-1791995525345-x0dis5": {
+      "agentId": "agent-1791995525345-x0dis5",
+      "agentType": "code-reviewer",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 2,
+      "config": {
+        "model": "sonnet"
+      },
+      "createdAt": "2026-10-14T16:32:05.349Z",
+      "domain": "ai-integration",
+      "model": "sonnet",
+      "modelRoutedBy": "explicit"
+    },
+    "agent-1791995530308-jsw060": {
+      "agentId": "agent-1791995530308-jsw060",
+      "agentType": "security-reviewer",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "model": "haiku"
+      },
+      "createdAt": "2026-10-14T16:32:10.308Z",
+      "domain": "configuration-security",
+      "model": "haiku",
+      "modelRoutedBy": "explicit"
+    },
+    "agent-1791999489150-e3zv16": {
+      "agentId": "agent-1791999489150-e3zv16",
+      "agentType": "code-reviewer",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "model": "haiku"
+      },
+      "createdAt": "2026-10-14T17:38:09.151Z",
+      "domain": "billing",
+      "model": "haiku",
+      "modelRoutedBy": "explicit"
+    },
+    "agent-1791999493258-yy6zdh": {
+      "agentId": "agent-1791999493258-yy6zdh",
+      "agentType": "code-reviewer",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "model": "haiku"
+      },
+      "createdAt": "2026-10-14T17:38:13.258Z",
+      "domain": "messaging-delivery",
+      "model": "haiku",
+      "modelRoutedBy": "explicit"
+    },
+    "agent-1791999496910-mmij9v": {
+      "agentId": "agent-1791999496910-mmij9v",
+      "agentType": "code-reviewer",
+      "status": "idle",
+      "health": 1,
+      "taskCount": 0,
+      "config": {
+        "model": "haiku"
+      },
+      "createdAt": "2026-10-14T17:38:16.910Z",
+      "domain": "marketplace-ai",
+      "model": "haiku",
+      "modelRoutedBy": "explicit"
     }
   },
   "version": "3.0.0"

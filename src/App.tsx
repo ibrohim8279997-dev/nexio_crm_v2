@@ -15,6 +15,7 @@ const Legal = lazy(() => import('./pages/public/Legal'))
 const NotFound = lazy(() => import('./pages/public/NotFound'))
 
 const Dashboard = lazy(() => import('./pages/app/Dashboard'))
+const MyDay = lazy(() => import('./pages/app/MyDay'))
 const Leads = lazy(() => import('./pages/app/Leads'))
 const Deals = lazy(() => import('./pages/app/Deals'))
 const Companies = lazy(() => import('./pages/app/Companies'))
@@ -36,6 +37,9 @@ const AiAgents = lazy(() => import('./pages/app/AiAgents'))
 const AiAgentDetail = lazy(() => import('./pages/app/AiAgentDetail'))
 const AiCalls = lazy(() => import('./pages/app/AiCalls'))
 const AiAnalytics = lazy(() => import('./pages/app/AiAnalytics'))
+const Marketplace = lazy(() => import('./pages/app/Marketplace'))
+const PluginManager = lazy(() => import('./pages/app/PluginManager'))
+const PluginWorkspace = lazy(() => import('./pages/app/PluginWorkspace'))
 const NexioServices = lazy(() => import('./pages/app/NexioServices'))
 const Billing = lazy(() => import('./pages/app/Billing'))
 const SettingsPage = lazy(() => import('./pages/app/Settings'))
@@ -53,6 +57,7 @@ const PlatformSupport = lazy(() => import('./pages/platform/Support'))
 const PlatformAiOps = lazy(() => import('./pages/platform/AiOps'))
 const PlatformSecurity = lazy(() => import('./pages/platform/Security'))
 const PlatformSettings = lazy(() => import('./pages/platform/PlatformSettings'))
+const PlatformMarketplace = lazy(() => import('./pages/platform/Marketplace'))
 
 function RouteSkeleton() {
   return (
@@ -98,12 +103,14 @@ export function App() {
           <Route path="ai-ops" element={<PlatformAiOps />} />
           <Route path="security" element={<PlatformSecurity />} />
           <Route path="settings" element={<PlatformSettings />} />
+          <Route path="marketplace" element={<PlatformMarketplace />} />
           <Route path="*" element={<Navigate to="/platform" replace />} />
         </Routes></PlatformShell></RequirePlatform>} />
 
         {/* Tenant workspace */}
         <Route path="/app/*" element={<RequireAuth><AppShell><Routes>
           <Route index element={<Dashboard />} />
+          <Route path="my-day" element={<MyDay />} />
           <Route path="leads" element={<Leads />} />
           <Route path="contacts" element={<Contacts />} />
           <Route path="companies" element={<Companies />} />
@@ -123,6 +130,10 @@ export function App() {
           <Route path="analytics" element={<Analytics />} />
           <Route path="automations" element={<Automations />} />
           <Route path="integrations" element={<Integrations />} />
+          <Route path="marketplace" element={<Marketplace />} />
+          <Route path="marketplace/:id" element={<Marketplace />} />
+          <Route path="plugins" element={<PluginManager />} />
+          <Route path="plugins/:id" element={<PluginWorkspace />} />
           <Route path="ai-agents" element={<AiAgents />} />
           <Route path="ai-agents/:id" element={<AiAgentDetail />} />
           <Route path="ai-calls" element={<AiCalls />} />

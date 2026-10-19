@@ -1,0 +1,24 @@
+{
+  "id": "nexio.ai.assistant",
+  "name": "Nexio AI Assistant",
+  "display_name": "Nexio AI Assistant",
+  "version": "1.0.0",
+  "type": "official",
+  "author": "Nexio Lab",
+  "category": "ai",
+  "tagline": "CRM ichidagi AI yordamchi: savollar, xulosalar va ish tavsiyalari",
+  "description": "Nexio CRM ma'lumotlari bilan ishlaydigan AI yordamchi. Har bir so'rov tarifdagi AI limiti bo'yicha hisoblanadi; limit tugasa operatsiya to'xtatiladi.",
+  "api_version": "1.0",
+  "min_nexio_version": "1.0.0",
+  "dependencies": [],
+  "permissions": ["ai.read", "ai.write", "crm.read", "settings.write"],
+  "hooks": [],
+  "usage_metrics": ["ai_tokens", "assistant_requests", "connected_accounts"],
+  "settings_schema": {
+    "system_prompt": {"type": "string", "default": "Siz Nexio CRM yordamchisiz. Javobni aniq va qisqa bering.", "label": "Yordamchi ko'rsatmasi"},
+    "model": {"type": "string", "default": "", "label": "AI model (ixtiyoriy)"}
+  },
+  "feature_flags": ["crm_assistant", "ai_usage_meter"],
+  "runtime": {"entry": "Nexio\\AiAssistant\\Plugin@Plugin.php"},
+  "pricing": {"model": "paid", "monthly": 50000, "currency": "UZS"}
+}

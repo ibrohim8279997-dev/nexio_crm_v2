@@ -1,0 +1,8 @@
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { Link } from 'react-router-dom';
+import { Button, Card } from '../../components/ui/core';
+import { useAuth } from '../../lib/auth';
+export default function NotFound() {
+    const { user } = useAuth();
+    return (_jsx("div", { className: "flex min-h-screen items-center justify-center bg-bg px-4", children: _jsxs(Card, { className: "w-full max-w-md p-8 text-center", children: [_jsx("p", { className: "text-[11px] font-semibold uppercase tracking-widest text-primary", children: "404" }), _jsx("h1", { className: "mt-2 text-xl font-bold text-ink", children: "\u0421\u0442\u0440\u0430\u043D\u0438\u0446\u0430 \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u0430" }), _jsx("p", { className: "mt-2 text-[13px] leading-relaxed text-muted", children: "\u0417\u0430\u043F\u0440\u043E\u0448\u0435\u043D\u043D\u044B\u0439 \u0440\u0430\u0437\u0434\u0435\u043B \u043D\u0435 \u0441\u0443\u0449\u0435\u0441\u0442\u0432\u0443\u0435\u0442 \u0438\u043B\u0438 \u0431\u044B\u043B \u043F\u0435\u0440\u0435\u043C\u0435\u0449\u0451\u043D. \u041F\u0440\u043E\u0432\u0435\u0440\u044C\u0442\u0435 \u0430\u0434\u0440\u0435\u0441 \u043B\u0438\u0431\u043E \u0432\u0435\u0440\u043D\u0438\u0442\u0435\u0441\u044C \u0432 \u0440\u0430\u0431\u043E\u0447\u0435\u0435 \u043F\u0440\u043E\u0441\u0442\u0440\u0430\u043D\u0441\u0442\u0432\u043E." }), _jsxs("div", { className: "mt-5 flex justify-center gap-2", children: [_jsx(Link, { to: user ? '/app' : '/login', children: _jsx(Button, { size: "sm", children: user ? 'В рабочее пространство' : 'Войти' }) }), _jsx(Link, { to: "/", children: _jsx(Button, { variant: "secondary", size: "sm", children: "\u041D\u0430 \u0433\u043B\u0430\u0432\u043D\u0443\u044E" }) })] })] }) }));
+}

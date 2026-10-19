@@ -6,7 +6,8 @@ import {
 } from 'lucide-react'
 import { Avatar, Badge, Button, Card, Grid, ProgressBar, QueryState, SectionCard, Skeleton, StatCard, StatusPill, Tabs } from '../../components/ui/core'
 import { BarsChart, DonutChart, TrendChart } from '../../components/charts'
-import { useApi } from '../../lib/hooks'
+import { useApi, useApiMutation } from '../../lib/hooks'
+import { api } from '../../lib/api'
 import { compact, label, money, monthLabel, num, pct, relative, shortDate } from '../../lib/format'
 import { useAuth } from '../../lib/auth'
 
@@ -39,12 +40,20 @@ const PERIODS = [
 
 export default function Dashboard() {
   const { tenant } = useAuth()
+  const [telegramPrompt, setTelegramPrompt] = useState(() => localStorage.getItem('nexio_telegram_prompt_seen') !== '1')
   const [period, setPeriod] = useState('30d')
   const [granularity, setGranularity] = useState<'monthly' | 'quarterly' | 'yearly'>('monthly')
   const currency = tenant?.currency ?? 'UZS'
 
   const summary = useApi<Summary>(['dashboard', period], `/api/v1/dashboard?period=${period}`)
   const panel = useApi<Workpanel>(['workpanel'], '/api/v1/dashboard/workpanel')
+  const telegram = useApiMutation(() => api.post<{ configured: boolean; url: string | null }>('/api/v1/notifications/telegram-link'), {
+    onDone: (result) => {
+      localStorage.setItem('nexio_telegram_prompt_seen', '1')
+      setTelegramPrompt(false)
+      if (result.url) window.open(result.url, '_blank', 'noopener,noreferrer')
+    },
+  })
 
   const trend = useMemo(() => {
     const rows = summary.data?.monthly ?? []
@@ -75,6 +84,16 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-4 sm:space-y-5">
+      {telegramPrompt && (
+        <Card className="flex flex-wrap items-center gap-3 border-blue-100 bg-blue-50/70">
+          <div className="min-w-0 flex-1">
+            <p className="text-[13px] font-semibold text-ink">Telegram botni ulang</p>
+            <p className="mt-0.5 text-[11px] text-muted">CRM bildirishnomalarini Telegram’da ham oling.</p>
+          </div>
+          <Button size="sm" loading={telegram.isPending} onClick={() => telegram.mutate(undefined)}>Ulash</Button>
+          <Button size="sm" variant="ghost" onClick={() => { localStorage.setItem('nexio_telegram_prompt_seen', '1'); setTelegramPrompt(false) }}>Keyinroq</Button>
+        </Card>
+      )}
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>

@@ -29,6 +29,13 @@ export function useApiMutation<TArgs, TResult = unknown>(
     onSuccess: (r) => {
       for (const key of opts.invalidate ?? []) void qc.invalidateQueries({ queryKey: key })
       if (opts.success) toast.success(opts.success)
+      // Click flows return a merchant URL. Keeping this in the shared mutation
+      // helper prevents one billing screen from accidentally swallowing it.
+      const paymentUrl = (r as { payment_url?: unknown } | null)?.payment_url
+      if (typeof paymentUrl === 'string' && paymentUrl !== '') {
+        window.location.assign(paymentUrl)
+        return
+      }
       opts.onDone?.(r)
     },
     onError: (e) => {

@@ -8,6 +8,8 @@
  */
 return [
 
+    'frontend_url' => rtrim((string) env('FRONTEND_URL', env('APP_URL', 'http://localhost:3000')), '/'),
+
     'plugins' => [
 
         /*
@@ -50,9 +52,9 @@ return [
          *    b2b-authproxy.taxi.yandex.net, test host b2b.taxi.tst.yandex.net.
          *    https://yandex.ru/support/delivery-profile/ru/api/other-day/access
          *    The separate Yandex Express API uses b2b.taxi.yandex.net and is NOT enabled here.
-         *  - Uzum Tezkor: no public API documentation could be verified, so the allowlist stays
-         *    EMPTY and the adapter performs no network calls at all. A host invented for it would
-         *    be an unverifiable integration pretending to work.
+         *  - Telephony and Uzum are user-supplied vendor connections. They do not use a global
+         *    host allowlist; OutboundEndpoint validates each connection as HTTPS and rejects
+         *    localhost/private/link-local targets before opening a socket.
          */
         'allowed_outbound_hosts' => [
             'nexio.telephony' => [],

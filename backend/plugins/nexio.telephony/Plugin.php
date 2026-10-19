@@ -11,6 +11,7 @@ use Nexio\Telephony\Providers\TelephonyProvider;
 
 require_once __DIR__ . '/Providers/TelephonyProvider.php';
 require_once __DIR__ . '/Providers/SandboxProvider.php';
+require_once __DIR__ . '/Providers/HttpTelephonyProvider.php';
 require_once __DIR__ . '/Providers/ProviderRegistry.php';
 
 /**

@@ -4,10 +4,37 @@ namespace App\Http\Controllers\Api\V1;
 use App\Support\ApiException;
 use App\Support\Ctx;
 use App\Support\H;
+use App\Support\SqlDialect;
 use Illuminate\Support\Facades\DB;
+use App\Services\GroqAi;
 
 class AiController
 {
+    public function complete(Ctx $ctx)
+    {
+        $ctx->auth();
+        H::requirePermission($ctx, 'ai.read');
+        $body = H::body($ctx);
+        $prompt = H::str($body['prompt'] ?? null, 'prompt', true, 12000);
+        $plan = DB::table('subscriptions as s')->join('plans as p', 'p.id', '=', 's.plan_id')
+            ->where('s.tenant_id', $ctx->tenantId)->whereIn('s.status', ['active', 'trialing'])
+            ->orderByDesc('s.created_at')->first(['p.ai_minutes']);
+        if (!$plan) throw new ApiException(403, 'AI uchun faol tarif topilmadi', 'ai_not_entitled');
+        $result = (new GroqAi())->complete($prompt, $body['model'] ?? null);
+        $tokens = (int) ($result['usage']['total_tokens'] ?? 0);
+        if ($tokens > 0 && $ctx->tenantId) {
+            $period = gmdate('Y-m');
+            $used = (int) DB::table('usage_records')->where('tenant_id', $ctx->tenantId)->where('metric', 'ai_tokens')->where('period', $period)->sum('quantity');
+            $limit = (int) $plan->ai_minutes * 1000;
+            if ($limit > 0 && $used + $tokens > $limit) throw new ApiException(402, 'AI usage limiti tugagan', 'ai_usage_limit');
+            DB::table('usage_records')->insert([
+                'id' => H::newId('use'), 'tenant_id' => $ctx->tenantId, 'metric' => 'ai_tokens',
+                'quantity' => $tokens, 'limit_value' => $limit, 'period' => $period, 'recorded_at' => H::now(),
+            ]);
+        }
+        return H::json($result);
+    }
+
     public const CALL_STATES = [
         'queued', 'compliance_checked', 'dialing', 'connected', 'ai_disclosed', 'conversation',
         'interested', 'objection', 'qualified', 'offer', 'customer_confirmed', 'order_created',
@@ -112,8 +139,8 @@ class AiController
             'name' => H::str($b['name'] ?? null, 'name', true, 160),
             'role' => H::oneOf($b['role'] ?? null, 'role', ['sales', 'analytics', 'support', 'automation'], 'sales'),
             'description' => H::str($b['description'] ?? null, 'description', false, 2000),
-            'provider' => 'sandbox',
-            'model' => H::str($b['model'] ?? null, 'model', false, 80) ?? 'nexio-voice-1',
+            'provider' => config('ai.provider', 'groq'),
+            'model' => H::str($b['model'] ?? null, 'model', false, 80) ?? config('ai.model', 'openai/gpt-oss-120b'),
             'voice' => H::str($b['voice'] ?? null, 'voice', false, 60) ?? 'ru-female-1',
             'language' => H::oneOf($b['language'] ?? null, 'language', ['ru', 'uz', 'en'], 'ru'),
             'persona' => H::str($b['persona'] ?? null, 'persona', false, 4000),
@@ -326,6 +353,76 @@ class AiController
     }
 
     /**
+     * Finalise a provider-backed call with facts supplied by the telephony/transcription layer.
+     * CRM mutations are idempotent per call and never create a deal from an AI prediction.
+     */
+    public function finalizeCall(Ctx $ctx)
+    {
+        $user = $ctx->auth();
+        H::requirePermission($ctx, 'ai.write');
+        $callId = (string) ($ctx->params['id'] ?? '');
+        $call = DB::selectOne('SELECT * FROM ai_calls WHERE id=? AND tenant_id=?', [$callId, $ctx->tenantId]);
+        if (!$call) throw new ApiException(404, 'Call topilmadi', 'not_found');
+        $body = H::body($ctx);
+        $outcome = H::oneOf($body['outcome'] ?? null, 'outcome', ['interested', 'objection', 'qualified', 'not_interested', 'no_answer', 'voicemail', 'opted_out', 'human_handoff', 'failed', 'followup'], $call->outcome ?: 'followup');
+        $transcript = array_key_exists('transcript', $body) ? H::str($body['transcript'], 'transcript', false, 60000) : $call->transcript;
+        $summary = array_key_exists('summary', $body) ? H::str($body['summary'], 'summary', false, 10000) : $call->summary;
+        $matchedContact = $call->contact_id ? DB::selectOne('SELECT id, org_id FROM contacts WHERE id=? AND tenant_id=?', [$call->contact_id, $ctx->tenantId]) : null;
+        if (!$matchedContact && $call->phone) {
+            $matches = DB::select('SELECT id, org_id FROM contacts WHERE tenant_id=? AND phone=? ORDER BY created_at LIMIT 2', [$ctx->tenantId, $call->phone]);
+            if (count($matches) === 1) $matchedContact = $matches[0];
+        }
+
+        $leadId = null;
+        $taskId = null;
+        DB::transaction(function () use ($ctx, $user, $call, $callId, $outcome, $transcript, $summary, $matchedContact, $body, &$leadId, &$taskId) {
+            $now = H::now();
+            DB::update(
+                'UPDATE ai_calls SET contact_id=COALESCE(?,contact_id), org_id=COALESCE(?,org_id), status=?, outcome=?, transcript=?, summary=?, ended_at=COALESCE(ended_at,?), sandbox=0 WHERE id=? AND tenant_id=?',
+                [$matchedContact->id ?? null, $matchedContact->org_id ?? null, 'completed', $outcome, $transcript, $summary, $now, $callId, $ctx->tenantId]
+            );
+
+            if (!$matchedContact && !empty($body['create_lead']) && $call->phone) {
+                $leadId = H::newId('lead');
+                DB::table('leads')->insert([
+                    'id' => $leadId, 'tenant_id' => $ctx->tenantId, 'title' => 'Inbound call ' . $call->phone,
+                    'contact_name' => null, 'org_id' => null, 'email' => null, 'phone' => $call->phone,
+                    'source' => 'ai_voice', 'status' => 'new', 'score' => 0, 'value' => 0, 'currency' => 'UZS',
+                    'owner_id' => $user['id'], 'notes' => $summary, 'created_at' => $now, 'updated_at' => $now,
+                ]);
+            }
+
+            $activity = DB::selectOne('SELECT id FROM activities WHERE tenant_id=? AND kind=? AND entity_type=? AND entity_id=? LIMIT 1', [$ctx->tenantId, 'ai_call', 'ai_call', $callId]);
+            if (!$activity) {
+                DB::table('activities')->insert([
+                    'id' => H::newId('act'), 'tenant_id' => $ctx->tenantId, 'kind' => 'ai_call',
+                    'subject' => 'AI call finalized: ' . $outcome, 'body' => $summary ?: $transcript,
+                    'entity_type' => 'ai_call', 'entity_id' => $callId, 'actor_id' => $user['id'], 'actor_name' => $user['name'],
+                    'meta' => json_encode(['outcome' => $outcome, 'contact_id' => $matchedContact->id ?? null], JSON_UNESCAPED_UNICODE), 'created_at' => $now,
+                ]);
+            }
+
+            if (!empty($body['follow_up_required'])) {
+                $due = H::str($body['follow_up_date'] ?? null, 'follow_up_date', true, 30);
+                if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $due)) throw new ApiException(400, 'follow_up_date YYYY-MM-DD bo‘lishi kerak', 'bad_request');
+                $existingTask = DB::selectOne('SELECT id FROM tasks WHERE tenant_id=? AND entity_type=? AND entity_id=? LIMIT 1', [$ctx->tenantId, 'ai_call', $callId]);
+                if (!$existingTask) {
+                    $taskId = H::newId('tsk');
+                    DB::table('tasks')->insert([
+                        'id' => $taskId, 'tenant_id' => $ctx->tenantId, 'title' => H::str($body['follow_up_title'] ?? null, 'follow_up_title', false, 250) ?: 'AI call follow-up',
+                        'description' => H::str($body['next_step'] ?? null, 'next_step', false, 4000), 'project_id' => null,
+                        'entity_type' => 'ai_call', 'entity_id' => $callId, 'assignee_id' => $user['id'], 'status' => 'todo',
+                        'priority' => 'medium', 'due_date' => $due, 'created_by' => $user['id'], 'created_at' => $now, 'updated_at' => $now,
+                    ]);
+                } else $taskId = $existingTask->id;
+            }
+            H::audit($ctx, 'ai.call_finalized', 'ai_call', $callId, ['outcome' => $outcome, 'lead_id' => $leadId, 'task_id' => $taskId]);
+        });
+
+        return H::json(['ok' => true, 'call_id' => $callId, 'contact_id' => $matchedContact->id ?? null, 'lead_id' => $leadId, 'task_id' => $taskId, 'deal_created' => false]);
+    }
+
+    /**
      * Sandbox call simulator. Walks the documented state machine, produces a transcript and
      * — only on explicit confirmation — a clearly-marked sandbox order awaiting human approval.
      */
@@ -476,7 +573,7 @@ class AiController
             [$t]
         );
         $byHour = DB::select(
-            "SELECT CAST(strftime('%H', started_at) AS INTEGER) AS hour, COUNT(*) AS calls,
+            "SELECT " . SqlDialect::hour('started_at') . " AS hour, COUNT(*) AS calls,
                     SUM(CASE WHEN outcome IN ('interested','qualified') THEN 1 ELSE 0 END) AS positive
                FROM ai_calls WHERE tenant_id = ? GROUP BY hour ORDER BY hour",
             [$t]

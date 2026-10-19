@@ -3,13 +3,13 @@ import { api } from './api'
 
 export interface AuthUser { id: string; email: string; name: string; avatar_color: string; is_platform_admin: number; platform_role?: string | null }
 export interface TenantRef {
-  id: string; name: string; slug: string; brand_color: string; logo_text: string | null
+  id: string; name: string; slug: string; brand_color: string; logo_text: string | null; logo_url?: string | null
   status: string; currency: string; timezone: string; locale: string; role: string; subscription_status?: string | null
 }
 export interface MeResponse {
   user: AuthUser | null
   role: string | null
-  tenant: { id: string; name: string; slug: string; brand_color: string; logo_text: string | null; locale: string; timezone: string; currency: string; status: string } | null
+  tenant: { id: string; name: string; slug: string; brand_color: string; logo_text: string | null; logo_url?: string | null; locale: string; timezone: string; currency: string; status: string } | null
   tenants: TenantRef[]
   isPlatformAdmin: boolean
 }
@@ -19,6 +19,7 @@ interface AuthCtx extends MeResponse {
   refresh: () => Promise<void>
   switchTenant: (tenantId: string) => Promise<void>
   logout: () => Promise<void>
+  acceptLogin: (payload: { user: AuthUser; role: string | null }) => void
 }
 
 const Ctx = createContext<AuthCtx | null>(null)
@@ -32,7 +33,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const me = await api.get<MeResponse>('/api/v1/auth/me')
       setState(me)
     } catch {
-      setState({ user: null, role: null, tenant: null, tenants: [], isPlatformAdmin: false })
+      // Keep a just-authenticated session visible if the background refresh is transiently unavailable.
+      setState((current) => current.user ? current : { user: null, role: null, tenant: null, tenants: [], isPlatformAdmin: false })
     } finally {
       setLoading(false)
     }
@@ -50,7 +52,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setState({ user: null, role: null, tenant: null, tenants: [], isPlatformAdmin: false })
   }, [])
 
-  const value = useMemo(() => ({ ...state, loading, refresh, switchTenant, logout }), [state, loading, refresh, switchTenant, logout])
+  const acceptLogin = useCallback((payload: { user: AuthUser; role: string | null }) => {
+    setState((current) => ({ ...current, user: payload.user, role: payload.role }))
+  }, [])
+
+  const value = useMemo(() => ({ ...state, loading, refresh, switchTenant, logout, acceptLogin }), [state, loading, refresh, switchTenant, logout, acceptLogin])
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>
 }
 
@@ -62,7 +68,7 @@ export function useAuth() {
 
 /** Client-side permission mirror. The server is authoritative; this only hides UI. */
 const PERMS: Record<string, string[]> = {
-  tenant_owner: ['crm.read', 'crm.write', 'crm.delete', 'deals.write', 'orders.write', 'projects.write', 'tasks.write', 'finance.read', 'finance.write', 'billing.read', 'billing.write', 'ai.read', 'ai.write', 'ai.start_campaign', 'team.read', 'team.write', 'roles.write', 'settings.read', 'settings.write', 'integrations.write', 'export.data', 'audit.read', 'services.request'],
+  tenant_owner: ['crm.read', 'crm.write', 'crm.delete', 'deals.write', 'orders.write', 'projects.write', 'tasks.write', 'finance.read', 'finance.write', 'billing.read', 'billing.write', 'ai.read', 'ai.write', 'ai.start_campaign', 'ai.recordings', 'team.read', 'team.write', 'roles.write', 'settings.read', 'settings.write', 'integrations.write', 'export.data', 'audit.read', 'services.request'],
   tenant_admin: ['crm.read', 'crm.write', 'crm.delete', 'deals.write', 'orders.write', 'projects.write', 'tasks.write', 'finance.read', 'billing.read', 'ai.read', 'ai.write', 'ai.start_campaign', 'team.read', 'team.write', 'roles.write', 'settings.read', 'settings.write', 'integrations.write', 'export.data', 'audit.read', 'services.request'],
   sales_manager: ['crm.read', 'crm.write', 'deals.write', 'orders.write', 'tasks.write', 'finance.read', 'ai.read', 'ai.write', 'ai.start_campaign', 'team.read', 'billing.read', 'export.data', 'services.request'],
   team_lead: ['crm.read', 'crm.write', 'deals.write', 'orders.write', 'tasks.write', 'projects.write', 'ai.read', 'team.read', 'export.data', 'services.request'],

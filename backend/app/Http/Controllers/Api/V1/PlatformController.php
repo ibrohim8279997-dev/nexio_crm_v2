@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Support\ApiException;
 use App\Support\Ctx;
 use App\Support\H;
+use App\Support\SqlDialect;
 use Illuminate\Support\Facades\DB;
 
 /** Platform operators only. Every read of tenant-scoped data is logged. */
@@ -49,14 +50,14 @@ class PlatformController
                     (SELECT COUNT(*) FROM ai_calls) AS total_calls,
                     (SELECT COALESCE(SUM(cost),0) FROM ai_calls) AS ai_cost_total,
                     (SELECT COUNT(*) FROM users) AS users,
-                    (SELECT COUNT(*) FROM sessions WHERE expires_at > datetime('now')) AS active_sessions,
+                    (SELECT COUNT(*) FROM sessions WHERE expires_at > " . SqlDialect::now() . ") AS active_sessions,
                     (SELECT COUNT(*) FROM nexio_service_requests WHERE status='submitted') AS new_service_requests,
                     (SELECT COUNT(*) FROM nexio_service_requests WHERE status IN ('submitted','in_review','accepted','in_progress')) AS open_service_requests"
         );
         $revenueByMonth = DB::select(
-            "SELECT strftime('%Y-%m', issued_at) AS ym, COALESCE(SUM(CASE WHEN status='paid' THEN total END),0) AS collected,
+            "SELECT " . SqlDialect::month('issued_at') . " AS ym, COALESCE(SUM(CASE WHEN status='paid' THEN total END),0) AS collected,
                     COALESCE(SUM(total),0) AS billed
-               FROM invoices WHERE issued_at >= datetime('now','-12 months') GROUP BY ym ORDER BY ym"
+               FROM invoices WHERE issued_at >= " . SqlDialect::ago(12, 'month') . " GROUP BY ym ORDER BY ym"
         );
         $byPlan = DB::select(
             "SELECT p.name, p.code, COUNT(s.id) AS tenants, COALESCE(SUM(p.price_monthly),0) AS mrr
@@ -164,7 +165,7 @@ class PlatformController
             'meta' => json_encode(['status' => $status], JSON_UNESCAPED_UNICODE), 'created_at' => H::now(),
         ]);
         if (in_array($status, ['suspended', 'cancelled'], true)) {
-            DB::update("UPDATE sessions SET expires_at = datetime('now') WHERE tenant_id = ?", [$t]);
+            DB::update("UPDATE sessions SET expires_at = " . SqlDialect::now() . " WHERE tenant_id = ?", [$t]);
         }
         return H::json(['ok' => true, 'status' => $status, 'note' => 'Данные сохранены; доступ управляется статусом.']);
     }
@@ -294,18 +295,18 @@ class PlatformController
         $this->requirePlatform($ctx);
         $auditRows = DB::select("SELECT a.action, a.actor_name, a.target, a.created_at, t.name AS tenant_name FROM audit_logs a LEFT JOIN tenants t ON t.id=a.tenant_id ORDER BY a.created_at DESC LIMIT 60");
         $hooks = DB::select("SELECT event, status, attempts, created_at FROM webhook_events ORDER BY created_at DESC LIMIT 40");
-        $sessions = DB::selectOne("SELECT COUNT(*) AS total, SUM(CASE WHEN expires_at > datetime('now') THEN 1 ELSE 0 END) AS active FROM sessions");
-        $logins = DB::selectOne("SELECT COUNT(*) AS c FROM audit_logs WHERE action='login.success' AND created_at >= datetime('now','-1 day')");
+        $sessions = DB::selectOne("SELECT COUNT(*) AS total, SUM(CASE WHEN expires_at > " . SqlDialect::now() . " THEN 1 ELSE 0 END) AS active FROM sessions");
+        $logins = DB::selectOne("SELECT COUNT(*) AS c FROM audit_logs WHERE action='login.success' AND created_at >= " . SqlDialect::ago(1, 'day'));
         $flagRows = DB::select("SELECT key, SUM(enabled) AS enabled, COUNT(*) AS total FROM feature_flags GROUP BY key");
         return H::json([
             'audit' => $auditRows, 'webhooks' => $hooks,
             'sessions' => $sessions, 'logins24h' => (int) ($logins->c ?? 0),
             'featureFlags' => $flagRows,
             'secrets' => [
-                ['name' => 'AI provider keys', 'status' => 'not_configured', 'note' => 'AI-слой работает на sandbox-адаптере'],
-                ['name' => 'Telephony provider', 'status' => 'not_configured', 'note' => 'Реальные звонки не выполняются'],
-                ['name' => 'Payment provider', 'status' => 'not_configured', 'note' => 'Биллинг в sandbox-режиме'],
-                ['name' => 'Email provider', 'status' => 'not_configured', 'note' => 'Письма не отправляются, ссылки возвращаются в UI'],
+                ['name' => 'AI provider keys', 'status' => config('ai.api_key') ? 'connected' : 'not_configured', 'note' => config('ai.api_key') ? 'Groq provider ulangan' : 'Groq key sozlanmagan'],
+                ['name' => 'Telephony provider', 'status' => 'connection', 'note' => 'Har bir CRM user plugin Settings orqali ulaydi; credentiallar envda emas.'],
+                ['name' => 'Payment provider', 'status' => config('payments.provider', 'sandbox'), 'note' => 'Click env orqali boshqariladi'],
+                ['name' => 'Email provider', 'status' => config('mail.default', 'log'), 'note' => 'SMTP sozlamalari env orqali boshqariladi'],
             ],
             'hardening' => [
                 ['control' => 'HttpOnly + SameSite session cookie', 'enabled' => true],
@@ -329,15 +330,22 @@ class PlatformController
                FROM ai_agents a JOIN tenants t ON t.id=a.tenant_id ORDER BY cost DESC LIMIT 100"
         );
         $calls = DB::select(
-            "SELECT date(created_at) AS day, COUNT(*) AS calls, SUM(CASE WHEN status='failed' THEN 1 ELSE 0 END) AS failed,
-                    COALESCE(SUM(cost),0) AS cost FROM ai_calls WHERE created_at >= datetime('now','-14 days') GROUP BY day ORDER BY day"
+            "SELECT CAST(created_at AS DATE) AS day, COUNT(*) AS calls, SUM(CASE WHEN status='failed' THEN 1 ELSE 0 END) AS failed,
+                    COALESCE(SUM(cost),0) AS cost FROM ai_calls WHERE created_at >= " . SqlDialect::ago(14, 'day') . " GROUP BY day ORDER BY day"
         );
         $approvals = DB::selectOne("SELECT COUNT(*) AS c FROM ai_approvals WHERE status='pending'");
         $optOuts = DB::selectOne('SELECT COUNT(*) AS c FROM suppression_list');
         return H::json([
             'agents' => $rows, 'callsByDay' => $calls,
             'pendingApprovals' => (int) ($approvals->c ?? 0), 'suppressionTotal' => (int) ($optOuts->c ?? 0),
-            'provider' => ['name' => 'sandbox', 'mode' => 'sandbox', 'note' => 'Реальный AI/телефония-провайдер не подключён'],
+            'provider' => [
+                'name' => config('ai.provider', 'groq'),
+                'mode' => config('ai.api_key') ? 'live' : 'not_configured',
+                'model' => config('ai.model'),
+                'note' => config('ai.api_key')
+                    ? 'Groq AI provider server-side ulangan.'
+                    : 'AI provider API key sozlanmagan.',
+            ],
         ]);
     }
 
@@ -369,7 +377,7 @@ class PlatformController
             "SELECT k.id, k.number, k.subject, k.channel, k.priority, k.status, k.sla_due_at, k.created_at, k.updated_at,
                     k.requester, k.body, t.name AS tenant_name, t.id AS tenant_id, u.name AS assignee_name,
                     CASE WHEN k.status IN ('resolved','closed') THEN 1 ELSE 0 END AS closed,
-                    CASE WHEN k.sla_due_at IS NOT NULL AND k.sla_due_at < datetime('now') AND k.status NOT IN ('resolved','closed') THEN 1 ELSE 0 END AS breached
+                    CASE WHEN k.sla_due_at IS NOT NULL AND k.sla_due_at < " . SqlDialect::now() . " AND k.status NOT IN ('resolved','closed') THEN 1 ELSE 0 END AS breached
                FROM tickets k JOIN tenants t ON t.id = k.tenant_id LEFT JOIN users u ON u.id = k.assignee_id
               ORDER BY breached DESC, CASE k.priority WHEN 'urgent' THEN 0 WHEN 'high' THEN 1 WHEN 'normal' THEN 2 ELSE 3 END, k.created_at DESC
               LIMIT 200"
@@ -377,7 +385,7 @@ class PlatformController
         $stats = DB::selectOne(
             "SELECT COUNT(*) AS total,
                     SUM(CASE WHEN status IN ('open','pending') THEN 1 ELSE 0 END) AS open,
-                    SUM(CASE WHEN status NOT IN ('resolved','closed') AND sla_due_at IS NOT NULL AND sla_due_at < datetime('now') THEN 1 ELSE 0 END) AS breached,
+                    SUM(CASE WHEN status NOT IN ('resolved','closed') AND sla_due_at IS NOT NULL AND sla_due_at < " . SqlDialect::now() . " THEN 1 ELSE 0 END) AS breached,
                     SUM(CASE WHEN status IN ('resolved','closed') THEN 1 ELSE 0 END) AS resolved,
                     SUM(CASE WHEN priority IN ('high','urgent') AND status NOT IN ('resolved','closed') THEN 1 ELSE 0 END) AS escalated
                FROM tickets"

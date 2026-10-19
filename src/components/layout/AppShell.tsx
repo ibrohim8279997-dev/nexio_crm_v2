@@ -1,21 +1,42 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import {
-  Activity, BarChart3, Bell, BookText, Briefcase, Building2, ChevronDown, Contact, CreditCard, FileText,
-  Headphones, LayoutDashboard, LifeBuoy, Menu, MessageSquare, Package, Plug, Search, Settings, ShoppingCart,
+  Activity, BarChart3, Bell, BookText, Briefcase, Building2, ChevronDown, Contact, CreditCard, FileText, Clock3,
+  Headphones, LayoutDashboard, LifeBuoy, Menu, MessageSquare, Package, Plug, Search, Settings, ShoppingCart, Blocks,
   Sparkles, Target, Users, Workflow, X, Zap, LogOut, Store, ShieldCheck, PhoneCall, LineChart,
 } from 'lucide-react'
 import { cn } from '../../lib/cn'
 import { useAuth } from '../../lib/auth'
 import { Avatar, Badge, Button, IconButton } from '../ui/core'
-import { useApi } from '../../lib/hooks'
+import { useApi, useApiMutation } from '../../lib/hooks'
+import { api } from '../../lib/api'
 import { useToast } from '../ui/toast'
 import { CommandPalette } from './CommandPalette'
+import { useI18n } from '../../lib/i18n'
+import logoUrl from '../../assets/nexio-lab-logo.svg'
+import { ThemeToggle } from '../ui/ThemeToggle'
 
 interface NavItem { to: string; label: string; icon: ReactNode; permission?: string }
 interface NavGroup { label: string; items: NavItem[] }
 
 const ICON = 'size-[18px]'
+
+function navKey(path: string) {
+  const keys: Record<string, string> = {
+    '/app': 'dashboard', '/app/leads': 'leads', '/app/deals': 'deals', '/app/companies': 'companies', '/app/contacts': 'contacts', '/app/orders': 'orders', '/app/catalog': 'catalog',
+    '/app/projects': 'projects', '/app/tasks': 'tasks', '/app/communications': 'communications', '/app/documents': 'documents', '/app/finance': 'financePage', '/app/analytics': 'analytics', '/app/automations': 'automations', '/app/integrations': 'integrations',
+    '/app/team': 'team', '/app/nexio-services': 'services', '/app/billing': 'billing', '/app/settings': 'settings', '/app/ai-calls': 'aiCalls', '/app/ai-analytics': 'aiAnalytics',
+  }
+  return keys[path] ?? ''
+}
+
+function groupKey(path: string) {
+  if (path === '/app') return 'sales'
+  if (path === '/app/projects' || path === '/app/tasks') return 'work'
+  if (path === '/app/communications' || path === '/app/documents') return 'clients'
+  if (path === '/app/finance' || path === '/app/analytics' || path === '/app/automations' || path === '/app/integrations') return 'finance'
+  return 'company'
+}
 
 const GROUPS: NavGroup[] = [
   {
@@ -35,6 +56,7 @@ const GROUPS: NavGroup[] = [
     items: [
       { to: '/app/projects', label: 'Проекты', icon: <Activity className={ICON} /> },
       { to: '/app/tasks', label: 'Задачи', icon: <BookText className={ICON} /> },
+      { to: '/app/my-day', label: 'My Day', icon: <Clock3 className={ICON} /> },
     ],
   },
   {
@@ -52,6 +74,8 @@ const GROUPS: NavGroup[] = [
       { to: '/app/analytics', label: 'Аналитика', icon: <BarChart3 className={ICON} /> },
       { to: '/app/automations', label: 'Автоматизации', icon: <Workflow className={ICON} /> },
       { to: '/app/integrations', label: 'Интеграции', icon: <Plug className={ICON} /> },
+      { to: '/app/marketplace', label: 'Marketplace', icon: <Blocks className={ICON} /> },
+      { to: '/app/plugins', label: 'Plugin Manager', icon: <Plug className={ICON} /> },
     ],
   },
   {
@@ -73,12 +97,10 @@ const GROUPS: NavGroup[] = [
   },
 ]
 
-function Logo({ text, name, color }: { text?: string | null; name?: string; color?: string }) {
+function Logo({ text, logoUrl: customLogo, name }: { text?: string | null; logoUrl?: string | null; name?: string }) {
   return (
     <div className="flex items-center gap-2.5">
-      <span className="inline-flex size-9 items-center justify-center rounded-xl bg-primary text-[15px] font-extrabold text-white shadow-sm" style={color ? { background: color } : undefined}>
-        {(text || name || 'N').slice(0, 1).toUpperCase()}
-      </span>
+      <img src={customLogo || logoUrl} alt={name ?? 'Nexio Lab'} title={text ?? undefined} className="h-10 w-10 rounded-xl bg-white p-1 object-contain" />
       <span className="min-w-0">
         <span className="block truncate text-[15px] font-bold leading-tight tracking-tight text-ink">{name ?? 'Nexio CRM'}</span>
         <span className="block text-[10px] font-medium uppercase tracking-wider text-muted">Nexio Lab · CRM</span>
@@ -87,19 +109,20 @@ function Logo({ text, name, color }: { text?: string | null; name?: string; colo
   )
 }
 
-function SidebarContent({ onNavigate, tenantName, logoText, brandColor, showUpgrade }: {
-  onNavigate?: () => void; tenantName?: string; logoText?: string | null; brandColor?: string; showUpgrade?: boolean
+function SidebarContent({ onNavigate, tenantName, logoText, logoUrl, showUpgrade }: {
+  onNavigate?: () => void; tenantName?: string; logoText?: string | null; logoUrl?: string | null; showUpgrade?: boolean
 }) {
   const { role, isPlatformAdmin } = useAuth()
+  const { t } = useI18n()
   return (
     <div className="flex h-full flex-col">
       <div className="px-4 py-4">
-        <Logo text={logoText} name={tenantName} color={brandColor} />
+        <Logo text={logoText} logoUrl={logoUrl} name={tenantName} />
       </div>
       <nav className="no-scrollbar flex-1 space-y-5 overflow-y-auto px-2.5 pb-4" aria-label="Основная навигация">
         {GROUPS.map((g) => (
           <div key={g.label}>
-            <p className="px-2.5 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">{g.label}</p>
+            <p className="px-2.5 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">{t(groupKey(g.items[0].to))}</p>
             <ul className="space-y-0.5">
               {g.items.map((it) => (
                 <li key={it.to}>
@@ -114,7 +137,7 @@ function SidebarContent({ onNavigate, tenantName, logoText, brandColor, showUpgr
                   >
                     {({ isActive }) => (<>
                       <span className={cn('transition-colors', isActive ? 'text-primary' : 'text-slate-400 group-hover:text-muted')}>{it.icon}</span>
-                      <span className="truncate">{it.label}</span>
+                      <span className="truncate">{t(navKey(it.to) || it.label)}</span>
                     </>)}
                   </NavLink>
                 </li>
@@ -239,6 +262,43 @@ function NotificationsMenu() {
   )
 }
 
+function PersistentNotificationsMenu() {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  const query = useApi<{ data: { id: string; type: string; title: string; body: string | null; read_at: string | null }[]; unread: number }>(['notifications'], '/api/v1/notifications', { refetchInterval: 30_000 })
+  const read = useApiMutation((id: string) => api.post(`/api/v1/notifications/${id}/read`), { invalidate: [['notifications']] })
+  const readAll = useApiMutation(() => api.post('/api/v1/notifications/read-all'), { invalidate: [['notifications']] })
+  useEffect(() => {
+    const onDoc = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false) }
+    document.addEventListener('mousedown', onDoc)
+    return () => document.removeEventListener('mousedown', onDoc)
+  }, [])
+  const items = query.data?.data ?? []
+  return (
+    <div className="relative" ref={ref}>
+      <IconButton onClick={() => setOpen((v) => !v)} title="Уведомления" className="relative">
+        <Bell className="size-[18px]" />
+        {!!query.data?.unread && <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-danger ring-2 ring-white" />}
+      </IconButton>
+      {open && <div className="absolute right-0 z-50 mt-1.5 w-80 overflow-hidden rounded-card border border-line bg-surface shadow-[var(--shadow-pop)]">
+        <div className="flex items-center justify-between border-b border-line px-3.5 py-2.5">
+          <p className="text-[13px] font-semibold text-ink">Уведомления</p>
+          <button className="text-[11px] font-semibold text-primary hover:underline" onClick={() => readAll.mutate(undefined)}>Прочитать всё</button>
+        </div>
+        <div className="max-h-80 overflow-y-auto">
+          {items.length === 0 && <p className="px-3.5 py-6 text-center text-xs text-muted">Новых уведомлений нет</p>}
+          {items.map((n) => <button key={n.id} onClick={() => !n.read_at && read.mutate(n.id)} className={cn('flex w-full gap-2.5 border-b border-line/70 px-3.5 py-2.5 text-left last:border-0 hover:bg-subtle', !n.read_at && 'bg-blue-50/40')}>
+            <span className={cn('mt-1 size-2 shrink-0 rounded-full', n.type === 'error' ? 'bg-danger' : n.type === 'warning' ? 'bg-warning' : 'bg-primary')} />
+            <span className="min-w-0"><span className="block text-[12px] font-semibold text-ink">{n.title}</span><span className="block truncate text-[11px] text-muted">{n.body}</span></span>
+          </button>)}
+        </div>
+      </div>}
+    </div>
+  )
+}
+
+void NotificationsMenu
+
 function ProfileMenu() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
@@ -309,7 +369,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       {/* Desktop sidebar */}
       <aside className="sticky top-0 hidden h-screen w-[248px] shrink-0 border-r border-line bg-surface lg:block">
-        <SidebarContent tenantName={tenant?.name} logoText={tenant?.logo_text} brandColor={tenant?.brand_color} showUpgrade={showUpgrade} />
+        <SidebarContent tenantName={tenant?.name} logoText={tenant?.logo_text} logoUrl={tenant?.logo_url} showUpgrade={showUpgrade} />
       </aside>
 
       {/* Mobile drawer */}
@@ -320,7 +380,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <div className="flex justify-end p-2">
               <IconButton onClick={() => setMobileNav(false)} title="Закрыть меню"><X className="size-4" /></IconButton>
             </div>
-            <SidebarContent onNavigate={() => setMobileNav(false)} tenantName={tenant?.name} logoText={tenant?.logo_text} brandColor={tenant?.brand_color} showUpgrade={showUpgrade} />
+            <SidebarContent onNavigate={() => setMobileNav(false)} tenantName={tenant?.name} logoText={tenant?.logo_text} logoUrl={tenant?.logo_url} showUpgrade={showUpgrade} />
           </div>
         </div>
       )}
@@ -348,8 +408,9 @@ export function AppShell({ children }: { children: ReactNode }) {
 
             <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
               <IconButton className="sm:hidden" onClick={() => setPalette(true)} title="Поиск"><Search className="size-[18px]" /></IconButton>
+              <ThemeToggle />
               <CompanySwitcher />
-              <NotificationsMenu />
+              <PersistentNotificationsMenu />
               <ProfileMenu />
             </div>
           </div>

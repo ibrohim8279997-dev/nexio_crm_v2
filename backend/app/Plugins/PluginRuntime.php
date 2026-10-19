@@ -323,6 +323,10 @@ class PluginRuntime
         // 12. commit the reservation and remember the result for a possible retry
         if ($reservation && !$reservation['replay']) {
             try {
+                if ($pluginId === 'nexio.ai.assistant' && $operation === 'ask') {
+                    $measured = (float) ($result['usage']['total_tokens'] ?? 0);
+                    UsageMeter::settle((string) $ctx->tenantId, $reservation['token'], $measured);
+                }
                 UsageMeter::commit((string) $ctx->tenantId, $reservation['token']);
                 UsageMeter::attachResult((string) $ctx->tenantId, $reservation['token'], $result);
             } catch (\Throwable $e) {

@@ -2,11 +2,12 @@ import { useState, type ReactNode } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import {
   Activity, ArrowLeft, BarChart3, Building2, CreditCard, Gauge, LayoutDashboard, LogOut, Menu, Settings,
-  ShieldCheck, Sparkles, Store, X,
+  ShieldCheck, Sparkles, Store, Blocks, X,
 } from 'lucide-react'
 import { cn } from '../../lib/cn'
 import { useAuth } from '../../lib/auth'
 import { Avatar, Button, IconButton } from '../ui/core'
+import { ThemeToggle } from '../ui/ThemeToggle'
 
 const ICON = 'size-[18px]'
 const NAV = [
@@ -20,6 +21,7 @@ const NAV = [
   { to: '/platform/ai-ops', label: 'AI Operations', icon: <Sparkles className={ICON} /> },
   { to: '/platform/security', label: 'Безопасность', icon: <ShieldCheck className={ICON} /> },
   { to: '/platform/settings', label: 'Настройки платформы', icon: <Settings className={ICON} /> },
+  { to: '/platform/marketplace', label: 'Marketplace', icon: <Blocks className={ICON} /> },
 ]
 
 function Nav({ onNavigate }: { onNavigate?: () => void }) {
@@ -78,6 +80,7 @@ export function PlatformShell({ children }: { children: ReactNode }) {
           <IconButton className="lg:hidden" onClick={() => setOpen(true)} title="Меню"><Menu className="size-5" /></IconButton>
           <p className="text-[13px] font-semibold text-ink">Панель оператора Nexio Lab</p>
           <div className="ml-auto flex items-center gap-2">
+            <ThemeToggle />
             <span className="hidden items-center gap-1.5 rounded-full border border-violet-100 bg-violet-50 px-2.5 py-1 text-[11px] font-semibold text-violet-700 sm:inline-flex">
               <ShieldCheck className="size-3.5" /> {user.platform_role ?? 'platform_admin'}
             </span>

@@ -24,9 +24,9 @@ export default function Communications() {
   const toast = useToast()
   const q = useApi<CommResponse>(['comms', channel], `/api/v1/communications?channel=${channel}&limit=60`)
 
-  const send = useApiMutation((p: Record<string, unknown>) => api.post<{ sandbox?: boolean; note?: string }>('/api/v1/communications', p), {
+  const send = useApiMutation((p: Record<string, unknown>) => api.post<{ delivered?: boolean; status?: string; note?: string }>('/api/v1/communications', p), {
     invalidate: [['comms']], success: 'Сообщение сохранено в журнале',
-    onDone: (r) => { setOpen(false); if (r.sandbox && r.note) toast.info('Sandbox-режим', r.note) },
+    onDone: (r) => { setOpen(false); if (r.note && !r.delivered) toast.info('Provider holati', r.note) },
   })
 
   const byChannel = q.data?.byChannel ?? []
@@ -96,12 +96,13 @@ export default function Communications() {
 
 function ComposeModal({ open, onClose, onSend, loading }: { open: boolean; onClose: () => void; onSend: (p: Record<string, unknown>) => void; loading: boolean }) {
   const orgs = useApi<{ data: { id: string; name: string }[] }>(['orgs-mini'], '/api/v1/organizations?limit=100', { enabled: open })
-  const [form, setForm] = useState({ channel: 'email', org_id: '', subject: '', body: '' })
+  const [form, setForm] = useState({ channel: 'email', to: '', org_id: '', subject: '', body: '' })
   return (
     <Modal open={open} onClose={onClose} title="Новое сообщение" description="Сообщение фиксируется в timeline клиента. Без подключённого провайдера оно не уходит наружу."
       footer={<><Button variant="secondary" size="sm" onClick={onClose}>Отмена</Button>
         <Button size="sm" loading={loading} onClick={() => onSend(form)}><Send className="size-4" /> Отправить</Button></>}>
       <div className="space-y-4">
+        <Field label="Qabul qiluvchi" hint="Email, Telegram chat ID yoki WhatsApp xalqaro telefon raqami."><Input value={form.to} onChange={(e) => setForm({ ...form, to: e.target.value })} placeholder="user@example.com / 123456789 / 998901234567" /></Field>
         <Field label="Канал"><Select value={form.channel} onChange={(e) => setForm({ ...form, channel: e.target.value })}>
           {['email', 'telegram', 'whatsapp', 'portal', 'phone'].map((c) => <option key={c} value={c}>{label(c)}</option>)}
         </Select></Field>

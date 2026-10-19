@@ -438,6 +438,58 @@ class UsageMeter
         DB::update('UPDATE plugin_usage SET result = ? WHERE id = ? AND tenant_id = ?', [$json, $token, $tenantId]);
     }
 
+    /**
+     * Replace a conservative reservation with the provider's measured usage.
+     * This is used by AI providers: the browser cannot under-reserve, but the company is not
+     * charged for the unused completion allowance when the provider reports token usage.
+     */
+    public static function settle(string $tenantId, string $token, float $actual): void
+    {
+        if ($actual <= 0) return;
+        DB::transaction(function () use ($tenantId, $token, $actual) {
+            $row = DB::selectOne('SELECT * FROM plugin_usage WHERE id=? AND tenant_id=? LIMIT 1', [$token, $tenantId]);
+            if (!$row || $row->status === 'released') return;
+
+            $reserved = (float) $row->amount;
+            $actual = min($reserved, max(0, $actual));
+            $delta = $reserved - $actual;
+            if ($delta <= 0.000001) return;
+
+            $meta = is_string($row->metadata ?? null) ? json_decode((string) $row->metadata, true) : null;
+            $charged = is_array($meta) && is_array($meta['charged'] ?? null) ? $meta['charged'] : [[
+                'period' => (string) $row->period,
+                'dimension_key' => (string) $row->dimension_key,
+                'period_start' => (string) $row->period_start,
+                'amount' => $reserved,
+                'overage' => (int) $row->is_overage === 1,
+            ]];
+
+            foreach ($charged as $entry) {
+                $entryAmount = (float) ($entry['amount'] ?? $reserved);
+                $entryDelta = min($entryAmount, $delta);
+                $counter = DB::table('plugin_usage_counters')
+                    ->where('tenant_id', $tenantId)->where('plugin_id', $row->plugin_id)->where('metric', $row->metric)
+                    ->where('period', (string) ($entry['period'] ?? $row->period))
+                    ->where('dimension_key', (string) ($entry['dimension_key'] ?? ''))
+                    ->where('period_start', (string) ($entry['period_start'] ?? $row->period_start))
+                    ->lockForUpdate()->first();
+                if ($counter) {
+                    DB::table('plugin_usage_counters')->where('id', $counter->id)->update([
+                        'used' => max(0, (float) $counter->used - $entryDelta),
+                        'overage' => max(0, (float) $counter->overage - (!empty($entry['overage']) ? $entryDelta : 0)),
+                        'updated_at' => H::now(),
+                    ]);
+                }
+            }
+
+            $meta = is_array($meta) ? $meta : [];
+            $meta['settled_amount'] = $actual;
+            DB::update('UPDATE plugin_usage SET amount=?, metadata=? WHERE id=? AND tenant_id=?', [
+                $actual, json_encode(PluginAudit::redact($meta), JSON_UNESCAPED_UNICODE), $token, $tenantId,
+            ]);
+        });
+    }
+
     /** The stored result of a reservation, or null when there is nothing replayable. */
     public static function storedResult(string $tenantId, string $token): ?array
     {

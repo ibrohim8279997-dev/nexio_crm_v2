@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Copy, Mail, ShieldCheck, Trash2, UserPlus, Users, X } from 'lucide-react'
 import { Avatar, Badge, Button, Card, PageHeader, ProgressBar, QueryState, SectionCard, StatCard, StatusPill, Tabs } from '../../components/ui/core'
 import { DataTable, type Column } from '../../components/ui/table'
@@ -24,6 +24,19 @@ const ROLE_LABELS: Record<string, string> = {
   tenant_owner: 'Владелец', tenant_admin: 'Администратор', sales_manager: 'Руководитель продаж', sales_agent: 'Менеджер продаж',
   team_lead: 'Тимлид', project_manager: 'Руководитель проектов', developer: 'Разработчик', support_agent: 'Специалист поддержки',
   finance_manager: 'Финансовый менеджер', analyst: 'Аналитик', employee: 'Сотрудник', read_only: 'Только чтение', client_portal_user: 'Клиент портала',
+}
+const PERMISSION_LABELS: Record<string, string> = {
+  'crm.read': 'Mijozlar va CRMni ko‘rish', 'crm.write': 'CRM ma’lumotlarini tahrirlash', 'crm.delete': 'CRM ma’lumotlarini o‘chirish',
+  'deals.write': 'Bitimlarni boshqarish', 'orders.write': 'Buyurtmalarni boshqarish', 'tasks.write': 'Vazifalarni boshqarish',
+  'team.read': 'Jamoani ko‘rish', 'team.write': 'Jamoani boshqarish', 'settings.read': 'Sozlamalarni ko‘rish', 'settings.write': 'Sozlamalarni o‘zgartirish',
+  'finance.read': 'Moliyani ko‘rish', 'finance.write': 'Moliyani boshqarish', 'billing.read': 'Obunani ko‘rish', 'billing.write': 'Obunani boshqarish',
+  'integrations.write': 'Integratsiyalarni ulash', 'export.data': 'Ma’lumotlarni eksport qilish', 'audit.read': 'Amallar tarixini ko‘rish',
+}
+const EXTRA_PERMISSION_LABELS: Record<string, string> = {
+  'projects.write': 'Loyihalarni boshqarish', 'ai.read': 'AI funksiyalaridan foydalanish',
+  'ai.write': 'AI sozlamalarini boshqarish', 'ai.start_campaign': 'AI kampaniyasini ishga tushirish',
+  'ai.recordings': 'AI yozuvlarini ko‘rish', 'portal.read': 'Mijoz portalini ko‘rish',
+  'services.request': 'Nexio xizmatlariga so‘rov yuborish',
 }
 
 export default function Team() {
@@ -138,6 +151,7 @@ export default function Team() {
         {tab === 'permissions' && (
           <QueryState loading={matrix.isLoading} error={matrix.error} empty={false} onRetry={() => matrix.refetch()}>
             <div className="overflow-x-auto p-4">
+              <p className="mb-3 text-[12px] leading-relaxed text-muted">Har bir rolning nima qila olishi quyida oddiy tilda ko‘rsatilgan. Xom texnik kod faqat qo‘shimcha ma’lumot sifatida beriladi.</p>
               <table className="w-full min-w-[720px] text-[12px]">
                 <thead>
                   <tr className="border-b border-line text-left text-[10px] uppercase tracking-wide text-muted">
@@ -153,7 +167,7 @@ export default function Team() {
                         <div className="flex flex-wrap gap-1">
                           {row.permissions.length === 0
                             ? <span className="text-muted">Нет разрешений</span>
-                            : row.permissions.map((p) => <Badge key={p} tone="neutral">{p}</Badge>)}
+                            : row.permissions.map((p) => <Badge key={p} tone="neutral">{PERMISSION_LABELS[p] ?? EXTRA_PERMISSION_LABELS[p] ?? p}</Badge>)}
                         </div>
                       </td>
                     </tr>
@@ -177,18 +191,28 @@ export default function Team() {
 function InviteModal({ open, onClose, roles, onCopied }: { open: boolean; onClose: () => void; roles: string[]; onCopied: (url: string) => void }) {
   const [email, setEmail] = useState('')
   const [role, setRole] = useState('sales_agent')
+  const [telegramChatId, setTelegramChatId] = useState('')
   const [inviteUrl, setInviteUrl] = useState<string | null>(null)
-  const invite = useApiMutation((p: Record<string, unknown>) => api.post<{ inviteUrl: string; emailed: boolean; note: string }>('/api/v1/team/invite', p), {
+  const [telegramInviteUrl, setTelegramInviteUrl] = useState<string | null>(null)
+  const invite = useApiMutation((p: Record<string, unknown>) => api.post<{ inviteUrl: string; telegramInviteUrl?: string | null; emailed: boolean; telegramSent: boolean }>('/api/v1/team/invite', p), {
     invalidate: [['team']], success: 'Приглашение создано',
-    onDone: (r) => { setInviteUrl(r.inviteUrl); onCopied(r.inviteUrl) },
+    onDone: (r) => { setInviteUrl(r.inviteUrl); setTelegramInviteUrl(r.telegramInviteUrl ?? null); onCopied(r.inviteUrl) },
   })
   const available = roles.filter((r) => r !== 'client_portal_user')
+  useEffect(() => {
+    if (!open) {
+      setInviteUrl(null)
+      setTelegramInviteUrl(null)
+      setEmail('')
+      setTelegramChatId('')
+    }
+  }, [open])
 
   return (
     <Modal open={open} onClose={() => { onClose(); setInviteUrl(null); setEmail('') }} title="Пригласить сотрудника"
       description="Ссылка действует 7 дней и привязана к указанному email."
       footer={<><Button variant="secondary" size="sm" onClick={() => { onClose(); setInviteUrl(null) }}>Закрыть</Button>
-        <Button size="sm" loading={invite.isPending} onClick={() => invite.mutate({ email, role })} disabled={!email || !!inviteUrl}>
+        <Button size="sm" loading={invite.isPending} onClick={() => invite.mutate({ email, role, telegram_chat_id: telegramChatId || undefined })} disabled={!email || !!inviteUrl}>
           <UserPlus className="size-4" /> Создать приглашение
         </Button></>}>
       <div className="space-y-4">
@@ -198,6 +222,20 @@ function InviteModal({ open, onClose, roles, onCopied }: { open: boolean; onClos
             {available.map((r) => <option key={r} value={r}>{ROLE_LABELS[r] ?? r}</option>)}
           </Select>
         </Field>
+        <Field label="Telegram chat ID" hint="Ixtiyoriy. Bot sozlangan bo‘lsa, taklif havolasi shu yerda ham chiqadi.">
+          <Input value={telegramChatId} onChange={(e) => setTelegramChatId(e.target.value)} placeholder="123456789" disabled={!!inviteUrl} />
+        </Field>
+        {telegramInviteUrl && inviteUrl && (
+          <div className="rounded-xl border border-sky-100 bg-sky-50 p-3">
+            <p className="text-[12px] font-semibold text-sky-800">Telegram orqali yuborish</p>
+            <div className="mt-2 flex items-center gap-2">
+              <Input readOnly value={telegramInviteUrl} className="bg-white text-[12px]" />
+              <Button size="sm" variant="secondary" onClick={() => { void navigator.clipboard.writeText(telegramInviteUrl); onCopied(telegramInviteUrl) }}>
+                <Copy className="size-3.5" />
+              </Button>
+            </div>
+          </div>
+        )}
         {inviteUrl && (
           <div className="rounded-xl border border-emerald-100 bg-emerald-50 p-3">
             <p className="text-[12px] font-semibold text-emerald-800">Ссылка приглашения создана</p>

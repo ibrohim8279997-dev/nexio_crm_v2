@@ -29,7 +29,10 @@ return new class extends Migration
 
     private function hasColumn(string $table, string $column): bool
     {
-        foreach (DB::select("PRAGMA table_info({$table})") as $col) {
+        $rows = DB::connection()->getDriverName() === 'sqlite'
+            ? DB::select("PRAGMA table_info({$table})")
+            : DB::select('SELECT column_name AS name FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = ?', [$table]);
+        foreach ($rows as $col) {
             if ((string) $col->name === $column) {
                 return true;
             }
