@@ -126,6 +126,9 @@ class PluginRegistry
                 'tagline' => $row->tagline,
                 'icon' => $row->icon,
                 'category' => $row->category_code,
+                'navigation' => \App\Plugins\Manifest::navigationOf(
+                    (array) (PluginLoader::manifest((string) $row->plugin_id)['_raw'] ?? [])
+                ),
                 'version' => $row->version,
                 'status' => (string) $row->status,
                 'state' => $state['state'],

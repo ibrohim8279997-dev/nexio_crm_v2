@@ -141,6 +141,11 @@ class AdminMarketplaceController
                 'author' => $p->author,
                 'developer' => $p->developer_name,
                 'category' => $p->category_code,
+                'tagline' => $p->tagline,
+                'description' => $p->description,
+                'pricing_model' => $p->pricing_model,
+                'price_monthly' => (float) $p->price_monthly,
+                'currency' => $p->currency,
                 'visibility' => $p->visibility,
                 'is_published' => (bool) $p->is_published,
                 'is_deprecated' => (bool) $p->is_deprecated,
@@ -287,6 +292,10 @@ class AdminMarketplaceController
         if (isset($body['price_monthly'])) {
             $fields[] = 'price_monthly = ?';
             $binds[] = H::num($body['price_monthly'], 'price_monthly', false, 0);
+        }
+        if (isset($body['currency'])) {
+            $fields[] = 'currency = ?';
+            $binds[] = strtoupper(H::str($body['currency'], 'currency', true, 3));
         }
 
         if ($fields !== []) {

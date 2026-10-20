@@ -10,6 +10,7 @@
   "description": "Uzum delivery adapter. The company enters its own HTTPS API endpoint and token in the plugin connection; secrets stay encrypted on the backend.",
   "api_version": "1.0",
   "min_nexio_version": "1.0.0",
+  "navigation": [{"path": "/app/plugins/nexio.uzum.delivery", "label": "Uzum Delivery", "icon": "truck", "order": 20}],
   "dependencies": [{"plugin_id": "nexio.delivery", "constraint": ">=1.0.0", "optional": false}],
   "permissions": ["delivery.read", "delivery.create", "delivery.update", "delivery.cancel", "delivery.track", "settings.write"],
   "hooks": [],

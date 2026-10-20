@@ -10,6 +10,7 @@
   "description": "Адаптер интеграции Nexio Delivery с Yandex Delivery. Транспорт, аутентификация, allowlist хостов и разбор ответа реализованы; схема тела запроса НЕ выдумана, а задаётся оператором из официальной документации Yandex через настройку request_template. Подтверждено по документации: host b2b-authproxy.taxi.yandex.net (продакшн) или b2b.taxi.tst.yandex.net (тест), путь /api/b2b/platform/offers/create, авторизация Authorization: Bearer <OAuth-токен>. Токен хранится как секрет и никогда не возвращается через API.",
   "api_version": "1.0",
   "min_nexio_version": "1.0.0",
+  "navigation": [{"path": "/app/plugins/nexio.yandex.delivery", "label": "Yandex Delivery", "icon": "truck", "order": 30}],
   "dependencies": [
     {
       "plugin_id": "nexio.delivery",

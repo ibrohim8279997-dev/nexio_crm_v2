@@ -10,6 +10,7 @@
   "description": "Nexio CRM ma'lumotlari bilan ishlaydigan AI yordamchi. Har bir so'rov tarifdagi AI limiti bo'yicha hisoblanadi; limit tugasa operatsiya to'xtatiladi.",
   "api_version": "1.0",
   "min_nexio_version": "1.0.0",
+  "navigation": [{"path": "/app/plugins/nexio.ai.assistant", "label": "AI Assistant", "icon": "sparkles", "order": 10}],
   "dependencies": [],
   "permissions": ["ai.read", "ai.write", "crm.read", "settings.write"],
   "hooks": [],

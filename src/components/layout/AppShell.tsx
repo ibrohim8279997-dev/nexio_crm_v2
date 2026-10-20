@@ -4,6 +4,7 @@ import {
   Activity, BarChart3, Bell, BookText, Briefcase, Building2, ChevronDown, Contact, CreditCard, FileText, Clock3,
   Headphones, LayoutDashboard, LifeBuoy, Menu, MessageSquare, Package, Plug, Search, Settings, ShoppingCart, Blocks,
   Sparkles, Target, Users, Workflow, X, Zap, LogOut, Store, ShieldCheck, PhoneCall, LineChart,
+  Truck,
 } from 'lucide-react'
 import { cn } from '../../lib/cn'
 import { useAuth } from '../../lib/auth'
@@ -18,6 +19,7 @@ import { ThemeToggle } from '../ui/ThemeToggle'
 
 interface NavItem { to: string; label: string; icon: ReactNode; permission?: string }
 interface NavGroup { label: string; items: NavItem[] }
+interface InstalledPlugin { plugin_id: string; name: string; status: string; state: string; entitlement?: { can_use?: boolean }; navigation?: Array<{ path: string; label: string; icon?: string }> }
 
 const ICON = 'size-[18px]'
 
@@ -46,6 +48,15 @@ function groupKey(path: string) {
   if (path === '/app/communications' || path === '/app/documents') return 'clients'
   if (path === '/app/finance' || path === '/app/analytics' || path === '/app/automations' || path === '/app/integrations') return 'finance'
   return 'company'
+}
+
+function pluginIcon(name?: string) {
+  const props = { className: ICON }
+  if (name === 'package') return <Package {...props} />
+  if (name === 'truck') return <Truck {...props} />
+  if (name === 'phone-call') return <PhoneCall {...props} />
+  if (name === 'sparkles') return <Sparkles {...props} />
+  return <Plug {...props} />
 }
 
 const GROUPS: NavGroup[] = [
@@ -124,6 +135,10 @@ function SidebarContent({ onNavigate, tenantName, logoText, logoUrl, showUpgrade
 }) {
   const { role, isPlatformAdmin } = useAuth()
   const { t } = useI18n()
+  const installed = useApi<{ data: InstalledPlugin[] }>(['plugins', 'installed'], '/api/v1/plugins/installed')
+  const pluginItems = (installed.data?.data ?? [])
+    .filter((plugin) => plugin.status === 'enabled' && plugin.entitlement?.can_use !== false)
+    .flatMap((plugin) => (plugin.navigation ?? []).map((item) => ({ ...item, pluginId: plugin.plugin_id })))
   return (
     <div className="flex h-full flex-col">
       <div className="px-4 py-4">
@@ -155,6 +170,24 @@ function SidebarContent({ onNavigate, tenantName, logoText, logoUrl, showUpgrade
             </ul>
           </div>
         ))}
+        {pluginItems.length > 0 && (
+          <div>
+            <p className="px-2.5 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">Plugins</p>
+            <ul className="space-y-0.5">
+              {pluginItems.map((item) => (
+                <li key={`${item.pluginId}:${item.path}`}>
+                  <NavLink to={item.path} onClick={onNavigate}
+                    className={({ isActive }) => cn(
+                      'group flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-[13px] font-medium transition-colors',
+                      isActive ? 'bg-blue-50 text-primary-dark' : 'text-muted hover:bg-subtle hover:text-ink',
+                    )}>
+                    {({ isActive }) => <><span className={cn('transition-colors', isActive ? 'text-primary' : 'text-slate-400 group-hover:text-muted')}>{pluginIcon(item.icon)}</span><span className="truncate">{item.label}</span></>}
+                  </NavLink>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
         {isPlatformAdmin && (
           <div>
             <p className="px-2.5 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">Nexio Lab</p>

@@ -10,6 +10,7 @@
   "description": "Универсальный слой доставки Nexio CRM. Предоставляет единый интерфейс создания доставки, расчёта стоимости, отслеживания и отмены, а также нормализацию статусов конкретных провайдеров в универсальные статусы Nexio. Конкретные провайдеры (Uzum, Yandex) подключаются отдельными плагинами-адаптерами, которые зависят от этого плагина.",
   "api_version": "1.0",
   "min_nexio_version": "1.0.0",
+  "navigation": [{"path": "/app/plugins/nexio.delivery", "label": "Delivery", "icon": "truck", "order": 10}],
   "dependencies": [],
   "permissions": [
     "crm.orders.read",
