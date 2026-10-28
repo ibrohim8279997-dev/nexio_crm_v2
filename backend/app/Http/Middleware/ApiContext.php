@@ -44,6 +44,7 @@ class ApiContext
         }
 
         $ctx = new Ctx($request);
+        $ctx->params = $request->route()?->parameters() ?? [];
         app()->instance(Ctx::class, $ctx);
         $this->loadSession($ctx, $request);
 

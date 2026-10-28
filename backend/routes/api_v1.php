@@ -16,15 +16,14 @@ use App\Http\Controllers\Api\V1\PluginOperationsController;
 use App\Http\Controllers\Api\V1\PortalController;
 use App\Http\Controllers\Api\V1\SalesController;
 use App\Http\Controllers\Api\V1\TeamController;
-use App\Support\Ctx;
 use Illuminate\Support\Facades\Route;
 
-/** Binds the controller method with the resolved Ctx (named route parameters merged in). */
-$h = fn (string $controller, string $method) => function (\Illuminate\Http\Request $request) use ($controller, $method) {
-    $ctx = app(Ctx::class);
-    $ctx->params = $request->route()?->parameters() ?? [];
-    return app($controller)->{$method}($ctx);
-};
+/**
+ * Plain [controller, method] action so `artisan route:cache` can serialize it — a closure
+ * factory here was cached as the outer fn and broke every /v1 route. The controller method
+ * receives the request Ctx (bound by ApiContext, which also fills Ctx::$params).
+ */
+$h = fn (string $controller, string $method) => [$controller, $method];
 
 Route::prefix('v1')->group(function () use ($h) {
     // ── auth ────────────────────────────────────────────────────────────────
