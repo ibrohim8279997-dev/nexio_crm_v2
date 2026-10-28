@@ -12,6 +12,8 @@
 # Oxirgi muvaffaqiyatli deploy commit'i .last-deploy faylida saqlanadi, shuning uchun yarim
 # yo'lda to'xtagan deploy keyingi safar to'liq qaytadan bajariladi.
 #
+# GitHub token faqat birinchi pull'da so'raladi va ~/.git-credentials'da saqlanadi.
+#
 # Env: FORCE=1 (hamma qadamlar), SKIP_PULL=1, SKIP_FRONTEND=1, BRANCH (main), PHP (php),
 #      PM2_APP (nexio-crm).
 set -euo pipefail
@@ -35,6 +37,12 @@ if [[ "${SKIP_PULL:-0}" != "1" && "${DEPLOY_REEXEC:-0}" != "1" ]]; then
     if [[ -n "$(git status --porcelain --untracked-files=no)" ]]; then
         git status --short --untracked-files=no >&2
         die "Serverda commit qilinmagan o'zgarishlar bor — avval tekshiring (git diff)."
+    fi
+    # HTTPS remote: GitHub login/tokenni birinchi marta so'raydi va ~/.git-credentials'ga
+    # saqlaydi (fayl faqat shu foydalanuvchiga ochiq, 600). Keyingi safar so'ramaydi.
+    if [[ "$(git remote get-url origin)" == https://* && -z "$(git config --get credential.helper || true)" ]]; then
+        git config credential.helper "store --file=$HOME/.git-credentials"
+        echo "GitHub bir marta so'raydi: Username — GitHub login, Password — token. Keyin eslab qoladi."
     fi
     git fetch --prune origin "$BRANCH"
     git checkout -q "$BRANCH"
