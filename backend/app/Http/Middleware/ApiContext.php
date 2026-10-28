@@ -24,10 +24,12 @@ class ApiContext
         $method = strtoupper($request->method());
         $isMutation = !in_array($method, ['GET', 'HEAD', 'OPTIONS'], true);
 
-        // CSRF: browsers send Origin on cross-site mutations. Reject mismatched origins.
+        // CSRF: browsers send Origin on cross-site mutations. Reject origins other than the API
+        // itself and the frontend origins allowed in config/cors.php.
         if ($isMutation) {
             $origin = $request->header('Origin');
-            if ($origin && rtrim($origin, '/') !== rtrim($request->getSchemeAndHttpHost(), '/')) {
+            $allowed = array_merge([rtrim($request->getSchemeAndHttpHost(), '/')], (array) config('cors.allowed_origins', []));
+            if ($origin && !in_array(rtrim($origin, '/'), $allowed, true)) {
                 return H::json(['error' => ['code' => 'csrf', 'message' => 'Запрос с другого источника отклонён']], 403);
             }
         }
