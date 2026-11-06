@@ -1025,6 +1025,114 @@
       "lastAccessed": "2026-11-06T17:40:21.737Z",
       "accessCount": 0,
       "expiresAt": "2026-12-06T17:40:21.737Z"
+    },
+    "cmd-1793987719885": {
+      "key": "cmd-1793987719885",
+      "value": "{\"command\":\"cd /c/Users/Ibrohim/nexio_crm_v2; ls -la /git-error-* ./git-error-* \\\"$TEMP\\\"/git-error-* 2>/dev/null | head; git status | head -8; git branch -vv | cut -c1-110; git remote -v | sed -E 's#//[^@/]+@#//***@#'; git log --oneline -3; git log --oneline origin/main..HEAD 2>/dev/null | wc -l; git log --oneline HEAD..origin/main 2>/dev/null | wc -l; echo \\\"--- counts\\\"; git status --short | wc -l; git status --short | cut -c1-2 | sort | uniq -c; echo \\\"--- locks\\\"; ls .git/*.lock 2>/dev/null; ls .git/refs/heads/*.lock 2>/dev/null; echo \\\"--- hooks\\\"; ls .git/hooks | grep -v sample; git config --get core.hooksPath; echo \\\"--- sensitive candidates\\\"; git status --short --untracked-files=all | grep -iE '\\\\.env|secret|credential|\\\\.key|\\\\.pem|\\\\.sqlite|\\\\.log|token|id_rsa|\\\\.p12' | cut -c1-120 | head -30; echo \\\"--- large\\\"; git status --short --untracked-files=all | wc -l; cat .gitignore | head -40\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-06T17:55:19.885Z",
+      "lastAccessed": "2026-11-06T17:55:19.885Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-06T17:55:19.885Z"
+    },
+    "cmd-1793987748749": {
+      "key": "cmd-1793987748749",
+      "value": "{\"command\":\"cd /c/Users/Ibrohim/nexio_crm_v2; git status --short | cut -c1-120; echo \\\"--- MERGE_HEAD\\\"; git log --oneline -1 MERGE_HEAD 2>/dev/null; cat .git/MERGE_MSG 2>/dev/null | head -5 | cut -c1-120; echo \\\"--- origin commits\\\"; git log --format='%h %an %ad %s' --date=short HEAD..origin/main | cut -c1-110; echo \\\"--- my commit stat\\\"; git show --stat --format='%h %an %s' 790f741 | tail -3 | cut -c1-110; git show --name-only --format= 790f741 | wc -l; echo \\\"--- secrets in commit?\\\"; git show --name-only --format= 790f741 | grep -iE '(^|/)\\\\.env($|\\\\.)|\\\\.sqlite|\\\\.pem|\\\\.key$|laravel\\\\.log|credential' | cut -c1-100; echo \\\"--- origin changed files\\\"; git diff --stat 790f741...origin/main | tail -14 | cut -c1-100; echo \\\"--- conflict\\\"; git diff --name-only --diff-filter=U; git diff --diff-filter=U | head -80 | cut -c1-170\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-06T17:55:48.749Z",
+      "lastAccessed": "2026-11-06T17:55:48.749Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-06T17:55:48.749Z"
+    },
+    "cmd-1793987783470": {
+      "key": "cmd-1793987783470",
+      "value": "{\"command\":\"cd /c/Users/Ibrohim/nexio_crm_v2 2>/dev/null; echo \\\"--- ops refs\\\"; grep -n \\\"projectRef\\\\|memberRef\\\\|<<<<<<<\\\\|>>>>>>>\\\" backend/app/Http/Controllers/Api/V1/OpsController.php | cut -c1-140; grep -n \\\"function projectRef\\\\|function memberRef\\\" -A12 backend/app/Http/Controllers/Api/V1/OpsController.php | cut -c1-150; echo \\\"--- their H diff\\\"; git diff 6e694db...origin/main --stat -- backend/app/Support/H.php | tail -1; git diff HEAD MERGE_HEAD -- backend/app/Support/H.php 2>/dev/null | grep -E '^[-+]' | grep -vE '^(\\\\+\\\\+\\\\+|---)' | cut -c1-130 | head -20; echo \\\"--- workflows/auto deploy\\\"; ls .github/workflows 2>/dev/null; git ls-tree -r --name-only MERGE_HEAD | grep -E '^\\\\.github/' ; grep -nE 'git (pull|fetch|reset)|branch|main' deploy.sh | head -8 | cut -c1-120; echo \\\"--- attribution\\\"; cat .claude/settings.json 2>/dev/null | grep -n -A3 attribution | head; echo \\\"--- ignored but changed by us\\\"; git check-ignore -v backend/app/Console/Commands/TelegramPoll.php backend/tests/Feature/ProductionFixesTest.php src/lib/api.ts; git ls-files --error-unmatch backend/app/Console/Commands/TelegramPoll.php 2>&1 | tail -1; echo \\\"--- our work in HEAD\\\"; git grep -c 'function tenantRef' HEAD -- backend/app/Support/H.php; git grep -c withoutBlankIds HEAD -- src/lib/api.ts; git grep -c 'POLL_HEARTBEAT' HEAD -- backend/app/Services/TelegramBot.php; echo \\\"--- secret scan (added lines, counts only)\\\"; git diff 6e694db 790f741 -U0 -- . ':!package-lock.json' ':!backend/composer.lock' 2>/dev/null | grep -E '^\\\\+' > \\\"$TEMP/added.txt\\\"; for p in '[0-9]{8,10}:[A-Za-z0-9_-]{35}' 'gsk_[A-Za-z0-9]{20,}' 'sk-[A-Za-z0-9_-]{20,}' 'ghp_[A-Za-z0-9]{20,}' 'github_pat_' 'AKIA[0-9A-Z]{16}' '-----BEGIN [A-Z ]*PRIVATE KEY' 'APP_KEY=base64:[A-Za-z0-9+/=]{20,}' 'xox[baprs]-'; do printf '%s => ' \\\"$p\\\"; grep -cE -- \\\"$p\\\" \\\"$TEMP/added.txt\\\"; done; rm -f \\\"$TEMP/added.txt\\\"; echo \\\"--- tracked env/db\\\"; git ls-tree -r --name-only HEAD | grep -E '(^|/)\\\\.env($|\\\\.)|\\\\.sqlite|\\\\.log$' | cut -c1-80; echo \\\"--- visibility\\\"; gh repo view ibroh …[truncated]\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-06T17:56:23.470Z",
+      "lastAccessed": "2026-11-06T17:56:23.470Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-06T17:56:23.470Z"
+    },
+    "cmd-1793987801215": {
+      "key": "cmd-1793987801215",
+      "value": "{\"command\":\"cd /c/Users/Ibrohim/nexio_crm_v2; echo \\\"--- pat hit (masked)\\\"; git diff 6e694db 790f741 -U0 --no-color -- . ':!package-lock.json' ':!backend/composer.lock' 2>/dev/null | awk '/^\\\\+\\\\+\\\\+ /{f=$2} /^\\\\+/ && /github_pat_/{print f\\\": \\\"$0}' | sed -E 's/(github_pat_)[A-Za-z0-9_]+/\\\\1***MASKED***/g' | cut -c1-200; echo \\\"--- pat is real-length?\\\"; git diff 6e694db 790f741 -U0 --no-color -- . ':!package-lock.json' ':!backend/composer.lock' 2>/dev/null | grep -oE 'github_pat_[A-Za-z0-9_]*' | awk '{print length($0)}'; echo \\\"--- log files\\\"; for f in frontend.log worker.log; do printf '%s: size=%s in_HEAD_changed=' \\\"$f\\\" \\\"$(git cat-file -s HEAD:$f)\\\"; git diff --name-only 6e694db 790f741 -- $f | wc -l; git show HEAD:$f | grep -ciE 'token|secret|password|api[_-]?key'; done; echo \\\"--- generic high-entropy assignments in added lines\\\"; git diff 6e694db 790f741 -U0 --no-color -- . ':!package-lock.json' ':!backend/composer.lock' ':!.claude-flow' ':!.swarm' ':!seed' 2>/dev/null | grep -E '^\\\\+' | grep -E \\\"(TOKEN|SECRET|PASSWORD|API_KEY)[A-Z_]*[=:] *['\\\\\\\"]?[A-Za-z0-9/+_-]{16,}\\\" | sed -E \\\"s/([=:] *['\\\\\\\"]?)[A-Za-z0-9/+_-]{4,}/\\\\1***/\\\" | cut -c1-110 | head -12; echo \\\"--- ops helper use\\\"; grep -n \\\"this->owned\\\\|function owned\\\" backend/app/Http/Controllers/Api/V1/OpsController.php | cut -c1-120; git show 790f741:backend/app/Http/Controllers/Api/V1/OpsController.php | grep -c 'function owned'\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-06T17:56:41.215Z",
+      "lastAccessed": "2026-11-06T17:56:41.215Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-06T17:56:41.215Z"
+    },
+    "cmd-1793987881943": {
+      "key": "cmd-1793987881943",
+      "value": "{\"command\":\"SP=/c/Users/Ibrohim/AppData/Local/Temp/claude/a5e33a921a1bd9fd/f0b9773a-9d29-410a-86be-7dc1b5e25091/scratchpad; cd /c/Users/Ibrohim/nexio_crm_v2; php $SP/resolve.php && sed -n 14,26p backend/app/Http/Controllers/Api/V1/OpsController.php | cut -c1-130; php -l backend/app/Http/Controllers/Api/V1/OpsController.php | head -1; cd backend; php artisan test > $SP/merged.txt 2>&1; php $SP/sum.php $SP/merged.txt | cut -c1-140; php -r '$t=file_get_contents($argv[1]);$j=json_decode(substr($t,strrpos($t,\\\"{\\\\\\\"tool\\\\\\\"\\\")),true);echo \\\"errors=\\\",$j[\\\"errors\\\"]??0,PHP_EOL;foreach($j[\\\"error_details\\\"]??[] as $e)echo $e[\\\"test\\\"],\\\" :: \\\",substr($e[\\\"message\\\"],0,140),PHP_EOL;' $SP/merged.txt | head -8; cd ..; npx tsc -p tsconfig.app.json --noEmit; echo \\\"tsc exit=$?\\\"; npx vitest run > $SP/vt.txt 2>&1; echo \\\"vitest exit=$?\\\"; grep -aE 'Tests ' $SP/vt.txt | sed 's/\\\\x1b\\\\[[0-9;]*m//g'; npx vite build > $SP/vb.txt 2>&1; echo \\\"vite exit=$?\\\"; rm -f $SP/vt.txt $SP/vb.txt $SP/resolve.php\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-06T17:58:01.943Z",
+      "lastAccessed": "2026-11-06T17:58:01.943Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-06T17:58:01.943Z"
+    },
+    "cmd-1793987918391": {
+      "key": "cmd-1793987918391",
+      "value": "{\"command\":\"cd /c/Users/Ibrohim/nexio_crm_v2; B=fix/notifications-telegram-fk-validation; git checkout -b $B 2>&1 | tail -1; git add backend/app/Http/Controllers/Api/V1/OpsController.php 2>/dev/null; echo \\\"unmerged left: $(git diff --name-only --diff-filter=U 2>/dev/null | wc -l)\\\"; git commit --no-edit 2>&1 | tail -2 | cut -c1-110; git log --oneline -3 | cut -c1-90; git log -1 --format='parents: %p'; git push -u origin $B 2>&1 | sed -E 's#//[^@/]+@#//***@#' | tail -8 | cut -c1-130; echo \\\"push exit=${PIPESTATUS[0]}\\\"; echo \\\"---\\\"; git status | head -4; git status --short | cut -c1-70; git log --oneline origin/main..$B | wc -l; git log --oneline $B..origin/main | wc -l\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-06T17:58:38.391Z",
+      "lastAccessed": "2026-11-06T17:58:38.391Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-06T17:58:38.391Z"
+    },
+    "cmd-1793987937510": {
+      "key": "cmd-1793987937510",
+      "value": "{\"command\":\"cd /c/Users/Ibrohim/nexio_crm_v2; git rev-parse -q --verify MERGE_HEAD | cut -c1-8; git commit -m \\\"Merge origin/main into fix/notifications-telegram-fk-validation\\\" -m \\\"Conflict in OpsController: keep H::tenantRef/H::memberRef validation and task notifications; drop the superseded private projectRef/memberRef helpers.\\\" 2>&1 | tail -2 | cut -c1-110; git log -1 --format='%h parents: %p%n%s' | cut -c1-100; git push 2>&1 | sed -E 's#//[^@/]+@#//***@#' | tail -2 | cut -c1-120; echo \\\"push exit=${PIPESTATUS[0]}\\\"; echo \\\"--- verify\\\"; git fetch origin 2>&1 | tail -1; echo \\\"local=$(git rev-parse --short HEAD) remote=$(git rev-parse --short origin/fix/notifications-telegram-fk-validation)\\\"; echo \\\"behind origin/main: $(git log --oneline HEAD..origin/main | wc -l)  ahead: $(git log --oneline origin/main..HEAD | wc -l)\\\"; git status | sed -n 1,3p; git status --short | cut -c1-60; git grep -c 'function tenantRef' origin/fix/notifications-telegram-fk-validation -- backend/app/Support/H.php | tail -1 | cut -c1-90; git grep -c 'function projectRef\\\\|<<<<<<<' origin/fix/notifications-telegram-fk-validation -- backend/app/Http/Controllers/Api/V1/OpsController.php | wc -l\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-06T17:58:57.510Z",
+      "lastAccessed": "2026-11-06T17:58:57.510Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-06T17:58:57.510Z"
+    },
+    "cmd-1793987959647": {
+      "key": "cmd-1793987959647",
+      "value": "{\"command\":\"git log --format='%h %an %ad %s' --date=iso 3795155..origin/main\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-06T17:59:19.647Z",
+      "lastAccessed": "2026-11-06T17:59:19.647Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-06T17:59:19.647Z"
+    },
+    "cmd-1793987967417": {
+      "key": "cmd-1793987967417",
+      "value": "{\"command\":\"git merge --no-commit --no-ff origin/main\",\"exitCode\":1,\"success\":false}",
+      "namespace": "commands",
+      "storedAt": "2026-11-06T17:59:27.417Z",
+      "lastAccessed": "2026-11-06T17:59:27.417Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-06T17:59:27.417Z"
+    },
+    "cmd-1793987979428": {
+      "key": "cmd-1793987979428",
+      "value": "{\"command\":\"git checkout --ours -- backend/app/Http/Controllers/Api/V1/OpsController.php && git add backend/app/Http/Controllers/Api/V1/OpsController.php && git diff --name-only --diff-filter=U | wc -l && git diff --cached --stat HEAD | tail -6 && git rev-parse --short MERGE_HEAD && php -l backend/app/Http/Controllers/Api/V1/OpsController.php\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-06T17:59:39.428Z",
+      "lastAccessed": "2026-11-06T17:59:39.428Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-06T17:59:39.428Z"
+    },
+    "cmd-1793987990247": {
+      "key": "cmd-1793987990247",
+      "value": "{\"command\":\"git commit -m \\\"Merge origin/main into fix/notifications-telegram-fk-validation\\\" -m \\\"Records origin/main as an ancestor. The previous commit b2af288 already holds the merged content, but it has one parent and is not a real merge.\\\" 2>&1 | tail -1 && git log -1 --format='%h parents: %p' && git push 2>&1 | tail -1\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-06T17:59:50.247Z",
+      "lastAccessed": "2026-11-06T17:59:50.247Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-06T17:59:50.247Z"
+    },
+    "cmd-1793987998217": {
+      "key": "cmd-1793987998217",
+      "value": "{\"command\":\"git fetch origin 2>/dev/null; echo \\\"remote branch: $(git rev-parse --short origin/fix/notifications-telegram-fk-validation)\\\"; echo \\\"origin/main: $(git rev-parse --short origin/main)\\\"; echo \\\"behind main: $(git rev-list --count HEAD..origin/main)\\\"; echo \\\"ahead of main: $(git rev-list --count origin/main..HEAD)\\\"; echo \\\"changed vs main: $(git diff --name-only origin/main HEAD | wc -l) files\\\"; echo \\\"local main: $(git rev-parse --short main)\\\"; git status --short --branch | head -6\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-06T17:59:58.217Z",
+      "lastAccessed": "2026-11-06T17:59:58.217Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-06T17:59:58.217Z"
     }
   },
   "version": "3.0.0"
