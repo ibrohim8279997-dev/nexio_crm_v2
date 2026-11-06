@@ -89,7 +89,13 @@ class H
         if (json_last_error() !== JSON_ERROR_NONE) {
             throw new ApiException(400, 'Некорректный JSON в теле запроса', 'bad_request');
         }
-        return is_array($decoded) ? $decoded : [];
+        if (!is_array($decoded)) return [];
+        // UI selects send '' for "none" (e.g. «Без проекта», «Я»). For reference fields that must
+        // mean NULL — otherwise `$b['x_id'] ?? $default` keeps '' and the insert hits a FK error (500).
+        foreach ($decoded as $k => $v) {
+            if ($v === '' && is_string($k) && str_ends_with($k, '_id')) $decoded[$k] = null;
+        }
+        return $decoded;
     }
 
     public static function str(mixed $v, string $field, bool $required = true, int $max = 500): ?string

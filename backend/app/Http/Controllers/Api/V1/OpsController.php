@@ -464,7 +464,7 @@ class OpsController
         DB::update('UPDATE tasks SET title=COALESCE(?,title), description=?, priority=COALESCE(?,priority), due_date=?, assignee_id=?, updated_at=? WHERE id=? AND tenant_id=?', [
             H::str($b['title'] ?? null, 'title', false, 250),
             H::str($b['description'] ?? null, 'description', false, 4000),
-            $b['priority'] ?? null,
+            H::oneOf($b['priority'] ?? null, 'priority', self::PRIORITIES, null),
             H::str($b['due_date'] ?? null, 'due_date', false, 30),
             $assignee,
             H::now(), $ctx->params['id'], $ctx->tenantId,
