@@ -5,7 +5,7 @@ import { Avatar, Button, Card, Grid, PageHeader, ProgressBar, QueryState, Sectio
 import { Field, Input, Select } from '../../components/ui/form'
 import { Modal } from '../../components/ui/overlay'
 import { useApi, useApiMutation } from '../../lib/hooks'
-import { api } from '../../lib/api'
+import { api, withoutBlankIds } from '../../lib/api'
 import { compact, label, money, num, relative, shortDate } from '../../lib/format'
 import { useCan } from '../../lib/auth'
 
@@ -140,7 +140,7 @@ export default function ProjectDetail() {
 function AddTaskModal({ open, onClose, projectId }: { open: boolean; onClose: () => void; projectId: string }) {
   const team = useApi<{ data: { id: string; name: string }[] }>(['team-mini'], '/api/v1/team', { enabled: open })
   const [form, setForm] = useState({ title: '', priority: 'medium', due_date: '', assignee_id: '' })
-  const create = useApiMutation((p: Record<string, unknown>) => api.post('/api/v1/tasks', p), {
+  const create = useApiMutation((p: Record<string, unknown>) => api.post('/api/v1/tasks', withoutBlankIds(p)), {
     invalidate: [['project', projectId], ['projects'], ['tasks'], ['dashboard']], success: 'Задача создана',
     onDone: () => { onClose(); setForm({ title: '', priority: 'medium', due_date: '', assignee_id: '' }) },
   })

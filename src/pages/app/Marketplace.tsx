@@ -44,7 +44,7 @@ export default function Marketplace() {
   const navigate = useNavigate()
   const { id } = useParams()
   const catalog = useApi<Catalog>(['marketplace', query], `/api/v1/marketplace/plugins${query ? `?q=${encodeURIComponent(query)}` : ''}`)
-  const install = useApiMutation((plugin: Plugin) => api.post(`/api/v1/plugins/${plugin.id}/install`, {}).then((result) => ({ result, pluginId: plugin.id })), {
+  const install = useApiMutation((plugin: Plugin) => api.post(`/api/v1/plugins/${plugin.id}/install`, {}).then((result) => api.post(`/api/v1/plugins/${plugin.id}/enable`, {}).catch(() => null).then(() => ({ result, pluginId: plugin.id }))), {
     invalidate: [['marketplace'], ['plugins']], success: 'Plugin o‘rnatildi', onDone: (result) => navigate(`/app/plugins/${result.pluginId}`),
   })
   const detail = useApi<{ plugin: Plugin }>(['marketplace', 'plugin', id], `/api/v1/marketplace/plugins/${id}`, { enabled: !!id })

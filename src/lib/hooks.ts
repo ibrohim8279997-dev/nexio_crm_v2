@@ -14,6 +14,11 @@ export function useApi<T>(key: unknown[], path: string, options?: Partial<UseQue
   })
 }
 
+/** Read through a POST-only endpoint, such as a plugin operation: the path is called with an empty body. */
+export function useApiPost<T>(key: unknown[], path: string, options?: Partial<UseQueryOptions<T, ApiError>>) {
+  return useApi<T>(key, path, { queryFn: () => api.post<T>(path, {}), ...options })
+}
+
 /**
  * Mutation helper. Invalidates the supplied keys and surfaces server errors as toasts,
  * including quota (402) and permission (403) refusals, which are never swallowed.
@@ -28,6 +33,8 @@ export function useApiMutation<TArgs, TResult = unknown>(
     mutationFn: fn,
     onSuccess: (r) => {
       for (const key of opts.invalidate ?? []) void qc.invalidateQueries({ queryKey: key })
+      // Most writes raise a notification: show it now rather than on the next 30-second poll.
+      void qc.invalidateQueries({ queryKey: ['notifications'] })
       if (opts.success) toast.success(opts.success)
       // Click flows return a merchant URL. Keeping this in the shared mutation
       // helper prevents one billing screen from accidentally swallowing it.

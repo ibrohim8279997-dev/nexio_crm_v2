@@ -28,8 +28,6 @@ class RenewSubscriptions extends Command
                     ->where('title', $title)->where('body', $body)->where('created_at', '>=', now()->subDay())->exists();
                 if ($recentlySent) continue;
                 $notifications->notify((string) $member->id, (string) $subscription->tenant_id, 'warning', $title, $body, '/app/billing');
-                $link = DB::table('user_telegram_links')->where('user_id', $member->id)->whereNotNull('chat_id')->where('chat_id', '<>', '')->first();
-                if ($link) $notifications->telegram((string) $link->chat_id, $title . ":\n" . $body);
                 if (!empty($member->email)) $notifications->email((string) $member->email, $title, $body);
             }
         }
@@ -48,8 +46,6 @@ class RenewSubscriptions extends Command
                     $title = 'Tarif avtomatik yangilanmadi';
                     $body = $s->plan_name . ' uchun Click orqali yangi to‘lovni amalga oshiring.';
                     $notifications->notify((string) $member->id, (string) $s->tenant_id, 'error', $title, $body, '/app/billing');
-                    $link = DB::table('user_telegram_links')->where('user_id', $member->id)->whereNotNull('chat_id')->where('chat_id', '<>', '')->first();
-                    if ($link) $notifications->telegram((string) $link->chat_id, $title . "\n" . $body);
                     if (!empty($member->email)) $notifications->email((string) $member->email, $title, $body);
                 }
                 $this->warn("Failed {$s->tenant_id}: {$e->getMessage()}");

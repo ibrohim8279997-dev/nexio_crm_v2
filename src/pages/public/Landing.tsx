@@ -9,9 +9,9 @@ import { ThemeToggle } from '../../components/ui/ThemeToggle'
 import logoUrl from '../../assets/nexio-lab-logo.svg'
 
 function LanguageSwitcher() {
-  const { locale, setLocale } = useI18n()
+  const { locale, setLocale, t } = useI18n()
   return <label className="inline-flex h-9 items-center rounded-xl border border-line bg-surface px-2.5 text-[12px] font-semibold text-muted">
-    <span className="sr-only">Interface language</span>
+    <span className="sr-only">{t('language')}</span>
     <select value={locale} onChange={(e) => setLocale(e.target.value as Locale)} className="cursor-pointer bg-transparent text-ink outline-none">
       <option value="uz">O‘zbekcha</option><option value="ru">Русский</option><option value="en">English</option>
     </select>
@@ -34,8 +34,8 @@ export function PublicHeader() {
           </span>
         </Link>
         <nav className="hidden items-center gap-1 md:flex" aria-label="Маркетинговая навигация">
-          {[['/features', 'Возможности'], ['/pricing', 'Тарифы'], ['/security', 'Безопасность'], ['/legal/terms', 'Документы']].map(([to, l]) => (
-            <Link key={to} to={to} className="rounded-lg px-3 py-2 text-[13px] font-medium text-muted hover:bg-subtle hover:text-ink">{l}</Link>
+          {[['/features', 'features'], ['/pricing', 'pricing'], ['/security', 'security'], ['/legal/terms', 'documentsNav']].map(([to, key]) => (
+            <Link key={to} to={to} className="rounded-lg px-3 py-2 text-[13px] font-medium text-muted hover:bg-subtle hover:text-ink">{t(key)}</Link>
           ))}
         </nav>
         <div className="flex items-center gap-2">
@@ -45,8 +45,8 @@ export function PublicHeader() {
             <Link to={role === 'client_portal_user' ? '/portal' : '/app'}><Button size="sm">{role === 'client_portal_user' ? 'Mijoz portalini ochish' : t('workspace')} <ArrowRight className="size-3.5" /></Button></Link>
           ) : (
             <>
-              <Link to="/login" className="hidden sm:block"><Button variant="ghost" size="sm">Войти</Button></Link>
-              <Link to="/register"><Button size="sm">Начать бесплатно</Button></Link>
+              <Link to="/login" className="hidden sm:block"><Button variant="ghost" size="sm">{t('login')}</Button></Link>
+              <Link to="/register"><Button size="sm">{t('startFree')}</Button></Link>
             </>
           )}
           <button className="md:hidden" onClick={() => setOpen((v) => !v)} aria-label="Меню">{open ? <X className="size-5" /> : <Menu className="size-5" />}</button>
@@ -91,7 +91,7 @@ export function PublicFooter() {
       </div>
       <div className="border-t border-line px-4 py-4">
         <p className="mx-auto max-w-6xl text-[11px] text-slate-400">
-          © {new Date().getFullYear()} Nexio Lab. Future Starts Here. Временный типографический знак — замена на официальный логотип после передачи брендбука.
+          © {new Date().getFullYear()} Nexio Lab. Future Starts Here.
         </p>
       </div>
     </footer>
@@ -107,6 +107,7 @@ const HIGHLIGHTS = [
 
 export default function Landing() {
   const { user } = useAuth()
+  const { t } = useI18n()
   return (
     <div className="min-h-screen bg-bg">
       <PublicHeader />
@@ -116,23 +117,20 @@ export default function Landing() {
         <div className="pointer-events-none absolute -right-32 -top-32 size-[520px] rounded-full bg-blue-100/50 blur-3xl" aria-hidden />
         <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 py-14 lg:grid-cols-2 lg:py-20">
           <div>
-            <Badge tone="primary" className="mb-4"><Sparkles className="size-3" /> Nexio Ecosystem · Design Blueprint v2.0</Badge>
-            <h1 className="text-[34px] font-extrabold leading-[1.08] tracking-tight text-ink sm:text-[46px]">
-              Управляйте продажами,<br />процессами и <span className="text-primary">ИИ-агентами</span>
-            </h1>
+            <Badge tone="primary" className="mb-4"><Sparkles className="size-3" /> Nexio Ecosystem</Badge>
+            <h1 className="text-[34px] font-extrabold leading-[1.08] tracking-tight text-ink sm:text-[46px]">{t('heroTitle')}</h1>
             <p className="mt-4 max-w-xl text-[14px] leading-relaxed text-muted">
-              Nexio CRM — коммерческая SaaS-платформа Nexio Lab для собственной работы и для компаний-подписчиков.
-              Полный цикл: лид → сделка → заказ → проект → оплата → аналитика. С изоляцией данных каждого арендатора.
+              {t('heroText')}
             </p>
             <div className="mt-7 flex flex-wrap items-center gap-3">
               <Link to={user ? '/app' : '/register'}>
-                <Button size="lg">{user ? 'Открыть рабочее пространство' : 'Начать бесплатно'} <ArrowRight className="size-4" /></Button>
+                <Button size="lg">{user ? t('workspace') : t('startFree')} <ArrowRight className="size-4" /></Button>
               </Link>
-              <Link to="/pricing"><Button variant="secondary" size="lg">Смотреть тарифы</Button></Link>
+              <Link to="/pricing"><Button variant="secondary" size="lg">{t('viewPlans')}</Button></Link>
             </div>
             <ul className="mt-6 flex flex-wrap gap-x-5 gap-y-2">
-              {['14 дней бесплатно', 'Без карты', 'Воронка настроена сразу'].map((t) => (
-                <li key={t} className="flex items-center gap-1.5 text-[12px] text-muted"><Check className="size-3.5 text-success" /> {t}</li>
+              {['freeTrial', 'noCard', 'readyFunnel'].map((key) => (
+                <li key={key} className="flex items-center gap-1.5 text-[12px] text-muted"><Check className="size-3.5 text-success" /> {t(key)}</li>
               ))}
             </ul>
           </div>
@@ -196,9 +194,9 @@ export default function Landing() {
       {/* Highlights */}
       <section className="border-y border-line bg-surface">
         <div className="mx-auto max-w-6xl px-4 py-12">
-          <h2 className="text-[24px] font-extrabold tracking-tight text-ink">The smarter way to run your business</h2>
+          <h2 className="text-[24px] font-extrabold tracking-tight text-ink">Управляйте бизнесом проще</h2>
           <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-muted">
-            Оригинальная дизайн-система Nexio Lab: светлая тема, фирменные синие акценты, плотные таблицы и понятная иерархия.
+            Продажи, проекты, финансы и поддержка клиентов в одной системе, чтобы команда работала без лишних сервисов.
           </p>
           <Grid cols={4} className="mt-7">
             {HIGHLIGHTS.map((h) => (

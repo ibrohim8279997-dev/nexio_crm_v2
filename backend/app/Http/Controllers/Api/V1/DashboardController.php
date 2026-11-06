@@ -306,6 +306,16 @@ class DashboardController
                FROM ai_calls WHERE tenant_id = ? AND started_at IS NOT NULL GROUP BY hour ORDER BY hour",
             [$t]
         );
+        $inventory = DB::selectOne(
+            'SELECT COUNT(DISTINCT p.id) AS products, COUNT(DISTINCT s.warehouse_id) AS warehouses,
+                    COALESCE(SUM(s.quantity * p.cost),0) AS inventory_value,
+                    COALESCE(SUM(CASE WHEN s.quantity - s.reserved_quantity <= p.min_stock THEN 1 ELSE 0 END),0) AS low_stock,
+                    COALESCE(SUM(s.reserved_quantity),0) AS reserved_quantity
+               FROM inventory_products p
+               LEFT JOIN inventory_stock s ON s.product_id = p.id AND s.tenant_id = p.tenant_id
+              WHERE p.tenant_id = ? AND p.is_active = 1',
+            [$t]
+        );
 
         return H::json([
             'period' => ['from' => $from, 'to' => $to, 'label' => $label],
@@ -313,6 +323,7 @@ class DashboardController
             'cycle' => ['days' => isset($cycle['days']) ? round($cycle['days'] * 10) / 10 : 0, 'sample' => $cycle['n'] ?? 0],
             'managers' => $managers, 'cohorts' => $cohorts,
             'aiByOutcome' => $aiByOutcome, 'aiByHour' => $aiByHour,
+            'inventory' => $inventory ? (array) $inventory : ['products' => 0, 'warehouses' => 0, 'inventory_value' => 0, 'low_stock' => 0, 'reserved_quantity' => 0],
             'notes' => [
                 'Показатели с выборкой меньше 5 записей помечаются как недостаточные для выводов.',
                 'Наблюдаемые закономерности не являются доказанной причинностью.',

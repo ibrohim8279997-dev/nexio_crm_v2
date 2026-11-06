@@ -9,6 +9,7 @@ const Landing = lazy(() => import('./pages/public/Landing'))
 const Login = lazy(() => import('./pages/public/Login'))
 const Register = lazy(() => import('./pages/public/Register'))
 const ResetPassword = lazy(() => import('./pages/public/ResetPassword'))
+const VerifyEmail = lazy(() => import('./pages/public/VerifyEmail'))
 const InvitePage = lazy(() => import('./pages/public/InvitePage'))
 const Marketing = lazy(() => import('./pages/public/Marketing'))
 const Legal = lazy(() => import('./pages/public/Legal'))
@@ -83,6 +84,7 @@ export function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
+        <Route path="/verify-email/:token" element={<VerifyEmail />} />
         <Route path="/invite/:token" element={<InvitePage />} />
         <Route path="/pricing" element={<Marketing page="pricing" />} />
         <Route path="/features" element={<Marketing page="features" />} />
@@ -138,6 +140,7 @@ export function App() {
           <Route path="marketplace/:id" element={<Marketplace />} />
           <Route path="plugins" element={<PluginManager />} />
           <Route path="plugins/:id" element={<PluginWorkspace />} />
+          <Route path="plugins/:id/workspace" element={<PluginWorkspace />} />
           <Route path="ai-agents" element={<AiAgents />} />
           <Route path="ai-agents/:id" element={<AiAgentDetail />} />
           <Route path="ai-calls" element={<AiCalls />} />

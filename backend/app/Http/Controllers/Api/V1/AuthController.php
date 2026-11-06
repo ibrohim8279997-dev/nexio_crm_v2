@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Middleware\ApiContext;
+use App\Services\NotificationDispatcher;
 use App\Support\ApiException;
 use App\Support\Ctx;
 use App\Support\H;
@@ -103,7 +104,7 @@ class AuthController
                 'id' => H::newId('sub'), 'tenant_id' => $tenantId, 'plan_id' => $plan->id,
                 'status' => 'trialing', 'seats' => $plan->seats, 'amount' => $plan->price_monthly,
                 'currency' => $plan->currency ?? 'USD', 'interval' => 'month',
-                'period_start' => $ts, 'period_end' => $this->plusDays(30), 'created_at' => $ts,
+                'period_start' => $ts, 'period_end' => $this->plusDays(14), 'created_at' => $ts,
             ]);
         }
         DB::table('audit_logs')->insert([
@@ -134,12 +135,15 @@ class AuthController
         $userId = H::newId('usr');
         $ts = H::now();
         $color = H::randomColor($email);
+        $verifyToken = H::newToken();
         DB::table('users')->insert([
             'id' => $userId, 'email' => $email, 'password_hash' => H::hashPassword($password),
             'name' => $name, 'avatar_color' => $color, 'is_platform_admin' => 0,
+            'email_verify_token' => $verifyToken,
             'created_at' => $ts, 'updated_at' => $ts,
         ]);
         $tenantId = $this->provisionTenant($company, $userId, $name);
+        $this->sendVerification($email, $verifyToken);
         $sid = $this->createSession($ctx, $userId, $tenantId);
 
         return H::json([
@@ -176,6 +180,31 @@ class AuthController
         ], 200, ['Set-Cookie' => $this->sessionCookie($sid, H::SESSION_TTL, $ctx->request->isSecure())]);
     }
 
+    private function sendVerification(string $email, string $token): bool
+    {
+        $url = rtrim((string) config('nexio.frontend_url'), '/') . "/verify-email/{$token}";
+        return (new NotificationDispatcher())->email($email, 'Nexio CRM: emailni tasdiqlang', "Emailingizni tasdiqlash uchun havolani oching:\n{$url}");
+    }
+
+    public function verifyEmail(Ctx $ctx)
+    {
+        $b = H::body($ctx);
+        $token = H::str($b['token'] ?? null, 'token', true, 80);
+        $updated = DB::table('users')->where('email_verify_token', $token)->update(['email_verified_at' => H::now(), 'email_verify_token' => null]);
+        if (!$updated) throw new ApiException(400, 'Havola yaroqsiz yoki allaqachon ishlatilgan', 'bad_request');
+        return H::json(['ok' => true]);
+    }
+
+    public function resendVerification(Ctx $ctx)
+    {
+        $user = $ctx->auth();
+        $row = DB::table('users')->where('id', $user['id'])->first(['email', 'email_verified_at']);
+        if ($row->email_verified_at) return H::json(['ok' => true, 'sent' => false]);
+        $token = H::newToken();
+        DB::table('users')->where('id', $user['id'])->update(['email_verify_token' => $token]);
+        return H::json(['ok' => true, 'sent' => $this->sendVerification((string) $row->email, $token)]);
+    }
+
     public function logout(Ctx $ctx)
     {
         if ($ctx->sessionId) DB::table('sessions')->where('id', $ctx->sessionId)->delete();
@@ -201,9 +230,12 @@ class AuthController
         $current = $ctx->tenantId
             ? DB::selectOne('SELECT id, name, slug, brand_color, logo_text, locale, timezone, currency, status, legal_name FROM tenants WHERE id = ?', [$ctx->tenantId])
             : null;
+        // Without a mail provider the user could never finish verifying, so nothing is asked of them.
+        $verified = DB::table('users')->where('id', $ctx->user['id'])->value('email_verified_at');
         return H::json([
             'user' => $ctx->user, 'role' => $ctx->role, 'tenant' => $current,
             'tenants' => $tenants, 'isPlatformAdmin' => (bool) $ctx->user['is_platform_admin'],
+            'emailVerificationRequired' => !$verified && (new NotificationDispatcher())->mailConfigured(),
         ]);
     }
 
@@ -236,6 +268,8 @@ class AuthController
         if ($u) {
             $token = H::newToken();
             $devToken = $token;
+            $resetUrl = rtrim((string) config('nexio.frontend_url'), '/') . "/reset-password/{$token}";
+            (new NotificationDispatcher())->email($email, 'Nexio CRM: parolni tiklash', "Parolni tiklash uchun havolani oching (1 soat amal qiladi):\n{$resetUrl}");
             DB::table('invitations')->insert([
                 'id' => H::newId('inv'), 'tenant_id' => null, 'email' => $email,
                 'role' => 'password_reset', 'token' => $token, 'status' => 'pending',
@@ -301,6 +335,7 @@ class AuthController
             DB::table('users')->insert([
                 'id' => $id, 'email' => $inv->email, 'password_hash' => H::hashPassword($password),
                 'name' => $name, 'avatar_color' => $color, 'is_platform_admin' => 0,
+                'email_verified_at' => H::now(), // the invite link was delivered to this address
                 'created_at' => H::now(), 'updated_at' => H::now(),
             ]);
             $user = (object) ['id' => $id, 'name' => $name, 'email' => $inv->email, 'avatar_color' => $color, 'is_platform_admin' => 0];
@@ -312,6 +347,7 @@ class AuthController
             ]);
         }
         DB::table('invitations')->where('id', $inv->id)->update(['status' => 'accepted']);
+        (new NotificationDispatcher())->notifyAdmins($inv->tenant_id, 'info', 'Yangi xodim qo‘shildi', "{$user->name} ({$user->email}) taklifni qabul qildi.", '/app/team');
         $sid = $this->createSession($ctx, $user->id, $inv->tenant_id);
         return H::json([
             'ok' => true, 'user' => ['id' => $user->id, 'email' => $user->email, 'name' => $user->name],

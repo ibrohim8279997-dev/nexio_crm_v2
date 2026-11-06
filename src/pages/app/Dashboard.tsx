@@ -8,6 +8,7 @@ import { Avatar, Badge, Button, Card, Grid, ProgressBar, QueryState, SectionCard
 import { BarsChart, DonutChart, TrendChart } from '../../components/charts'
 import { useApi, useApiMutation } from '../../lib/hooks'
 import { api } from '../../lib/api'
+import { useToast } from '../../components/ui/toast'
 import { compact, label, money, monthLabel, num, pct, relative, shortDate } from '../../lib/format'
 import { useAuth } from '../../lib/auth'
 import { useI18n } from '../../lib/i18n'
@@ -42,6 +43,7 @@ const PERIODS = [
 export default function Dashboard() {
   const { tenant } = useAuth()
   const { t } = useI18n()
+  const toast = useToast()
   const [telegramPrompt, setTelegramPrompt] = useState(() => localStorage.getItem('nexio_telegram_prompt_seen') !== '1')
   const [period, setPeriod] = useState('30d')
   const [granularity, setGranularity] = useState<'monthly' | 'quarterly' | 'yearly'>('monthly')
@@ -49,11 +51,13 @@ export default function Dashboard() {
 
   const summary = useApi<Summary>(['dashboard', period], `/api/v1/dashboard?period=${period}`)
   const panel = useApi<Workpanel>(['workpanel'], '/api/v1/dashboard/workpanel')
-  const telegram = useApiMutation(() => api.post<{ configured: boolean; url: string | null }>('/api/v1/notifications/telegram-link'), {
+  const telegram = useApiMutation(() => api.post<{ configured: boolean; url: string | null; warning: string | null }>('/api/v1/notifications/telegram-link'), {
     onDone: (result) => {
+      if (!result.url) { toast.error('Telegram bot sozlanmagan', result.warning ?? 'Administrator bot token va nomini kiritishi kerak.'); return }
+      if (result.warning) toast.error('Telegram bot xabar olmayapti', result.warning)
       localStorage.setItem('nexio_telegram_prompt_seen', '1')
       setTelegramPrompt(false)
-      if (result.url) window.open(result.url, '_blank', 'noopener,noreferrer')
+      if (!window.open(result.url, '_blank')) window.location.assign(result.url)
     },
   })
 
@@ -230,7 +234,7 @@ export default function Dashboard() {
                   <Badge tone={a.status === 'active' ? 'success' : a.status === 'paused' ? 'warning' : 'neutral'}>{label(a.status)}</Badge>
                 </li>
               ))}
-              {(summary.data?.ai.agents.length ?? 0) === 0 && <p className="py-4 text-center text-[12px] text-muted">AI-агенты не настроены</p>}
+              {(summary.data?.ai.agents.length ?? 0) === 0 && <li className="py-4 text-center text-[12px] text-muted">AI-агенты не настроены</li>}
             </ul>
             <div className="rounded-xl bg-bg p-3 text-[11px] leading-relaxed text-muted">
               Раздел «AI Agents» — раздел собственной CRM компании. Заявки на услуги Nexio Lab ведёт оператор платформы.

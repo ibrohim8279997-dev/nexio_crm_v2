@@ -66,12 +66,12 @@ export const ticketRoutes = {
          FROM tickets k LEFT JOIN organizations org ON org.id=k.org_id LEFT JOIN users u ON u.id=k.assignee_id
         WHERE ${where.join(' AND ')} ORDER BY CASE k.priority WHEN 'urgent' THEN 0 WHEN 'high' THEN 1 WHEN 'normal' THEN 2 ELSE 3 END, k.created_at DESC LIMIT ? OFFSET ?`).bind(...binds, limit, offset).all();
         const total = await ctx.env.DB.prepare(`SELECT COUNT(*) AS c FROM tickets k WHERE ${where.join(' AND ')}`).bind(...binds).first();
-        const stats = await ctx.env.DB.prepare(`SELECT COUNT(*) AS total, SUM(CASE WHEN status='open' THEN 1 ELSE 0 END) AS open,
-              SUM(CASE WHEN status='pending' THEN 1 ELSE 0 END) AS pending,
-              SUM(CASE WHEN status='resolved' THEN 1 ELSE 0 END) AS resolved,
-              SUM(CASE WHEN status='closed' THEN 1 ELSE 0 END) AS closed,
-              SUM(CASE WHEN priority IN ('high','urgent') AND status NOT IN ('resolved','closed') THEN 1 ELSE 0 END) AS escalated,
-              SUM(CASE WHEN status NOT IN ('resolved','closed') AND sla_due_at < datetime('now') THEN 1 ELSE 0 END) AS breached
+        const stats = await ctx.env.DB.prepare(`SELECT COUNT(*) AS total, COALESCE(SUM(CASE WHEN status='open' THEN 1 ELSE 0 END),0) AS open,
+              COALESCE(SUM(CASE WHEN status='pending' THEN 1 ELSE 0 END),0) AS pending,
+              COALESCE(SUM(CASE WHEN status='resolved' THEN 1 ELSE 0 END),0) AS resolved,
+              COALESCE(SUM(CASE WHEN status='closed' THEN 1 ELSE 0 END),0) AS closed,
+              COALESCE(SUM(CASE WHEN priority IN ('high','urgent') AND status NOT IN ('resolved','closed') THEN 1 ELSE 0 END),0) AS escalated,
+              COALESCE(SUM(CASE WHEN status NOT IN ('resolved','closed') AND sla_due_at < datetime('now') THEN 1 ELSE 0 END),0) AS breached
          FROM tickets WHERE tenant_id = ?`).bind(t).first();
         return json({ data: rows.results, total: total?.c ?? 0, page, limit, stats });
     },

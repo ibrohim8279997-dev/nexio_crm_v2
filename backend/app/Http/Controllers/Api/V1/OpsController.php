@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers\Api\V1;
 
+use App\Services\NotificationDispatcher;
 use App\Support\ApiException;
 use App\Support\Ctx;
 use App\Support\H;
@@ -17,26 +18,6 @@ class OpsController
     private function owned(Ctx $ctx, string $table, string $id): bool
     {
         return (bool) DB::selectOne("SELECT 1 AS x FROM {$table} WHERE id = ? AND tenant_id = ?", [$id, $ctx->tenantId]);
-    }
-
-    /** Optional project reference: '' → null; must belong to the tenant (avoids FK 500s). */
-    private function projectRef(Ctx $ctx, mixed $v): ?string
-    {
-        $id = H::str($v, 'project_id', false, 60);
-        if ($id !== null && !$this->owned($ctx, 'projects', $id)) {
-            throw new ApiException(400, 'Проект не найден', 'bad_request');
-        }
-        return $id;
-    }
-
-    /** Optional user reference: '' → null; must be a member of the tenant (avoids FK 500s). */
-    private function memberRef(Ctx $ctx, mixed $v, string $field): ?string
-    {
-        $id = H::str($v, $field, false, 60);
-        if ($id !== null && !DB::selectOne('SELECT 1 AS x FROM tenant_memberships WHERE user_id = ? AND tenant_id = ?', [$id, $ctx->tenantId])) {
-            throw new ApiException(400, 'Исполнитель не найден', 'bad_request');
-        }
-        return $id;
     }
 
     // ── Orders ───────────────────────────────────────────────────────────────
@@ -61,13 +42,14 @@ class OpsController
         $total = DB::selectOne("SELECT COUNT(*) AS c FROM orders o LEFT JOIN organizations org ON org.id=o.org_id WHERE {$w}", $binds);
         $stats = DB::selectOne(
             "SELECT COUNT(*) AS total,
-                    SUM(CASE WHEN status='draft' THEN 1 ELSE 0 END) AS draft,
-                    SUM(CASE WHEN status='confirmed' THEN 1 ELSE 0 END) AS confirmed,
-                    SUM(CASE WHEN status='in_progress' THEN 1 ELSE 0 END) AS in_progress,
-                    SUM(CASE WHEN status='fulfilled' THEN 1 ELSE 0 END) AS fulfilled,
-                    SUM(CASE WHEN status='cancelled' THEN 1 ELSE 0 END) AS cancelled,
+                    COALESCE(SUM(CASE WHEN status='draft' THEN 1 ELSE 0 END),0) AS draft,
+                    COALESCE(SUM(CASE WHEN status='confirmed' THEN 1 ELSE 0 END),0) AS confirmed,
+                    COALESCE(SUM(CASE WHEN status='in_progress' THEN 1 ELSE 0 END),0) AS in_progress,
+                    COALESCE(SUM(CASE WHEN status='fulfilled' THEN 1 ELSE 0 END),0) AS fulfilled,
+                    COALESCE(SUM(CASE WHEN status='cancelled' THEN 1 ELSE 0 END),0) AS cancelled,
                     COALESCE(SUM(CASE WHEN status='fulfilled' THEN amount END),0) AS fulfilled_value,
-                    COALESCE(SUM(CASE WHEN payment_status IN ('unpaid','overdue','partial') THEN amount END),0) AS receivable
+                    COALESCE(SUM(CASE WHEN status IN ('confirmed','in_progress','fulfilled')
+                                       AND payment_status IN ('unpaid','overdue','partial') THEN amount END),0) AS receivable
                FROM orders WHERE tenant_id = ?",
             [$t]
         );
@@ -95,6 +77,7 @@ class OpsController
     {
         $user = $ctx->auth();
         H::requirePermission($ctx, 'orders.write');
+        H::requireTenant($ctx);
         $t = $ctx->tenantId;
         $b = H::body($ctx);
         $id = H::newId('ord');
@@ -116,11 +99,16 @@ class OpsController
                 'qty' => $qty, 'price' => $price, 'total' => $qty * $price,
             ];
         }
+        if ($items === []) {
+            throw new ApiException(400, 'Заказ должен содержать хотя бы одну позицию', 'bad_request');
+        }
         $amount = array_sum(array_column($items, 'total'));
 
         DB::table('orders')->insert([
             'id' => $id, 'tenant_id' => $t, 'number' => $number,
-            'org_id' => $b['org_id'] ?? null, 'contact_id' => $b['contact_id'] ?? null, 'deal_id' => $b['deal_id'] ?? null,
+            'org_id' => H::tenantRef($ctx, $b['org_id'] ?? null, 'organizations', 'kompaniya'),
+            'contact_id' => H::tenantRef($ctx, $b['contact_id'] ?? null, 'contacts', 'kontakt'),
+            'deal_id' => H::tenantRef($ctx, $b['deal_id'] ?? null, 'deals', 'bitim'),
             'status' => H::oneOf($b['status'] ?? null, 'status', self::ORDER_STATES, 'draft'),
             'amount' => $amount,
             'currency' => H::str($b['currency'] ?? null, 'currency', false, 8) ?? 'UZS',
@@ -137,6 +125,7 @@ class OpsController
             ]);
         }
         H::audit($ctx, 'order.created', 'order', $id, ['number' => $number, 'amount' => $amount]);
+        (new NotificationDispatcher())->notifyAdmins($t, 'info', 'Yangi buyurtma', "{$number}: {$amount}", '/app/orders');
         return H::json(['id' => $id, 'number' => $number, 'amount' => $amount], 201);
     }
 
@@ -146,10 +135,11 @@ class OpsController
         $user = $ctx->auth();
         H::requirePermission($ctx, 'orders.write');
         $t = $ctx->tenantId;
-        $order = DB::selectOne('SELECT id, status, amount, currency FROM orders WHERE id = ? AND tenant_id = ?', [$ctx->params['id'], $t]);
+        $order = DB::selectOne('SELECT id, number, status, amount, currency, created_by FROM orders WHERE id = ? AND tenant_id = ?', [$ctx->params['id'], $t]);
         if (!$order) throw new ApiException(404, 'Заказ не найден', 'not_found');
         if ($order->status !== 'draft') throw new ApiException(400, 'Подтвердить можно только черновик заказа', 'bad_request');
         $items = DB::select('SELECT name, qty, price, total FROM order_items WHERE order_id = ?', [$ctx->params['id']]);
+        if ($items === []) throw new ApiException(400, 'Нельзя подтвердить заказ без позиций', 'bad_request');
         $snapshot = ['terms' => 'Оплата 50% предоплата, 50% по факту', 'currency' => $order->currency, 'tax_rate' => 12, 'captured_at' => H::now(), 'items' => $items];
         DB::transaction(function () use ($ctx, $t, $snapshot, $user) {
             DB::update("UPDATE orders SET status='confirmed', confirmed_at=?, snapshot=?, updated_at=? WHERE id=? AND tenant_id=?", [H::now(), json_encode($snapshot, JSON_UNESCAPED_UNICODE), H::now(), $ctx->params['id'], $t]);
@@ -160,19 +150,26 @@ class OpsController
             ]);
         });
         H::audit($ctx, 'order.confirmed', 'order', $ctx->params['id'], ['amount' => $order->amount]);
+        if ($order->created_by !== $user['id']) {
+            (new NotificationDispatcher())->notifyMember($t, $order->created_by, 'success', 'Buyurtma tasdiqlandi', (string) $order->number, '/app/orders');
+        }
         return H::json(['ok' => true, 'snapshot' => $snapshot]);
     }
 
     public function updateOrderStatus(Ctx $ctx)
     {
-        $ctx->auth();
+        $user = $ctx->auth();
         H::requirePermission($ctx, 'orders.write');
-        if (!$this->owned($ctx, 'orders', $ctx->params['id'])) throw new ApiException(404, 'Заказ не найден', 'not_found');
+        $order = DB::selectOne('SELECT number, created_by FROM orders WHERE id = ? AND tenant_id = ?', [$ctx->params['id'], $ctx->tenantId]);
+        if (!$order) throw new ApiException(404, 'Заказ не найден', 'not_found');
         $b = H::body($ctx);
         $status = H::oneOf($b['status'] ?? null, 'status', self::ORDER_STATES);
         $pay = !empty($b['payment_status']) ? H::oneOf($b['payment_status'], 'payment_status', self::PAY_STATES) : null;
         DB::update('UPDATE orders SET status=?, payment_status=COALESCE(?,payment_status), updated_at=? WHERE id=? AND tenant_id=?', [$status, $pay, H::now(), $ctx->params['id'], $ctx->tenantId]);
         H::audit($ctx, 'order.status_changed', 'order', $ctx->params['id'], ['status' => $status, 'payment_status' => $pay]);
+        if ($order->created_by !== $user['id']) {
+            (new NotificationDispatcher())->notifyMember($ctx->tenantId, $order->created_by, 'info', 'Buyurtma holati o‘zgardi', "{$order->number}: {$status}", '/app/orders');
+        }
         return H::json(['ok' => true]);
     }
 
@@ -204,6 +201,7 @@ class OpsController
             ]);
         }
         H::audit($ctx, 'project.created_from_order', 'project', $id, ['orderId' => $ctx->params['id']]);
+        (new NotificationDispatcher())->notifyMember($t, $user['id'], 'info', 'Yangi loyiha', "Проект по заказу {$order->number}", "/app/projects/{$id}");
         return H::json(['id' => $id, 'existing' => false], 201);
     }
 
@@ -231,16 +229,24 @@ class OpsController
         $total = DB::selectOne("SELECT COUNT(*) AS c FROM projects p LEFT JOIN organizations org ON org.id=p.org_id WHERE {$w}", $binds);
         $stats = DB::selectOne(
             "SELECT COUNT(*) AS total,
-                    SUM(CASE WHEN status='active' THEN 1 ELSE 0 END) AS active,
-                    SUM(CASE WHEN status='done' THEN 1 ELSE 0 END) AS done,
-                    SUM(CASE WHEN status='on_hold' THEN 1 ELSE 0 END) AS on_hold,
-                    SUM(CASE WHEN status='planning' THEN 1 ELSE 0 END) AS planning,
+                    COALESCE(SUM(CASE WHEN status='active' THEN 1 ELSE 0 END),0) AS active,
+                    COALESCE(SUM(CASE WHEN status='done' THEN 1 ELSE 0 END),0) AS done,
+                    COALESCE(SUM(CASE WHEN status='on_hold' THEN 1 ELSE 0 END),0) AS on_hold,
+                    COALESCE(SUM(CASE WHEN status='planning' THEN 1 ELSE 0 END),0) AS planning,
                     COALESCE(SUM(budget),0) AS budget,
                     COALESCE(AVG(progress),0) AS avg_progress
                FROM projects WHERE tenant_id = ?",
             [$t]
         );
-        return H::json(['data' => $rows, 'total' => (int) ($total->c ?? 0), 'page' => $page, 'limit' => $limit, 'stats' => $stats]);
+        $data = array_map(function ($project) {
+            $totalItems = (int) $project->tasks_count + (int) $project->milestones_total;
+            $completedItems = (int) $project->tasks_done + (int) $project->milestones_done;
+            return [
+                ...(array) $project,
+                'progress' => $totalItems > 0 ? (int) round($completedItems / $totalItems * 100) : (int) $project->progress,
+            ];
+        }, $rows);
+        return H::json(['data' => $data, 'total' => (int) ($total->c ?? 0), 'page' => $page, 'limit' => $limit, 'stats' => $stats]);
     }
 
     public function getProject(Ctx $ctx)
@@ -257,61 +263,81 @@ class OpsController
         $milestones = DB::select('SELECT * FROM project_milestones WHERE project_id = ? ORDER BY position', [$ctx->params['id']]);
         $tasks = DB::select('SELECT t.*, u.name AS assignee_name, u.avatar_color AS assignee_color FROM tasks t LEFT JOIN users u ON u.id=t.assignee_id WHERE t.project_id = ? ORDER BY t.due_date', [$ctx->params['id']]);
         $activity = DB::select('SELECT id, kind, subject, actor_name, created_at FROM activities WHERE tenant_id=? AND entity_id=? ORDER BY created_at DESC LIMIT 20', [$t, $ctx->params['id']]);
-        return H::json([...(array) $p, 'milestones' => $milestones, 'tasks' => $tasks, 'activity' => $activity]);
+        $totalItems = count($milestones) + count($tasks);
+        $completedItems = count(array_filter($milestones, fn ($milestone) => $milestone->status === 'done'))
+            + count(array_filter($tasks, fn ($task) => $task->status === 'done'));
+        return H::json([
+            ...(array) $p,
+            'progress' => $totalItems > 0 ? (int) round($completedItems / $totalItems * 100) : (int) $p->progress,
+            'milestones' => $milestones, 'tasks' => $tasks, 'activity' => $activity,
+        ]);
     }
 
     public function createProject(Ctx $ctx)
     {
         $user = $ctx->auth();
         H::requirePermission($ctx, 'projects.write');
+        H::requireTenant($ctx);
         $b = H::body($ctx);
         $id = H::newId('prj');
+        $managerId = H::memberRef($ctx, $b['manager_id'] ?? null, 'loyiha menejeri') ?? $user['id'];
         DB::table('projects')->insert([
             'id' => $id, 'tenant_id' => $ctx->tenantId,
             'name' => H::str($b['name'] ?? null, 'name', true, 200),
-            'org_id' => $b['org_id'] ?? null, 'order_id' => $b['order_id'] ?? null,
+            'org_id' => H::tenantRef($ctx, $b['org_id'] ?? null, 'organizations', 'kompaniya'),
+            'order_id' => H::tenantRef($ctx, $b['order_id'] ?? null, 'orders', 'buyurtma'),
             'status' => H::oneOf($b['status'] ?? null, 'status', self::PROJECT_STATES, 'planning'),
             'priority' => H::oneOf($b['priority'] ?? null, 'priority', self::PRIORITIES, 'medium'),
             'progress' => H::num($b['progress'] ?? null, 'progress', false, 0, 100) ?? 0,
             'budget' => H::num($b['budget'] ?? null, 'budget', false, 0) ?? 0,
             'currency' => H::str($b['currency'] ?? null, 'currency', false, 8) ?? 'UZS',
-            'manager_id' => $b['manager_id'] ?? $user['id'],
+            'manager_id' => $managerId,
             'start_date' => H::str($b['start_date'] ?? null, 'start_date', false, 30),
             'due_date' => H::str($b['due_date'] ?? null, 'due_date', false, 30),
             'description' => H::str($b['description'] ?? null, 'description', false, 4000),
             'created_at' => H::now(), 'updated_at' => H::now(),
         ]);
         H::audit($ctx, 'project.created', 'project', $id, ['name' => $b['name'] ?? null]);
+        (new NotificationDispatcher())->notifyMember($ctx->tenantId, $managerId, 'info', 'Yangi loyiha', (string) $b['name'], "/app/projects/{$id}");
         return H::json(['id' => $id], 201);
     }
 
     public function updateProject(Ctx $ctx)
     {
-        $ctx->auth();
+        $user = $ctx->auth();
         H::requirePermission($ctx, 'projects.write');
-        if (!$this->owned($ctx, 'projects', $ctx->params['id'])) throw new ApiException(404, 'Проект не найден', 'not_found');
+        $project = DB::selectOne('SELECT name, status, manager_id FROM projects WHERE id = ? AND tenant_id = ?', [$ctx->params['id'], $ctx->tenantId]);
+        if (!$project) throw new ApiException(404, 'Проект не найден', 'not_found');
         $b = H::body($ctx);
+        $manager = H::memberRef($ctx, $b['manager_id'] ?? null, 'loyiha menejeri');
         DB::update(
             'UPDATE projects SET name=COALESCE(?,name), status=COALESCE(?,status), priority=COALESCE(?,priority), progress=COALESCE(?,progress), budget=COALESCE(?,budget), manager_id=?, due_date=?, description=?, updated_at=? WHERE id=? AND tenant_id=?',
             [
                 H::str($b['name'] ?? null, 'name', false, 200), $b['status'] ?? null, $b['priority'] ?? null,
                 H::num($b['progress'] ?? null, 'progress', false, 0, 100),
                 H::num($b['budget'] ?? null, 'budget', false, 0),
-                $b['manager_id'] ?? null,
+                $manager,
                 H::str($b['due_date'] ?? null, 'due_date', false, 30),
                 H::str($b['description'] ?? null, 'description', false, 4000),
                 H::now(), $ctx->params['id'], $ctx->tenantId,
             ]
         );
         H::audit($ctx, 'project.updated', 'project', $ctx->params['id']);
+        $url = "/app/projects/{$ctx->params['id']}";
+        if ($manager && $manager !== $project->manager_id) {
+            (new NotificationDispatcher())->notifyMember($ctx->tenantId, $manager, 'info', 'Loyiha sizga biriktirildi', (string) $project->name, $url);
+        } elseif (!empty($b['status']) && $b['status'] !== $project->status && $project->manager_id !== $user['id']) {
+            (new NotificationDispatcher())->notifyMember($ctx->tenantId, $project->manager_id, 'info', 'Loyiha holati o‘zgardi', "{$project->name}: {$b['status']}", $url);
+        }
         return H::json(['ok' => true]);
     }
 
     public function addMilestone(Ctx $ctx)
     {
-        $ctx->auth();
+        $user = $ctx->auth();
         H::requirePermission($ctx, 'projects.write');
-        if (!$this->owned($ctx, 'projects', $ctx->params['id'])) throw new ApiException(404, 'Проект не найден', 'not_found');
+        $project = DB::selectOne('SELECT name, manager_id FROM projects WHERE id = ? AND tenant_id = ?', [$ctx->params['id'], $ctx->tenantId]);
+        if (!$project) throw new ApiException(404, 'Проект не найден', 'not_found');
         $b = H::body($ctx);
         $id = H::newId('ms');
         $pos = DB::selectOne('SELECT COALESCE(MAX(position),-1)+1 AS p FROM project_milestones WHERE project_id = ?', [$ctx->params['id']]);
@@ -322,6 +348,9 @@ class OpsController
             'due_date' => H::str($b['due_date'] ?? null, 'due_date', false, 30),
             'position' => $pos->p ?? 0,
         ]);
+        if ($project->manager_id !== $user['id']) {
+            (new NotificationDispatcher())->notifyMember($ctx->tenantId, $project->manager_id, 'info', 'Loyihaga yangi bosqich qo‘shildi', "{$project->name}: {$b['name']}", "/app/projects/{$ctx->params['id']}");
+        }
         return H::json(['id' => $id], 201);
     }
 
@@ -362,12 +391,12 @@ class OpsController
         );
         $total = DB::selectOne("SELECT COUNT(*) AS c FROM tasks t WHERE {$w}", $binds);
         $stats = DB::selectOne(
-            "SELECT COUNT(*) AS total, SUM(CASE WHEN status='todo' THEN 1 ELSE 0 END) AS todo,
-                    SUM(CASE WHEN status='in_progress' THEN 1 ELSE 0 END) AS in_progress,
-                    SUM(CASE WHEN status='review' THEN 1 ELSE 0 END) AS review,
-                    SUM(CASE WHEN status='done' THEN 1 ELSE 0 END) AS done,
-                    SUM(CASE WHEN status != 'done' AND due_date < CURRENT_DATE THEN 1 ELSE 0 END) AS overdue,
-                    SUM(CASE WHEN assignee_id = ? AND status != 'done' THEN 1 ELSE 0 END) AS mine
+            "SELECT COUNT(*) AS total, COALESCE(SUM(CASE WHEN status='todo' THEN 1 ELSE 0 END),0) AS todo,
+                    COALESCE(SUM(CASE WHEN status='in_progress' THEN 1 ELSE 0 END),0) AS in_progress,
+                    COALESCE(SUM(CASE WHEN status='review' THEN 1 ELSE 0 END),0) AS review,
+                    COALESCE(SUM(CASE WHEN status='done' THEN 1 ELSE 0 END),0) AS done,
+                    COALESCE(SUM(CASE WHEN status != 'done' AND due_date < CURRENT_DATE THEN 1 ELSE 0 END),0) AS overdue,
+                    COALESCE(SUM(CASE WHEN assignee_id = ? AND status != 'done' THEN 1 ELSE 0 END),0) AS mine
                FROM tasks WHERE tenant_id = ?",
             [$user['id'], $t]
         );
@@ -378,22 +407,25 @@ class OpsController
     {
         $user = $ctx->auth();
         H::requirePermission($ctx, 'tasks.write');
+        H::requireTenant($ctx);
         $b = H::body($ctx);
         $id = H::newId('tsk');
+        $assigneeId = H::memberRef($ctx, $b['assignee_id'] ?? null, 'ijrochi') ?? $user['id'];
         DB::table('tasks')->insert([
             'id' => $id, 'tenant_id' => $ctx->tenantId,
             'title' => H::str($b['title'] ?? null, 'title', true, 250),
             'description' => H::str($b['description'] ?? null, 'description', false, 4000),
-            'project_id' => $this->projectRef($ctx, $b['project_id'] ?? null),
+            'project_id' => H::tenantRef($ctx, $b['project_id'] ?? null, 'projects', 'loyiha'),
             'entity_type' => H::str($b['entity_type'] ?? null, 'entity_type', false, 40),
             'entity_id' => H::str($b['entity_id'] ?? null, 'entity_id', false, 60),
-            'assignee_id' => $this->memberRef($ctx, $b['assignee_id'] ?? null, 'assignee_id') ?? $user['id'],
+            'assignee_id' => $assigneeId,
             'status' => H::oneOf($b['status'] ?? null, 'status', self::TASK_STATES, 'todo'),
             'priority' => H::oneOf($b['priority'] ?? null, 'priority', self::PRIORITIES, 'medium'),
             'due_date' => H::str($b['due_date'] ?? null, 'due_date', false, 30),
             'created_by' => $user['id'], 'created_at' => H::now(), 'updated_at' => H::now(),
         ]);
         H::audit($ctx, 'task.created', 'task', $id);
+        (new NotificationDispatcher())->notifyMember($ctx->tenantId, $assigneeId, 'info', 'Yangi vazifa', (string) $b['title'], '/app/tasks');
         return H::json(['id' => $id], 201);
     }
 
@@ -401,7 +433,8 @@ class OpsController
     {
         $user = $ctx->auth();
         H::requirePermission($ctx, 'tasks.write');
-        if (!$this->owned($ctx, 'tasks', $ctx->params['id'])) throw new ApiException(404, 'Задача не найдена', 'not_found');
+        $task = DB::selectOne('SELECT title, created_by FROM tasks WHERE id = ? AND tenant_id = ?', [$ctx->params['id'], $ctx->tenantId]);
+        if (!$task) throw new ApiException(404, 'Задача не найдена', 'not_found');
         $b = H::body($ctx);
         $status = H::oneOf($b['status'] ?? null, 'status', self::TASK_STATES);
         DB::update('UPDATE tasks SET status=?, completed_at=?, updated_at=? WHERE id=? AND tenant_id=?', [
@@ -413,6 +446,9 @@ class OpsController
                 'subject' => 'Задача выполнена', 'entity_type' => 'task', 'entity_id' => $ctx->params['id'],
                 'actor_id' => $user['id'], 'actor_name' => $user['name'], 'created_at' => H::now(),
             ]);
+            if ($task->created_by !== $user['id']) {
+                (new NotificationDispatcher())->notifyMember($ctx->tenantId, $task->created_by, 'success', 'Vazifa bajarildi', "{$task->title} — {$user['name']}", '/app/tasks');
+            }
         }
         return H::json(['ok' => true]);
     }
@@ -421,16 +457,21 @@ class OpsController
     {
         $ctx->auth();
         H::requirePermission($ctx, 'tasks.write');
-        if (!$this->owned($ctx, 'tasks', $ctx->params['id'])) throw new ApiException(404, 'Задача не найдена', 'not_found');
+        $task = DB::selectOne('SELECT title, assignee_id FROM tasks WHERE id = ? AND tenant_id = ?', [$ctx->params['id'], $ctx->tenantId]);
+        if (!$task) throw new ApiException(404, 'Задача не найдена', 'not_found');
         $b = H::body($ctx);
+        $assignee = H::memberRef($ctx, $b['assignee_id'] ?? null, 'ijrochi');
         DB::update('UPDATE tasks SET title=COALESCE(?,title), description=?, priority=COALESCE(?,priority), due_date=?, assignee_id=?, updated_at=? WHERE id=? AND tenant_id=?', [
             H::str($b['title'] ?? null, 'title', false, 250),
             H::str($b['description'] ?? null, 'description', false, 4000),
             H::oneOf($b['priority'] ?? null, 'priority', self::PRIORITIES, null),
             H::str($b['due_date'] ?? null, 'due_date', false, 30),
-            $this->memberRef($ctx, $b['assignee_id'] ?? null, 'assignee_id'),
+            $assignee,
             H::now(), $ctx->params['id'], $ctx->tenantId,
         ]);
+        if ($assignee && $assignee !== $task->assignee_id) {
+            (new NotificationDispatcher())->notifyMember($ctx->tenantId, $assignee, 'info', 'Vazifa sizga biriktirildi', (string) ($b['title'] ?? $task->title), '/app/tasks');
+        }
         return H::json(['ok' => true]);
     }
 

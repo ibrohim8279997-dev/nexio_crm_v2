@@ -3,7 +3,8 @@ import { ArrowDownToLine, ArrowUpFromLine, Boxes, Plus, Truck } from 'lucide-rea
 import { Link } from 'react-router-dom'
 import { Badge, Button, Card, PageHeader, QueryState, SectionCard } from '../../components/ui/core'
 import { Input } from '../../components/ui/form'
-import { useApi, useApiMutation } from '../../lib/hooks'
+import { useApiMutation, useApiPost } from '../../lib/hooks'
+import { PluginEnableNotice } from '../../components/ui/PluginEnableNotice'
 import { api } from '../../lib/api'
 
 type Product = { id: string; sku: string; name: string; unit?: string; cost?: number; min_stock?: number }
@@ -12,10 +13,10 @@ type Stock = { id: string; sku: string; name: string; warehouse_code: string; qu
 const operation = (name: string, body: unknown) => api.post(`/api/v1/plugins/nexio.inventory/operations/${name}`, body)
 
 export default function Inventory() {
-  const dashboard = useApi<{ products: number; warehouses: number; low_stock: number; reserved_quantity: number }>(['inventory', 'dashboard'], '/api/v1/plugins/nexio.inventory/operations/dashboard')
-  const products = useApi<{ data: Product[] }>(['inventory', 'products'], '/api/v1/plugins/nexio.inventory/operations/products')
-  const warehouses = useApi<{ data: WarehouseRow[] }>(['inventory', 'warehouses'], '/api/v1/plugins/nexio.inventory/operations/warehouses')
-  const stock = useApi<{ data: Stock[] }>(['inventory', 'stock'], '/api/v1/plugins/nexio.inventory/operations/stock')
+  const dashboard = useApiPost<{ products: number; warehouses: number; low_stock: number; reserved_quantity: number }>(['inventory', 'dashboard'], '/api/v1/plugins/nexio.inventory/operations/dashboard')
+  const products = useApiPost<{ data: Product[] }>(['inventory', 'products'], '/api/v1/plugins/nexio.inventory/operations/products')
+  const warehouses = useApiPost<{ data: WarehouseRow[] }>(['inventory', 'warehouses'], '/api/v1/plugins/nexio.inventory/operations/warehouses')
+  const stock = useApiPost<{ data: Stock[] }>(['inventory', 'stock'], '/api/v1/plugins/nexio.inventory/operations/stock')
   const [movement, setMovement] = useState({ product_id: '', warehouse_id: '', quantity: '1' })
   const [product, setProduct] = useState({ sku: '', name: '', unit: 'pcs', cost: '0', min_stock: '0' })
   const [warehouse, setWarehouse] = useState({ code: '', name: '', address: '' })
@@ -27,6 +28,7 @@ export default function Inventory() {
   const setWarehouseField = (key: string, value: string) => setWarehouse((old) => ({ ...old, [key]: value }))
   return <div className="space-y-4 sm:space-y-5">
     <PageHeader title="Nexio Inventory" subtitle="Tovarlar, omborlar, qoldiq, harakatlar va rezervlar." breadcrumbs={[{ label: 'Ishchi maydon', to: '/app' }, { label: 'Inventory' }]} />
+    <PluginEnableNotice pluginId="nexio.inventory" />
     <div className="flex flex-wrap gap-2"><Link to="/app/inventory/procurement"><Button variant="secondary"><Truck className="size-4" /> Supplierlar va xaridlar</Button></Link><Link to="/app/plugins/nexio.inventory"><Button variant="secondary"><Boxes className="size-4" /> Plugin sozlamalari</Button></Link></div>
     <QueryState loading={dashboard.isLoading} error={dashboard.error} onRetry={() => dashboard.refetch()}><div className="grid gap-3 sm:grid-cols-4">{[['Tovarlar', dashboard.data?.products ?? 0], ['Omborlar', dashboard.data?.warehouses ?? 0], ['Kam qoldiq', dashboard.data?.low_stock ?? 0], ['Rezervda', dashboard.data?.reserved_quantity ?? 0]].map(([label, value]) => <Card key={String(label)} className="p-4"><p className="text-xs text-muted">{label}</p><b className="text-2xl text-ink">{value}</b></Card>)}</div></QueryState>
     <div className="grid gap-4 lg:grid-cols-2">

@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers\Api\V1;
 
+use App\Services\NotificationDispatcher;
 use App\Support\ApiException;
 use App\Support\Ctx;
 use App\Support\H;
@@ -121,6 +122,7 @@ class PortalController
             'assignee_id' => null, 'body' => $description, 'created_at' => H::now(), 'updated_at' => H::now(),
         ]);
         H::audit($ctx, 'portal.ticket_created', 'ticket', $id, ['org' => $org->id]);
+        (new NotificationDispatcher())->notifyAdmins($ctx->tenantId, 'info', 'Mijozdan yangi murojaat', (string) ($org->name ?? ''), '/app/helpdesk');
         return H::json(['ok' => true, 'id' => $id, 'sla_due_at' => $slaDue, 'note' => 'Обращение создано, срок реакции зависит от приоритета.'], 201);
     }
 
@@ -139,6 +141,7 @@ class PortalController
             'status' => 'received', 'created_at' => H::now(),
         ]);
         H::audit($ctx, 'portal.message_sent', 'communication', $id, ['org' => $org->id]);
+        (new NotificationDispatcher())->notifyAdmins($ctx->tenantId, 'info', 'Mijozdan yangi xabar', (string) ($org->name ?? ''), '/app/communications');
         return H::json(['ok' => true, 'id' => $id], 201);
     }
 }

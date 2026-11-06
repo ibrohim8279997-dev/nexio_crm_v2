@@ -35,13 +35,14 @@ export const orderRoutes = {
         WHERE ${where.join(' AND ')} ORDER BY o.created_at DESC LIMIT ? OFFSET ?`).bind(...binds, limit, offset).all();
         const total = await ctx.env.DB.prepare(`SELECT COUNT(*) AS c FROM orders o LEFT JOIN organizations org ON org.id=o.org_id WHERE ${where.join(' AND ')}`).bind(...binds).first();
         const stats = await ctx.env.DB.prepare(`SELECT COUNT(*) AS total,
-              SUM(CASE WHEN status='draft' THEN 1 ELSE 0 END) AS draft,
-              SUM(CASE WHEN status='confirmed' THEN 1 ELSE 0 END) AS confirmed,
-              SUM(CASE WHEN status='in_progress' THEN 1 ELSE 0 END) AS in_progress,
-              SUM(CASE WHEN status='fulfilled' THEN 1 ELSE 0 END) AS fulfilled,
-              SUM(CASE WHEN status='cancelled' THEN 1 ELSE 0 END) AS cancelled,
+              COALESCE(SUM(CASE WHEN status='draft' THEN 1 ELSE 0 END),0) AS draft,
+              COALESCE(SUM(CASE WHEN status='confirmed' THEN 1 ELSE 0 END),0) AS confirmed,
+              COALESCE(SUM(CASE WHEN status='in_progress' THEN 1 ELSE 0 END),0) AS in_progress,
+              COALESCE(SUM(CASE WHEN status='fulfilled' THEN 1 ELSE 0 END),0) AS fulfilled,
+              COALESCE(SUM(CASE WHEN status='cancelled' THEN 1 ELSE 0 END),0) AS cancelled,
               COALESCE(SUM(CASE WHEN status='fulfilled' THEN amount END),0) AS fulfilled_value,
-              COALESCE(SUM(CASE WHEN payment_status IN ('unpaid','overdue','partial') THEN amount END),0) AS receivable
+              COALESCE(SUM(CASE WHEN status IN ('confirmed','in_progress','fulfilled')
+                                 AND payment_status IN ('unpaid','overdue','partial') THEN amount END),0) AS receivable
          FROM orders WHERE tenant_id = ?`).bind(t).first();
         return json({ data: rows.results, total: total?.c ?? 0, page, limit, stats });
     },
@@ -165,14 +166,19 @@ export const projectRoutes = {
         WHERE ${where.join(' AND ')} ORDER BY p.created_at DESC LIMIT ? OFFSET ?`).bind(...binds, limit, offset).all();
         const total = await ctx.env.DB.prepare(`SELECT COUNT(*) AS c FROM projects p LEFT JOIN organizations org ON org.id=p.org_id WHERE ${where.join(' AND ')}`).bind(...binds).first();
         const stats = await ctx.env.DB.prepare(`SELECT COUNT(*) AS total,
-              SUM(CASE WHEN status='active' THEN 1 ELSE 0 END) AS active,
-              SUM(CASE WHEN status='done' THEN 1 ELSE 0 END) AS done,
-              SUM(CASE WHEN status='on_hold' THEN 1 ELSE 0 END) AS on_hold,
-              SUM(CASE WHEN status='planning' THEN 1 ELSE 0 END) AS planning,
+              COALESCE(SUM(CASE WHEN status='active' THEN 1 ELSE 0 END),0) AS active,
+              COALESCE(SUM(CASE WHEN status='done' THEN 1 ELSE 0 END),0) AS done,
+              COALESCE(SUM(CASE WHEN status='on_hold' THEN 1 ELSE 0 END),0) AS on_hold,
+              COALESCE(SUM(CASE WHEN status='planning' THEN 1 ELSE 0 END),0) AS planning,
               COALESCE(SUM(budget),0) AS budget,
               COALESCE(AVG(progress),0) AS avg_progress
          FROM projects WHERE tenant_id = ?`).bind(t).first();
-        return json({ data: rows.results, total: total?.c ?? 0, page, limit, stats });
+        const data = rows.results.map((project) => {
+            const totalItems = project.tasks_count + project.milestones_total;
+            const completedItems = project.tasks_done + project.milestones_done;
+            return { ...project, progress: totalItems ? Math.round((completedItems / totalItems) * 100) : project.progress };
+        });
+        return json({ data, total: total?.c ?? 0, page, limit, stats });
     },
     async get(ctx) {
         requireAuth(ctx);
@@ -187,7 +193,16 @@ export const projectRoutes = {
             ctx.env.DB.prepare(`SELECT t.*, u.name AS assignee_name, u.avatar_color AS assignee_color FROM tasks t LEFT JOIN users u ON u.id=t.assignee_id WHERE t.project_id = ? ORDER BY t.due_date`).bind(ctx.params.id).all(),
             ctx.env.DB.prepare("SELECT id, kind, subject, actor_name, created_at FROM activities WHERE tenant_id=? AND entity_id=? ORDER BY created_at DESC LIMIT 20").bind(t, ctx.params.id).all(),
         ]);
-        return json({ ...p, milestones: milestones.results, tasks: tasks.results, activity: activity.results });
+        const totalItems = milestones.results.length + tasks.results.length;
+        const completedItems = milestones.results.filter((milestone) => milestone.status === 'done').length
+            + tasks.results.filter((task) => task.status === 'done').length;
+        return json({
+            ...p,
+            progress: totalItems ? Math.round((completedItems / totalItems) * 100) : p.progress,
+            milestones: milestones.results,
+            tasks: tasks.results,
+            activity: activity.results,
+        });
     },
     async create(ctx) {
         requireAuth(ctx);
@@ -271,12 +286,13 @@ export const taskRoutes = {
                  CASE t.priority WHEN 'critical' THEN 0 WHEN 'high' THEN 1 WHEN 'medium' THEN 2 ELSE 3 END, t.due_date
         LIMIT ? OFFSET ?`).bind(...binds, limit, offset).all();
         const total = await ctx.env.DB.prepare(`SELECT COUNT(*) AS c FROM tasks t WHERE ${where.join(' AND ')}`).bind(...binds).first();
-        const stats = await ctx.env.DB.prepare(`SELECT COUNT(*) AS total, SUM(CASE WHEN status='todo' THEN 1 ELSE 0 END) AS todo,
-              SUM(CASE WHEN status='in_progress' THEN 1 ELSE 0 END) AS in_progress,
-              SUM(CASE WHEN status='review' THEN 1 ELSE 0 END) AS review,
-              SUM(CASE WHEN status='done' THEN 1 ELSE 0 END) AS done,
-              SUM(CASE WHEN status != 'done' AND due_date < date('now') THEN 1 ELSE 0 END) AS overdue,
-              SUM(CASE WHEN assignee_id = ? AND status != 'done' THEN 1 ELSE 0 END) AS mine
+        const stats = await ctx.env.DB.prepare(`SELECT COUNT(*) AS total,
+              COALESCE(SUM(CASE WHEN status='todo' THEN 1 ELSE 0 END),0) AS todo,
+              COALESCE(SUM(CASE WHEN status='in_progress' THEN 1 ELSE 0 END),0) AS in_progress,
+              COALESCE(SUM(CASE WHEN status='review' THEN 1 ELSE 0 END),0) AS review,
+              COALESCE(SUM(CASE WHEN status='done' THEN 1 ELSE 0 END),0) AS done,
+              COALESCE(SUM(CASE WHEN status != 'done' AND due_date < date('now') THEN 1 ELSE 0 END),0) AS overdue,
+              COALESCE(SUM(CASE WHEN assignee_id = ? AND status != 'done' THEN 1 ELSE 0 END),0) AS mine
          FROM tasks WHERE tenant_id = ?`).bind(ctx.user.id, t).first();
         return json({ data: rows.results, total: total?.c ?? 0, page, limit, stats });
     },

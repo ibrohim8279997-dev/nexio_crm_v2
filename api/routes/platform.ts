@@ -322,7 +322,7 @@ export const platformRoutes = {
       hardening: [
         { control: 'HttpOnly + SameSite session cookie', enabled: true },
         { control: 'CSRF: same-origin проверка для мутаций', enabled: true },
-        { control: 'PBKDF2-SHA256, 120k итераций', enabled: true },
+        { control: 'PBKDF2-SHA256, 100k итераций', enabled: true },
         { control: 'Аудит всех изменяющих действий', enabled: true },
         { control: 'Ограничение частоты чувствительных endpoint-ов', enabled: true },
         { control: 'MFA для чувствительных ролей', enabled: false, note: 'Требуется TOTP-провайдер' },

@@ -5,7 +5,7 @@ import { DataTable, type Column } from '../../components/ui/table'
 import { Field, Input, SearchInput, Select, Textarea } from '../../components/ui/form'
 import { Modal } from '../../components/ui/overlay'
 import { useApi, useApiMutation } from '../../lib/hooks'
-import { api } from '../../lib/api'
+import { api, withoutBlankIds } from '../../lib/api'
 import { label, num, relative, shortDate } from '../../lib/format'
 import { useCan } from '../../lib/auth'
 
@@ -67,7 +67,7 @@ export default function Helpdesk() {
         skeleton={<div className="grid grid-cols-2 gap-4 xl:grid-cols-4">{Array.from({ length: 4 }).map((_, i) => <Card key={i} className="h-24 animate-pulse" />)}</div>}>
         {s && (
           <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
-            <StatCard label="Всего обращений" value={num(s.total)} hint={`${s.open} открытых`} icon={<Headphones className="size-4" />} />
+            <StatCard label="Всего обращений" value={num(s.total)} hint={`${num(s.open)} открытых`} icon={<Headphones className="size-4" />} />
             <StatCard label="В работе" value={num(s.open + s.pending)} hint="ожидают решения" icon={<Clock className="size-4" />} tone="primary" />
             <StatCard label="Нарушение SLA" value={num(s.breached)} hint="просрочен срок реакции" icon={<AlertOctagon className="size-4" />} tone={s.breached > 0 ? 'danger' : 'neutral'} />
             <StatCard label="Решено" value={num(s.resolved + s.closed)} hint="закрытых обращений" icon={<CheckCircle2 className="size-4" />} tone="success" />
@@ -103,7 +103,7 @@ function CreateTicketModal({ open, onClose }: { open: boolean; onClose: () => vo
   const orgs = useApi<{ data: { id: string; name: string }[] }>(['orgs-mini'], '/api/v1/organizations?limit=100', { enabled: open })
   const empty = { subject: '', org_id: '', requester: '', channel: 'email', priority: 'normal', body: '' }
   const [form, setForm] = useState(empty)
-  const create = useApiMutation((p: Record<string, unknown>) => api.post('/api/v1/tickets', p), {
+  const create = useApiMutation((p: Record<string, unknown>) => api.post('/api/v1/tickets', withoutBlankIds(p)), {
     invalidate: [['tickets'], ['dashboard']], success: 'Обращение создано', onDone: () => { onClose(); setForm(empty) },
   })
   const set = (k: keyof typeof empty) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => setForm({ ...form, [k]: e.target.value })

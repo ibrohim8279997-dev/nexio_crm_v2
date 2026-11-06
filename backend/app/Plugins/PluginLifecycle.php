@@ -152,6 +152,7 @@ class PluginLifecycle
             'version' => $version->version,
             'runtime_mode' => $installation->runtime_mode,
         ], $installationId);
+        (new \App\Services\NotificationDispatcher())->notifyAdmins((string) $ctx->tenantId, 'success', 'Plugin o‘rnatildi', (string) $plugin->name, "/app/plugins/{$pluginId}");
 
         EventBus::emit((string) $ctx->tenantId, 'plugin.installed', [
             'plugin_id' => $pluginId,
@@ -204,6 +205,7 @@ class PluginLifecycle
         );
 
         PluginAudit::log($ctx, 'enabled', $pluginId, 'success', null, $installation->id);
+        (new \App\Services\NotificationDispatcher())->pluginChanged($ctx->tenantId, $pluginId, 'success', 'Plugin yoqildi');
         EventBus::emit((string) $ctx->tenantId, 'plugin.enabled', ['plugin_id' => $pluginId], "plugin.enabled:{$installation->id}:{$now}", $ctx->user['id'] ?? null);
 
         return ['ok' => true, 'status' => 'enabled'];
@@ -226,6 +228,9 @@ class PluginLifecycle
         });
 
         PluginAudit::log($ctx, 'disabled', $pluginId, 'success', null, $installation->id);
+        if ((string) $installation->status !== 'disabled') {
+            (new \App\Services\NotificationDispatcher())->pluginChanged($ctx->tenantId, $pluginId, 'warning', 'Plugin o‘chirildi');
+        }
         EventBus::emit((string) $ctx->tenantId, 'plugin.disabled', ['plugin_id' => $pluginId], "plugin.disabled:{$installation->id}:{$now}", $ctx->user['id'] ?? null);
 
         return ['ok' => true, 'status' => 'disabled', 'note' => 'Данные плагина сохранены.'];

@@ -5,6 +5,7 @@ use App\Support\ApiException;
 use App\Support\Ctx;
 use App\Support\H;
 use App\Support\SqlDialect;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 
 /** Platform operators only. Every read of tenant-scoped data is logged. */
@@ -188,6 +189,61 @@ class PlatformController
         }, $plans)]);
     }
 
+    public function createPlan(Ctx $ctx)
+    {
+        $this->requirePlatform($ctx);
+        $b = H::body($ctx);
+        $code = strtolower(H::str($b['code'] ?? null, 'code', true, 40));
+        if (!preg_match('/^[a-z0-9_-]+$/', $code)) {
+            throw new ApiException(400, 'Kod faqat lotin harflari, raqam, - va _ dan iborat bo‘lishi kerak', 'bad_request');
+        }
+        if (DB::selectOne('SELECT id FROM plans WHERE code = ?', [$code])) {
+            throw new ApiException(409, 'Bu kodli tarif allaqachon mavjud', 'conflict');
+        }
+        $id = H::newId('plan');
+        $position = DB::selectOne('SELECT COALESCE(MAX(position), 0) + 1 AS p FROM plans');
+        DB::transaction(function () use ($b, $id, $code, $position) {
+            DB::table('plans')->insert([
+                'id' => $id, 'code' => $code,
+                'name' => H::str($b['name'] ?? null, 'name', true, 80),
+                'tagline' => H::str($b['tagline'] ?? null, 'tagline', false, 200),
+                'price_monthly' => H::num($b['price_monthly'] ?? null, 'price_monthly', false, 0) ?? 0,
+                'price_yearly' => H::num($b['price_yearly'] ?? null, 'price_yearly', false, 0) ?? 0,
+                'currency' => H::str($b['currency'] ?? null, 'currency', false, 8) ?? 'USD',
+                'seats' => H::num($b['seats'] ?? null, 'seats', false, 0) ?? 3,
+                'api_requests' => H::num($b['api_requests'] ?? null, 'api_requests', false, 0) ?? 10000,
+                'ai_minutes' => H::num($b['ai_minutes'] ?? null, 'ai_minutes', false, 0) ?? 0,
+                'storage_gb' => H::num($b['storage_gb'] ?? null, 'storage_gb', false, 0) ?? 5,
+                'modules' => json_encode($this->planModules($b), JSON_UNESCAPED_UNICODE),
+                'is_public' => !array_key_exists('is_public', $b) || !empty($b['is_public']) ? 1 : 0,
+                'position' => (int) ($position->p ?? 1),
+            ]);
+            $this->replacePlanFeatures($id, $b);
+        });
+        H::audit($ctx, 'platform.plan_created', 'plan', $id, ['code' => $code]);
+        return H::json(['id' => $id], 201);
+    }
+
+    /** @return string[] */
+    private function planModules(array $b): array
+    {
+        $modules = array_map(fn ($m) => trim((string) $m), is_array($b['modules'] ?? null) ? $b['modules'] : []);
+        return array_values(array_unique(array_filter($modules, fn ($m) => $m !== '' && mb_strlen($m) <= 40)));
+    }
+
+    private function replacePlanFeatures(string $planId, array $b): void
+    {
+        DB::table('plan_features')->where('plan_id', $planId)->delete();
+        foreach (array_values(is_array($b['features'] ?? null) ? $b['features'] : []) as $i => $feature) {
+            $label = is_array($feature) ? trim((string) ($feature['label'] ?? '')) : '';
+            if ($label === '') continue;
+            DB::table('plan_features')->insert([
+                'id' => H::newId('pf'), 'plan_id' => $planId, 'label' => mb_substr($label, 0, 200),
+                'included' => !empty($feature['included']) ? 1 : 0, 'position' => $i,
+            ]);
+        }
+    }
+
     public function updatePlan(Ctx $ctx)
     {
         $this->requirePlatform($ctx);
@@ -210,8 +266,46 @@ class PlatformController
                 $ctx->params['id'],
             ]
         );
+        if (array_key_exists('modules', $b)) {
+            DB::table('plans')->where('id', $ctx->params['id'])->update(['modules' => json_encode($this->planModules($b), JSON_UNESCAPED_UNICODE)]);
+        }
+        if (array_key_exists('features', $b)) {
+            $this->replacePlanFeatures($ctx->params['id'], $b);
+        }
         H::audit($ctx, 'platform.plan_updated', 'plan', $ctx->params['id']);
         return H::json(['ok' => true]);
+    }
+
+    public function providers(Ctx $ctx)
+    {
+        $this->requirePlatform($ctx);
+        return H::json(['data' => DB::table('platform_provider_configs')->orderBy('provider')
+            ->get(['provider', 'secret_hint', 'model', 'enabled', 'updated_at'])]);
+    }
+
+    /** The secret is write-only: it is encrypted at rest and only its last 4 characters are ever returned. */
+    public function updateProvider(Ctx $ctx)
+    {
+        $user = $this->requirePlatformUser($ctx);
+        $provider = H::oneOf($ctx->params['provider'] ?? null, 'provider', ['groq', 'telephony', 'payment', 'email']);
+        $b = H::body($ctx);
+        $secret = H::str($b['secret'] ?? null, 'secret', false, 500);
+        $model = H::str($b['model'] ?? null, 'model', false, 120);
+        $enabled = ($b['enabled'] ?? true) !== false;
+        $values = ['enabled' => $enabled ? 1 : 0, 'updated_by' => $user['id'], 'updated_at' => H::now()];
+        if ($secret) {
+            $values['encrypted_secret'] = Crypt::encryptString($secret);
+            $values['secret_hint'] = '••••' . mb_substr($secret, -4);
+        }
+        if ($model) {
+            $values['model'] = $model;
+        }
+        if (!DB::table('platform_provider_configs')->where('provider', $provider)->exists()) {
+            $values['created_at'] = H::now();
+        }
+        DB::table('platform_provider_configs')->updateOrInsert(['provider' => $provider], $values);
+        H::audit($ctx, 'platform.provider_config_updated', 'provider', $provider, ['secretChanged' => (bool) $secret, 'enabled' => $enabled]);
+        return H::json(['ok' => true, 'provider' => $provider, 'secretHint' => $values['secret_hint'] ?? null]);
     }
 
     public function subscriptions(Ctx $ctx)

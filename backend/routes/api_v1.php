@@ -34,6 +34,8 @@ Route::prefix('v1')->group(function () use ($h) {
     Route::post('/auth/switch-tenant', $h(AuthController::class, 'switchTenant'));
     Route::post('/auth/forgot-password', $h(AuthController::class, 'forgotPassword'));
     Route::post('/auth/reset-password', $h(AuthController::class, 'resetPassword'));
+    Route::post('/auth/verify-email', $h(AuthController::class, 'verifyEmail'));
+    Route::post('/auth/resend-verification', $h(AuthController::class, 'resendVerification'))->middleware('throttle:5,60');
     Route::get('/invites/{token}', $h(AuthController::class, 'inviteInfo'));
     Route::post('/invites/{token}/accept', $h(AuthController::class, 'acceptInvite'));
 
@@ -42,6 +44,7 @@ Route::prefix('v1')->group(function () use ($h) {
     Route::get('/notifications', $h(NotificationController::class, 'index'));
     Route::post('/notifications/read-all', $h(NotificationController::class, 'readAll'));
     Route::post('/notifications/telegram-link', $h(NotificationController::class, 'telegramLink'));
+    Route::post('/notifications/telegram-unlink', $h(NotificationController::class, 'telegramUnlink'));
     Route::post('/notifications/{id}/read', $h(NotificationController::class, 'read'));
     Route::get('/dashboard/workpanel', $h(DashboardController::class, 'workpanel'));
     Route::get('/dashboard/my-day', $h(DashboardController::class, 'myDay'));
@@ -171,6 +174,7 @@ Route::prefix('v1')->group(function () use ($h) {
     Route::get('/platform/tenants/{id}', $h(PlatformController::class, 'tenantDetail'));
     Route::post('/platform/tenants/{id}/status', $h(PlatformController::class, 'setTenantStatus'));
     Route::get('/platform/plans', $h(PlatformController::class, 'plans'));
+    Route::post('/platform/plans', $h(PlatformController::class, 'createPlan'));
     Route::patch('/platform/plans/{id}', $h(PlatformController::class, 'updatePlan'));
     Route::get('/platform/subscriptions', $h(PlatformController::class, 'subscriptions'));
     Route::get('/platform/usage', $h(PlatformController::class, 'usage'));
@@ -181,6 +185,8 @@ Route::prefix('v1')->group(function () use ($h) {
     Route::get('/platform/security', $h(PlatformController::class, 'security'));
     Route::get('/platform/ai-ops', $h(PlatformController::class, 'aiOps'));
     Route::get('/platform/settings', $h(PlatformController::class, 'settings'));
+    Route::get('/platform/providers', $h(PlatformController::class, 'providers'));
+    Route::patch('/platform/providers/{provider}', $h(PlatformController::class, 'updateProvider'));
     Route::get('/platform/audit', $h(PlatformController::class, 'impersonatedAudit'));
 
     // ══════════════════════════════════════════════════════════════════════════════════

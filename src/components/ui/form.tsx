@@ -57,10 +57,10 @@ export function SearchInput({ value, onChange, placeholder = 'Поиск…', cl
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         aria-label={placeholder}
-        className={cn(base, 'h-10 pl-9 pr-8')}
+        className={cn(base, 'h-10 pl-9 pr-10')}
       />
       {value && (
-        <button onClick={() => onChange('')} aria-label="Очистить поиск" className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-md p-0.5 text-muted hover:bg-subtle">
+        <button onClick={() => onChange('')} aria-label="Очистить поиск" className="absolute right-1 top-1/2 inline-flex size-8 -translate-y-1/2 items-center justify-center rounded-md text-muted hover:bg-subtle">
           <X className="size-3.5" />
         </button>
       )}

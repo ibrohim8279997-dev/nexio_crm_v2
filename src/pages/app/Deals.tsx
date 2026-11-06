@@ -8,7 +8,7 @@ import { DataTable, type Column } from '../../components/ui/table'
 import { Field, Input, SearchInput, Select } from '../../components/ui/form'
 import { Modal } from '../../components/ui/overlay'
 import { useApi, useApiMutation } from '../../lib/hooks'
-import { api, download } from '../../lib/api'
+import { api, download, withoutBlankIds } from '../../lib/api'
 import { compact, money, num, shortDate } from '../../lib/format'
 import { useCan } from '../../lib/auth'
 
@@ -199,7 +199,7 @@ export default function Deals() {
 function CreateDealModal({ open, onClose, stages }: { open: boolean; onClose: () => void; stages: BoardStage[] }) {
   const orgs = useApi<{ data: { id: string; name: string }[] }>(['orgs-mini'], '/api/v1/organizations?limit=100', { enabled: open })
   const [form, setForm] = useState({ title: '', org_id: '', stage_id: '', amount: '', expected_close_at: '' })
-  const create = useApiMutation((payload: Record<string, unknown>) => api.post('/api/v1/deals', payload), {
+  const create = useApiMutation((payload: Record<string, unknown>) => api.post('/api/v1/deals', withoutBlankIds(payload)), {
     invalidate: [['pipeline'], ['deals'], ['dashboard']], success: 'Сделка создана',
     onDone: () => { onClose(); setForm({ title: '', org_id: '', stage_id: '', amount: '', expected_close_at: '' }) },
   })

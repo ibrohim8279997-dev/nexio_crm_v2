@@ -10,6 +10,10 @@ export default defineConfig(({ mode }) => {
     const apiTarget = env.VITE_API_TARGET || 'http://127.0.0.1:8000';
     return {
         plugins: [react(), tailwindcss()],
+        // .tsx/.ts are the sources: the tracked .js twins are stale compiler output and must not shadow them.
+        resolve: {
+            extensions: ['.tsx', '.ts', '.jsx', '.js', '.mjs', '.json'],
+        },
         build: {
             outDir: 'dist',
             sourcemap: false,

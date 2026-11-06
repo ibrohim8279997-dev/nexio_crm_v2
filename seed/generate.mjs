@@ -100,7 +100,7 @@ const tenantsRaw = [
 const tenantId = {}
 for (const t of tenantsRaw) {
   tenantId[t.slug] = id('tnt')
-  ins('tenants', [q(tenantId[t.slug]), q(t.name), q(t.slug), q(`${t.name} MChJ`), q(t.name.split(' ')[0].toUpperCase()), q(t.primary ? '#2563EB' : pick(['#2563EB', '#8B5CF6', '#0EA5E9', '#10B981'])), q('ru'), q('Asia/Tashkent'), q('UZS'), q(t.country), q(t.industry), q(t.status), q(planId[t.plan]), t.status === 'trial' ? q(daysAhead(5)) : 'NULL', q(daysAgo(t.since)), q(daysAgo(1))])
+  ins('tenants', [q(tenantId[t.slug]), q(t.name), q(t.slug), q(`${t.name} MChJ`), q(t.name.split(' ')[0].toUpperCase()), q(t.primary ? '#2563EB' : pick(['#2563EB', '#8B5CF6', '#0EA5E9', '#10B981'])), q('ru'), q('Asia/Tashkent'), q('UZS'), q(t.country), q(t.industry), q(t.status), q(planId[t.plan]), t.status === 'trial' ? q(daysAhead(5)) : 'NULL', q(daysAgo(t.since)), q(daysAgo(1)), 'NULL'])
   ins('tenant_settings', [q(tenantId[t.slug]), j({ work_hours: '09:00–18:00', week_start: 'mon', default_pipeline: 'Sales', tax_rate: 12, date_format: 'DD.MM.YYYY' }), q(daysAgo(1))])
 }
 
@@ -109,13 +109,13 @@ const acmeStaff = []
 acmeTeam.forEach((email, i) => {
   const u = usersRaw.find((x) => x.email === email)
   acmeStaff.push({ id: userId[email], name: u.name, role: u.role, color: u.color, email })
-  ins('tenant_memberships', [q(id('mem')), q(tenantId['acme-corp']), q(userId[email]), q(u.role), q(pick(['Sales', 'Delivery', 'Finance', 'Support', 'Engineering'])), q(pick(['Менеджер', 'Специалист', 'Ведущий специалист', 'Руководитель отдела'])), q('active'), 'NULL', q(userId['owner@nexio.uz']), q(daysAgo(200 - i * 10))])
+  ins('tenant_memberships', [q(id('mem')), q(tenantId['acme-corp']), q(userId[email]), q(u.role), q(pick(['Sales', 'Delivery', 'Finance', 'Support', 'Engineering'])), q(pick(['Менеджер', 'Специалист', 'Ведущий специалист', 'Руководитель отдела'])), q('active'), 'NULL', q(userId['owner@nexio.uz']), q(daysAgo(200 - i * 10)), 'NULL'])
 })
-ins('tenant_memberships', [q(id('mem')), q(tenantId['nexio-lab']), q(userId['owner@nexio.uz']), q('tenant_owner'), q('Management'), q('CEO'), q('active'), 'NULL', 'NULL', q(daysAgo(400))])
+ins('tenant_memberships', [q(id('mem')), q(tenantId['nexio-lab']), q(userId['owner@nexio.uz']), q('tenant_owner'), q('Management'), q('CEO'), q('active'), 'NULL', 'NULL', q(daysAgo(400)), 'NULL'])
 tenantsRaw.filter((t) => t.owner && t.slug !== 'acme-corp' && t.slug !== 'nexio-lab').forEach((t) => {
-  ins('tenant_memberships', [q(id('mem')), q(tenantId[t.slug]), q(userId[t.owner]), q('tenant_owner'), q('Management'), q('Владелец'), q('active'), 'NULL', q(userId['owner@nexio.uz']), q(daysAgo(t.since))])
+  ins('tenant_memberships', [q(id('mem')), q(tenantId[t.slug]), q(userId[t.owner]), q('tenant_owner'), q('Management'), q('Владелец'), q('active'), 'NULL', q(userId['owner@nexio.uz']), q(daysAgo(t.since)), 'NULL'])
 })
-ins('invitations', [q(id('inv')), q(tenantId['acme-corp']), q('new.hire@acmecorp.uz'), q('sales_agent'), q('inv_demo_7f3c91'), q(userId['admin@acmecorp.uz']), q('pending'), q(daysAhead(6)), q(daysAgo(1))])
+ins('invitations', [q(id('inv')), q(tenantId['acme-corp']), q('new.hire@acmecorp.uz'), q('sales_agent'), q('inv_demo_7f3c91'), q(userId['admin@acmecorp.uz']), q('pending'), q(daysAhead(6)), q(daysAgo(1)), 'NULL', 'NULL'])
 
 // ─── billing ───────────────────────────────────────────────────────────────
 const subStatus = { active: 'active', trial: 'trialing', past_due: 'past_due', suspended: 'grace', cancelled: 'cancelled' }
@@ -218,7 +218,7 @@ const portalMembers = [
 for (const pm of portalMembers) {
   const orgId = orgIds['acme-corp'][pm.orgIndex]
   if (!orgId) continue
-  ins('tenant_memberships', [q(id('mem')), q(tenantId['acme-corp']), q(userId[pm.email]), q('client_portal_user'), q(pm.dept), q(pm.title), q('active'), q(orgId), q(userId['admin@acmecorp.uz']), q(daysAgo(120))])
+  ins('tenant_memberships', [q(id('mem')), q(tenantId['acme-corp']), q(userId[pm.email]), q('client_portal_user'), q(pm.dept), q(pm.title), q('active'), q(orgId), q(userId['admin@acmecorp.uz']), q(daysAgo(120)), 'NULL'])
 }
 
 const cOf = (slug) => contactsAll.filter((c) => c.tenant === slug)
@@ -402,7 +402,7 @@ for (const t of tenantsRaw.filter((x) => x.primary)) {
     ins('ai_evaluations', [q(id('aev')), q(tenantId[t.slug]), q(pick(aiAgentIds[t.slug])), q(pick(['script_adherence', 'objection_handling', 'disclosure_compliance', 'outcome_accuracy'])), Math.round((0.62 + rnd() * 0.35) * 100) / 100, int(20, 200), q(daysAgo(int(0, 30)).slice(0, 7)), q(daysAgo(int(0, 30)))])
   }
   for (const c of cOf(t.slug).slice(0, t.slug === 'acme-corp' ? 90 : 25)) {
-    ins('consents', [q(id('cns')), q(tenantId[t.slug]), q(c.id), q('calls'), c.consent ? 1 : 0, q('Зафиксировано при отправке веб-формы'), q(daysAgo(int(5, 120)))])
+    ins('consents', [q(id('cns')), q(tenantId[t.slug]), q(c.id), q('calls'), c.consent ? 1 : 0, q('Зафиксировано при отправке веб-формы'), q(daysAgo(int(5, 120))), 'NULL', q('web_form'), 'NULL', 'NULL', 'NULL', 'NULL'])
   }
   for (let i = 0; i < 6; i++) ins('suppression_list', [q(id('sup')), q(tenantId[t.slug]), q(phone()), 'NULL', q(pick(['do_not_call', 'opted_out', 'complaint'])), q(daysAgo(int(1, 60)))])
 }
@@ -428,7 +428,8 @@ for (const [table, rows] of Object.entries(T)) {
   sql += `-- ${table}: ${rows.length} rows\n`
   for (let i = 0; i < rows.length; i += 50) {
     const chunk = rows.slice(i, i + 50)
-    sql += `INSERT INTO ${table} VALUES\n  ${chunk.map((r) => `(${r.map(ser).join(',')})`).join(',\n  ')};\n`
+    const insertMode = table === 'plans' || table === 'plan_features' ? 'INSERT OR IGNORE' : 'INSERT'
+    sql += `${insertMode} INTO ${table} VALUES\n  ${chunk.map((r) => `(${r.map(ser).join(',')})`).join(',\n  ')};\n`
   }
   sql += '\n'
 }

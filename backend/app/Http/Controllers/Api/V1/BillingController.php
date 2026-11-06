@@ -271,7 +271,7 @@ class BillingController
         H::requirePermission($ctx, 'finance.read');
         $t = $ctx->tenantId;
         $revenue = DB::selectOne("SELECT COALESCE(SUM(amount),0) AS v, COUNT(*) AS c FROM orders WHERE tenant_id = ? AND status='fulfilled'", [$t]);
-        $receivable = DB::selectOne("SELECT COALESCE(SUM(amount),0) AS v, COUNT(*) AS c FROM orders WHERE tenant_id = ? AND payment_status IN ('unpaid','overdue','partial') AND status NOT IN ('cancelled','refunded')", [$t]);
+        $receivable = DB::selectOne("SELECT COALESCE(SUM(amount),0) AS v, COUNT(*) AS c FROM orders WHERE tenant_id = ? AND payment_status IN ('unpaid','overdue','partial') AND status IN ('confirmed','in_progress','fulfilled')", [$t]);
         $paid = DB::selectOne("SELECT COALESCE(SUM(amount),0) AS v FROM orders WHERE tenant_id = ? AND payment_status='paid' AND status='fulfilled'", [$t]);
         $planned = DB::selectOne("SELECT COALESCE(SUM(amount),0) AS v FROM orders WHERE tenant_id = ? AND status IN ('confirmed','in_progress')", [$t]);
         $byMonth = DB::select("SELECT " . SqlDialect::month('created_at') . " AS ym, COALESCE(SUM(amount),0) AS value, COUNT(*) AS orders FROM orders WHERE tenant_id = ? AND created_at >= " . SqlDialect::ago(12, 'month') . " GROUP BY ym ORDER BY ym", [$t]);
