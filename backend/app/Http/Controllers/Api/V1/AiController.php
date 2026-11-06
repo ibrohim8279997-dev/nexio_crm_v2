@@ -215,7 +215,7 @@ class AiController
         $id = H::newId('acp');
         DB::table('ai_campaigns')->insert([
             'id' => $id, 'tenant_id' => $t,
-            'agent_id' => H::str($b['agent_id'] ?? null, 'agent_id'),
+            'agent_id' => H::tenantRef($ctx, H::str($b['agent_id'] ?? null, 'agent_id'), 'ai_agents', 'AI agent'),
             'name' => H::str($b['name'] ?? null, 'name', true, 200),
             'goal' => H::str($b['goal'] ?? null, 'goal', false, 500),
             'status' => 'draft',

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Services\TelegramBot;
 use App\Support\Ctx;
 use App\Support\H;
 use Illuminate\Support\Facades\DB;
@@ -15,7 +16,8 @@ class NotificationController
         $rows = DB::table('notifications')->where('user_id', $user['id'])
             ->orderByDesc('created_at')->limit($limit)->get();
         $unread = DB::table('notifications')->where('user_id', $user['id'])->whereNull('read_at')->count();
-        return H::json(['data' => $rows, 'unread' => $unread]);
+        $linked = DB::table('user_telegram_links')->where('user_id', $user['id'])->whereNotNull('chat_id')->exists();
+        return H::json(['data' => $rows, 'unread' => $unread, 'telegram' => ['configured' => $this->botUsername() !== '', 'linked' => $linked]]);
     }
 
     public function read(Ctx $ctx)
@@ -40,9 +42,41 @@ class NotificationController
         if ($link) {
             DB::table('user_telegram_links')->where('id', $link->id)->update(['link_token' => $token]);
         } else {
-            DB::table('user_telegram_links')->insert(['id' => H::newId('tgl'), 'user_id' => $user['id'], 'chat_id' => '', 'link_token' => $token, 'created_at' => H::now()]);
+            DB::table('user_telegram_links')->insert(['id' => H::newId('tgl'), 'user_id' => $user['id'], 'chat_id' => null, 'link_token' => $token, 'created_at' => H::now()]);
         }
-        $username = ltrim((string) config('telegram.bot_username', ''), '@');
-        return H::json(['configured' => $username !== '', 'url' => $username !== '' ? "https://t.me/{$username}?start={$token}" : null]);
+        $username = $this->botUsername();
+        if ($username === '') return H::json(['configured' => false, 'url' => null, 'warning' => null]);
+
+        $status = (new TelegramBot())->status();
+        if ($status['token_valid'] === false) {
+            return H::json(['configured' => false, 'url' => null, 'warning' => 'Telegram bot tokeni noto‘g‘ri. Administrator tokenni yangilashi kerak.']);
+        }
+        // The token's own bot is what will receive /start, even if TELEGRAM_BOT_USERNAME went stale.
+        $username = $status['username'] ?? $username;
+        return H::json([
+            'configured' => true,
+            'url' => "https://t.me/{$username}?start={$token}",
+            'warning' => $status['receiving'] === false ? $this->notReceivingWarning() : null,
+        ]);
+    }
+
+    private function notReceivingWarning(): string
+    {
+        return app()->isProduction()
+            ? 'Telegram bot hozir xabar qabul qilmayapti. Administratorga murojaat qiling.'
+            : 'Telegram bot hozir xabar qabul qilmayapti. Ulanish tugashi uchun serverda «php artisan nexio:telegram:poll» ni ishga tushiring.';
+    }
+
+    public function telegramUnlink(Ctx $ctx)
+    {
+        $user = $ctx->auth();
+        DB::table('user_telegram_links')->where('user_id', $user['id'])->update(['chat_id' => null, 'username' => null, 'linked_at' => null]);
+        return H::json(['ok' => true]);
+    }
+
+    private function botUsername(): string
+    {
+        if ((string) config('telegram.bot_token', '') === '') return '';
+        return ltrim((string) config('telegram.bot_username', ''), '@');
     }
 }

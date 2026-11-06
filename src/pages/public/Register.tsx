@@ -44,7 +44,7 @@ export default function Register() {
           <form onSubmit={submit} className="space-y-4">
             <Field label="Ваше имя" required>
               <div className="relative"><User className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted" />
-                <Input required value={form.name} onChange={set('name')} placeholder="Jasher Deen" className="h-11 pl-9" /></div>
+                <Input required value={form.name} onChange={set('name')} placeholder="Имя Фамилия" className="h-11 pl-9" /></div>
             </Field>
             <Field label="Название компании" required hint="Из названия формируется короткий адрес рабочего пространства (slug).">
               <div className="relative"><Building2 className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted" />

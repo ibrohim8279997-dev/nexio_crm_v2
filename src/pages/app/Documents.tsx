@@ -5,7 +5,7 @@ import { DataTable, type Column } from '../../components/ui/table'
 import { Field, Input, Select, Textarea } from '../../components/ui/form'
 import { Modal } from '../../components/ui/overlay'
 import { useApi, useApiMutation } from '../../lib/hooks'
-import { api } from '../../lib/api'
+import { api, withoutBlankIds } from '../../lib/api'
 import { label, num, shortDate } from '../../lib/format'
 import { useCan } from '../../lib/auth'
 
@@ -93,7 +93,7 @@ export default function Documents() {
 function NewDocModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const orgs = useApi<{ data: { id: string; name: string }[] }>(['orgs-mini'], '/api/v1/organizations?limit=100', { enabled: open })
   const [form, setForm] = useState({ name: '', kind: 'proposal', org_id: '' })
-  const create = useApiMutation((p: Record<string, unknown>) => api.post('/api/v1/documents', p), {
+  const create = useApiMutation((p: Record<string, unknown>) => api.post('/api/v1/documents', withoutBlankIds(p)), {
     invalidate: [['documents']], success: 'Документ создан', onDone: () => { onClose(); setForm({ name: '', kind: 'proposal', org_id: '' }) },
   })
   return (

@@ -16,6 +16,7 @@ interface AnalyticsResponse {
   cohorts: { ym: string; leads: number; converted: number }[]
   aiByOutcome: { outcome: string; count: number; avg_seconds: number }[]
   aiByHour: { hour: number; calls: number; positive: number }[]
+  inventory?: { products: number; warehouses: number; inventory_value: number; low_stock: number; reserved_quantity: number }
   notes: string[]
 }
 
@@ -55,6 +56,7 @@ export default function Analytics() {
               <StatCard label="Цикл сделки" value={`${d.cycle.days} дн`} hint={`выборка ${d.cycle.sample} сделок`} icon={<Clock className="size-4" />} tone="primary" />
               <StatCard label="Сделок на менеджера" value={d.managers.length ? num(d.managers.reduce((a, m) => a + m.total, 0) / d.managers.length, 1) : '0'} hint={`${d.managers.length} активных`} icon={<TrendingUp className="size-4" />} tone="ai" />
             </Grid>
+            {d.inventory && <Card className="border-blue-100 bg-blue-50/40 p-4"><div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-xs font-semibold text-ink">Inventory аналитика</p><p className="mt-1 text-[11px] text-muted">Омбор плагинидан tenant бўйича реал маълумотлар.</p></div><div className="flex flex-wrap gap-5 text-xs"><span><b className="text-ink">{d.inventory.products}</b> товар</span><span><b className="text-ink">{d.inventory.warehouses}</b> омбор</span><span><b className="text-ink">{d.inventory.inventory_value}</b> қиймат</span><span className={d.inventory.low_stock > 0 ? 'text-amber-700' : 'text-emerald-700'}><b>{d.inventory.low_stock}</b> кам қолдиқ</span><span><b className="text-ink">{d.inventory.reserved_quantity}</b> резерв</span></div></div></Card>}
 
             <SectionCard padded={false}>
               <div className="border-b border-line px-4 py-3">

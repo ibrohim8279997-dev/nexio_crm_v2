@@ -6,7 +6,7 @@ import {
 } from '../../components/ui/core'
 import { DataTable, Pagination, type Column } from '../../components/ui/table'
 import { Field, Input, SearchInput, Select, Textarea } from '../../components/ui/form'
-import { ConfirmDialog, Modal } from '../../components/ui/overlay'
+import { ConfirmDialog, Drawer, Modal } from '../../components/ui/overlay'
 import { useApi, useApiMutation } from '../../lib/hooks'
 import { api, download } from '../../lib/api'
 import { compact, label, money, num, relative } from '../../lib/format'
@@ -16,7 +16,7 @@ import { useToast } from '../../components/ui/toast'
 interface Lead {
   id: string; title: string; contact_name: string | null; email: string | null; phone: string | null
   source: string | null; status: string; score: number; value: number; currency: string
-  owner_name: string | null; owner_color: string | null; created_at: string
+  owner_name: string | null; owner_color: string | null; created_at: string; notes?: string | null
 }
 interface LeadsResponse {
   data: Lead[]; total: number; page: number; limit: number
@@ -32,6 +32,7 @@ const STATUS_TABS = [
 export default function Leads() {
   const [status, setStatus] = useState('')
   const [source, setSource] = useState('')
+  const [detail, setDetail] = useState<Lead | null>(null)
   const [q, setQ] = useState('')
   const [page, setPage] = useState(1)
   const [sort, setSort] = useState<{ key: string; dir: 'asc' | 'desc' }>({ key: 'created', dir: 'desc' })
@@ -143,6 +144,7 @@ export default function Leads() {
           <DataTable
             columns={columns}
             rows={list.data?.data ?? []}
+            onRowClick={setDetail}
             sort={sort}
             onSort={(key) => setSort((s) => ({ key, dir: s.key === key && s.dir === 'desc' ? 'asc' : 'desc' }))}
           />
@@ -151,6 +153,20 @@ export default function Leads() {
       </SectionCard>
 
       <CreateLeadModal open={createOpen} onClose={() => setCreateOpen(false)} />
+      <Drawer open={!!detail} onClose={() => setDetail(null)} title={detail?.title} description={detail ? label(detail.source) : undefined}>
+        {detail && (
+          <dl className="space-y-3 text-[13px]">
+            {[
+              ['Контакт', detail.contact_name], ['Email', detail.email], ['Телефон', detail.phone],
+              ['Сумма', money(detail.value, detail.currency)], ['Скор', String(detail.score)],
+              ['Ответственный', detail.owner_name], ['Создан', relative(detail.created_at)], ['Заметки', detail.notes],
+            ].map(([term, value]) => (
+              <div key={term}><dt className="text-[11px] text-muted">{term}</dt><dd className="mt-0.5 whitespace-pre-wrap text-ink">{value || '—'}</dd></div>
+            ))}
+            <div><dt className="text-[11px] text-muted">Статус</dt><dd className="mt-1"><StatusPill value={detail.status} /></dd></div>
+          </dl>
+        )}
+      </Drawer>
       <ConfirmDialog
         open={!!convertTarget} onClose={() => setConvertTarget(null)} onConfirm={() => convertTarget && convert.mutate(convertTarget)}
         loading={convert.isPending} title="Конвертировать лид в сделку?"

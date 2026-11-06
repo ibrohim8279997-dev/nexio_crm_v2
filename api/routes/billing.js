@@ -179,7 +179,7 @@ export const financeRoutes = {
         requirePermission(ctx, 'finance.read');
         const t = ctx.tenantId;
         const revenue = await ctx.env.DB.prepare("SELECT COALESCE(SUM(amount),0) AS v, COUNT(*) AS c FROM orders WHERE tenant_id = ? AND status='fulfilled'").bind(t).first();
-        const receivable = await ctx.env.DB.prepare("SELECT COALESCE(SUM(amount),0) AS v, COUNT(*) AS c FROM orders WHERE tenant_id = ? AND payment_status IN ('unpaid','overdue','partial') AND status NOT IN ('cancelled','refunded')").bind(t).first();
+        const receivable = await ctx.env.DB.prepare("SELECT COALESCE(SUM(amount),0) AS v, COUNT(*) AS c FROM orders WHERE tenant_id = ? AND payment_status IN ('unpaid','overdue','partial') AND status IN ('confirmed','in_progress','fulfilled')").bind(t).first();
         const paid = await ctx.env.DB.prepare("SELECT COALESCE(SUM(amount),0) AS v FROM orders WHERE tenant_id = ? AND payment_status='paid' AND status='fulfilled'").bind(t).first();
         const planned = await ctx.env.DB.prepare("SELECT COALESCE(SUM(amount),0) AS v FROM orders WHERE tenant_id = ? AND status IN ('confirmed','in_progress')").bind(t).first();
         const byMonth = await ctx.env.DB.prepare(`SELECT strftime('%Y-%m', created_at) AS ym, COALESCE(SUM(amount),0) AS value, COUNT(*) AS orders

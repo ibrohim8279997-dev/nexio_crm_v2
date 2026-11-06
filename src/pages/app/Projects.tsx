@@ -6,7 +6,7 @@ import { DataTable, type Column } from '../../components/ui/table'
 import { Field, Input, SearchInput, Select, Textarea } from '../../components/ui/form'
 import { Modal } from '../../components/ui/overlay'
 import { useApi, useApiMutation } from '../../lib/hooks'
-import { api } from '../../lib/api'
+import { api, withoutBlankIds } from '../../lib/api'
 import { compact, label, num, shortDate } from '../../lib/format'
 import { useCan } from '../../lib/auth'
 
@@ -73,8 +73,8 @@ export default function Projects() {
         skeleton={<div className="grid grid-cols-2 gap-4 xl:grid-cols-4">{Array.from({ length: 4 }).map((_, i) => <Card key={i} className="h-24 animate-pulse" />)}</div>}>
         {s && (
           <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
-            <StatCard label="Всего проектов" value={num(s.total)} hint={`${s.planning} в планировании`} icon={<CalendarDays className="size-4" />} />
-            <StatCard label="Активные" value={num(s.active)} hint={`${s.on_hold} на паузе`} icon={<Activity className="size-4" />} tone="primary" />
+            <StatCard label="Всего проектов" value={num(s.total)} hint={`${num(s.planning)} в планировании`} icon={<CalendarDays className="size-4" />} />
+            <StatCard label="Активные" value={num(s.active)} hint={`${num(s.on_hold)} на паузе`} icon={<Activity className="size-4" />} tone="primary" />
             <StatCard label="Завершено" value={num(s.done)} hint="по всем клиентам" icon={<CheckCircle2 className="size-4" />} tone="success" />
             <StatCard label="Средний прогресс" value={`${num(s.avg_progress)}%`} hint={compact(s.budget)} icon={<Clock className="size-4" />} tone="warning" />
           </div>
@@ -103,7 +103,7 @@ function CreateProjectModal({ open, onClose }: { open: boolean; onClose: () => v
   const orgs = useApi<{ data: { id: string; name: string }[] }>(['orgs-mini'], '/api/v1/organizations?limit=100', { enabled: open })
   const empty = { name: '', org_id: '', status: 'planning', priority: 'medium', budget: '', start_date: '', due_date: '', description: '' }
   const [form, setForm] = useState(empty)
-  const create = useApiMutation((p: Record<string, unknown>) => api.post('/api/v1/projects', p), {
+  const create = useApiMutation((p: Record<string, unknown>) => api.post('/api/v1/projects', withoutBlankIds(p)), {
     invalidate: [['projects'], ['dashboard']], success: 'Проект создан', onDone: () => { onClose(); setForm(empty) },
   })
   const set = (k: keyof typeof empty) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => setForm({ ...form, [k]: e.target.value })

@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers\Api\V1;
 
+use App\Services\NotificationDispatcher;
 use App\Support\ApiException;
 use App\Support\Ctx;
 use App\Support\H;
@@ -63,13 +64,15 @@ class SalesController
     {
         $user = $ctx->auth();
         H::requirePermission($ctx, 'crm.write');
+        H::requireTenant($ctx);
         $b = H::body($ctx);
         $id = H::newId('lead');
+        $ownerId = H::memberRef($ctx, $b['owner_id'] ?? null, 'mas’ul xodim') ?? $user['id'];
         DB::table('leads')->insert([
             'id' => $id, 'tenant_id' => $ctx->tenantId,
             'title' => H::str($b['title'] ?? null, 'title', true, 250),
             'contact_name' => H::str($b['contact_name'] ?? null, 'contact_name', false, 160),
-            'org_id' => $b['org_id'] ?? null,
+            'org_id' => H::tenantRef($ctx, $b['org_id'] ?? null, 'organizations', 'kompaniya'),
             'email' => H::str($b['email'] ?? null, 'email', false, 190),
             'phone' => H::str($b['phone'] ?? null, 'phone', false, 40),
             'source' => H::str($b['source'] ?? null, 'source', false, 60) ?? 'manual',
@@ -77,7 +80,7 @@ class SalesController
             'score' => H::num($b['score'] ?? null, 'score', false, 0, 100) ?? 40,
             'value' => H::num($b['value'] ?? null, 'value', false, 0) ?? 0,
             'currency' => H::str($b['currency'] ?? null, 'currency', false, 8) ?? 'UZS',
-            'owner_id' => $b['owner_id'] ?? $user['id'],
+            'owner_id' => $ownerId,
             'notes' => H::str($b['notes'] ?? null, 'notes', false, 2000),
             'created_at' => H::now(), 'updated_at' => H::now(),
         ]);
@@ -87,6 +90,7 @@ class SalesController
             'actor_id' => $user['id'], 'actor_name' => $user['name'], 'created_at' => H::now(),
         ]);
         H::audit($ctx, 'lead.created', 'lead', $id);
+        (new NotificationDispatcher())->notifyMember($ctx->tenantId, $ownerId, 'info', 'Yangi lid', (string) $b['title'], '/app/leads');
         return H::json(['id' => $id], 201);
     }
 
@@ -94,8 +98,10 @@ class SalesController
     {
         $ctx->auth();
         H::requirePermission($ctx, 'crm.write');
-        if (!$this->exists($ctx, 'leads', $ctx->params['id'])) throw new ApiException(404, 'Лид не найден', 'not_found');
+        $lead = DB::selectOne('SELECT title, owner_id FROM leads WHERE id = ? AND tenant_id = ?', [$ctx->params['id'], $ctx->tenantId]);
+        if (!$lead) throw new ApiException(404, 'Лид не найден', 'not_found');
         $b = H::body($ctx);
+        $owner = H::memberRef($ctx, $b['owner_id'] ?? null, 'mas’ul xodim');
         DB::update(
             'UPDATE leads SET title=COALESCE(?,title), contact_name=?, email=?, phone=?, source=?, status=COALESCE(?,status), score=COALESCE(?,score), value=COALESCE(?,value), owner_id=?, notes=?, updated_at=? WHERE id=? AND tenant_id=?',
             [
@@ -107,12 +113,15 @@ class SalesController
                 $b['status'] ?? null,
                 H::num($b['score'] ?? null, 'score', false, 0, 100),
                 H::num($b['value'] ?? null, 'value', false, 0),
-                $b['owner_id'] ?? null,
+                $owner,
                 H::str($b['notes'] ?? null, 'notes', false, 2000),
                 H::now(), $ctx->params['id'], $ctx->tenantId,
             ]
         );
         H::audit($ctx, 'lead.updated', 'lead', $ctx->params['id']);
+        if ($owner && $owner !== $lead->owner_id) {
+            (new NotificationDispatcher())->notifyMember($ctx->tenantId, $owner, 'info', 'Lid sizga biriktirildi', (string) $lead->title, '/app/leads');
+        }
         return H::json(['ok' => true]);
     }
 
@@ -158,6 +167,7 @@ class SalesController
             ]);
         });
         H::audit($ctx, 'lead.converted', 'lead', $lead->id, ['dealId' => $dealId]);
+        (new NotificationDispatcher())->notifyMember($t, $user['id'], 'success', 'Lid bitimga aylantirildi', (string) $lead->title, '/app/deals');
         return H::json(['dealId' => $dealId], 201);
     }
 
@@ -229,9 +239,11 @@ class SalesController
     {
         $user = $ctx->auth();
         H::requirePermission($ctx, 'deals.write');
+        H::requireTenant($ctx);
         $t = $ctx->tenantId;
         $b = H::body($ctx);
-        $stageId = $b['stage_id'] ?? null;
+        $ownerId = H::memberRef($ctx, $b['owner_id'] ?? null, 'mas’ul xodim') ?? $user['id'];
+        $stageId = H::tenantRef($ctx, $b['stage_id'] ?? null, 'pipeline_stages', 'bosqich');
         if (!$stageId) {
             $first = DB::selectOne('SELECT id FROM pipeline_stages WHERE tenant_id = ? ORDER BY position LIMIT 1', [$t]);
             $stageId = $first->id ?? null;
@@ -241,14 +253,15 @@ class SalesController
         DB::table('deals')->insert([
             'id' => $id, 'tenant_id' => $t,
             'title' => H::str($b['title'] ?? null, 'title', true, 250),
-            'org_id' => $b['org_id'] ?? null, 'contact_id' => $b['contact_id'] ?? null,
+            'org_id' => H::tenantRef($ctx, $b['org_id'] ?? null, 'organizations', 'kompaniya'),
+            'contact_id' => H::tenantRef($ctx, $b['contact_id'] ?? null, 'contacts', 'kontakt'),
             'pipeline_id' => $stage->pipeline_id ?? null, 'stage_id' => $stageId,
             'amount' => H::num($b['amount'] ?? null, 'amount', false, 0) ?? 0,
             'currency' => H::str($b['currency'] ?? null, 'currency', false, 8) ?? 'UZS',
             'probability' => H::num($b['probability'] ?? null, 'probability', false, 0, 100) ?? $stage->probability ?? 10,
             'status' => H::oneOf($b['status'] ?? null, 'status', ['open', 'won', 'lost'], 'open'),
             'source' => H::str($b['source'] ?? null, 'source', false, 60),
-            'owner_id' => $b['owner_id'] ?? $user['id'],
+            'owner_id' => $ownerId,
             'expected_close_at' => H::str($b['expected_close_at'] ?? null, 'expected_close_at', false, 30),
             'created_at' => H::now(), 'updated_at' => H::now(),
         ]);
@@ -258,6 +271,7 @@ class SalesController
             'actor_name' => $user['name'], 'created_at' => H::now(),
         ]);
         H::audit($ctx, 'deal.created', 'deal', $id, ['title' => $b['title'] ?? null]);
+        (new NotificationDispatcher())->notifyMember($t, $ownerId, 'info', 'Yangi bitim', (string) $b['title'], '/app/deals');
         return H::json(['id' => $id], 201);
     }
 
@@ -269,7 +283,7 @@ class SalesController
         $t = $ctx->tenantId;
         $b = H::body($ctx);
         $stageId = H::str($b['stage_id'] ?? null, 'stage_id');
-        $deal = DB::selectOne('SELECT id, status FROM deals WHERE id = ? AND tenant_id = ?', [$ctx->params['id'], $t]);
+        $deal = DB::selectOne('SELECT id, title, status, owner_id FROM deals WHERE id = ? AND tenant_id = ?', [$ctx->params['id'], $t]);
         if (!$deal) throw new ApiException(404, 'Сделка не найдена', 'not_found');
         $stage = DB::selectOne('SELECT id, name, probability, kind FROM pipeline_stages WHERE id = ? AND tenant_id = ?', [$stageId, $t]);
         if (!$stage) throw new ApiException(404, 'Стадия не найдена', 'not_found');
@@ -288,6 +302,12 @@ class SalesController
             'actor_name' => $user['name'], 'created_at' => H::now(),
         ]);
         H::audit($ctx, 'deal.stage_changed', 'deal', $ctx->params['id'], ['to' => $stage->name, 'status' => $status]);
+        if ($status !== 'open' && $status !== $deal->status) {
+            $won = $status === 'won';
+            (new NotificationDispatcher())->notifyMember($t, $deal->owner_id, $won ? 'success' : 'warning', $won ? 'Bitim yutildi' : 'Bitim yo‘qotildi', (string) $deal->title, '/app/deals');
+        } elseif ($deal->owner_id !== $user['id']) {
+            (new NotificationDispatcher())->notifyMember($t, $deal->owner_id, 'info', 'Bitim bosqichi o‘zgardi', "{$deal->title}: {$stage->name}", '/app/deals');
+        }
         return H::json(['ok' => true, 'status' => $status, 'stage' => $stage->name]);
     }
 
@@ -301,11 +321,12 @@ class SalesController
             'UPDATE deals SET title=COALESCE(?,title), org_id=?, contact_id=?, amount=COALESCE(?,amount), currency=COALESCE(?,currency), probability=COALESCE(?,probability), owner_id=?, expected_close_at=?, lost_reason=?, updated_at=? WHERE id=? AND tenant_id=?',
             [
                 H::str($b['title'] ?? null, 'title', false, 250),
-                $b['org_id'] ?? null, $b['contact_id'] ?? null,
+                H::tenantRef($ctx, $b['org_id'] ?? null, 'organizations', 'kompaniya'),
+                H::tenantRef($ctx, $b['contact_id'] ?? null, 'contacts', 'kontakt'),
                 H::num($b['amount'] ?? null, 'amount', false, 0),
                 H::str($b['currency'] ?? null, 'currency', false, 8),
                 H::num($b['probability'] ?? null, 'probability', false, 0, 100),
-                $b['owner_id'] ?? null,
+                H::memberRef($ctx, $b['owner_id'] ?? null, 'mas’ul xodim'),
                 H::str($b['expected_close_at'] ?? null, 'expected_close_at', false, 30),
                 H::str($b['lost_reason'] ?? null, 'lost_reason', false, 200),
                 H::now(), $ctx->params['id'], $ctx->tenantId,

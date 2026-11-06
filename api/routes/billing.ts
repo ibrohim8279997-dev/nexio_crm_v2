@@ -186,7 +186,7 @@ export const financeRoutes = {
     requireAuth(ctx); requirePermission(ctx, 'finance.read')
     const t = ctx.tenantId!
     const revenue = await ctx.env.DB.prepare("SELECT COALESCE(SUM(amount),0) AS v, COUNT(*) AS c FROM orders WHERE tenant_id = ? AND status='fulfilled'").bind(t).first<any>()
-    const receivable = await ctx.env.DB.prepare("SELECT COALESCE(SUM(amount),0) AS v, COUNT(*) AS c FROM orders WHERE tenant_id = ? AND payment_status IN ('unpaid','overdue','partial') AND status NOT IN ('cancelled','refunded')").bind(t).first<any>()
+    const receivable = await ctx.env.DB.prepare("SELECT COALESCE(SUM(amount),0) AS v, COUNT(*) AS c FROM orders WHERE tenant_id = ? AND payment_status IN ('unpaid','overdue','partial') AND status IN ('confirmed','in_progress','fulfilled')").bind(t).first<any>()
     const paid = await ctx.env.DB.prepare("SELECT COALESCE(SUM(amount),0) AS v FROM orders WHERE tenant_id = ? AND payment_status='paid' AND status='fulfilled'").bind(t).first<any>()
     const planned = await ctx.env.DB.prepare("SELECT COALESCE(SUM(amount),0) AS v FROM orders WHERE tenant_id = ? AND status IN ('confirmed','in_progress')").bind(t).first<any>()
     const byMonth = await ctx.env.DB.prepare(

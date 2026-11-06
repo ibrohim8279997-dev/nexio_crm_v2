@@ -80,6 +80,7 @@ class CrmController
     {
         $user = $ctx->auth();
         H::requirePermission($ctx, 'crm.write');
+        H::requireTenant($ctx);
         $b = H::body($ctx);
         $id = H::newId('org');
         DB::table('organizations')->insert([
@@ -95,7 +96,7 @@ class CrmController
             'size' => H::str($b['size'] ?? null, 'size', false, 40),
             'status' => H::oneOf($b['status'] ?? null, 'status', ['active', 'prospect', 'churned'], 'prospect'),
             'tier' => H::oneOf($b['tier'] ?? null, 'tier', ['vip', 'standard', 'basic'], 'standard'),
-            'owner_id' => $b['owner_id'] ?? $user['id'],
+            'owner_id' => H::memberRef($ctx, $b['owner_id'] ?? null, 'mas’ul xodim') ?? $user['id'],
             'tags' => json_encode(is_array($b['tags'] ?? null) ? $b['tags'] : [], JSON_UNESCAPED_UNICODE),
             'created_at' => H::now(), 'updated_at' => H::now(),
         ]);
@@ -121,7 +122,7 @@ class CrmController
                 H::str($b['city'] ?? null, 'city', false, 80),
                 H::str($b['address'] ?? null, 'address', false, 250),
                 H::str($b['size'] ?? null, 'size', false, 40),
-                $b['status'] ?? null, $b['tier'] ?? null, $b['owner_id'] ?? null,
+                $b['status'] ?? null, $b['tier'] ?? null, H::memberRef($ctx, $b['owner_id'] ?? null, 'mas’ul xodim'),
                 H::str($b['notes'] ?? null, 'notes', false, 2000),
                 H::now(), $ctx->params['id'], $ctx->tenantId,
             ]
@@ -169,21 +170,14 @@ class CrmController
     {
         $user = $ctx->auth();
         H::requirePermission($ctx, 'crm.write');
+        H::requireTenant($ctx);
         $b = H::body($ctx);
-        if (!$ctx->tenantId) {
-            throw new ApiException(422, 'CRM tenant tanlanmagan', 'tenant_required');
-        }
-        if (!empty($b['org_id']) && !DB::selectOne('SELECT 1 AS x FROM organizations WHERE id = ? AND tenant_id = ?', [$b['org_id'], $ctx->tenantId])) {
-            throw new ApiException(422, 'Tanlangan kompaniya ushbu CRMga tegishli emas', 'invalid_org');
-        }
-        $ownerId = $b['owner_id'] ?? $user['id'];
-        if (!DB::selectOne('SELECT 1 AS x FROM users WHERE id = ?', [$ownerId])) {
-            throw new ApiException(422, 'Tanlangan mas’ul foydalanuvchi topilmadi', 'invalid_owner');
-        }
+        $orgId = H::tenantRef($ctx, $b['org_id'] ?? null, 'organizations', 'kompaniya');
+        $ownerId = H::memberRef($ctx, $b['owner_id'] ?? null, 'mas’ul xodim') ?? $user['id'];
         $id = H::newId('con');
         $phone = H::str($b['phone'] ?? null, 'phone', false, 40);
         DB::table('contacts')->insert([
-            'id' => $id, 'tenant_id' => $ctx->tenantId, 'org_id' => $b['org_id'] ?? null,
+            'id' => $id, 'tenant_id' => $ctx->tenantId, 'org_id' => $orgId,
             'first_name' => H::str($b['first_name'] ?? null, 'first_name', true, 80),
             'last_name' => H::str($b['last_name'] ?? null, 'last_name', false, 80),
             'position' => H::str($b['position'] ?? null, 'position', false, 120),
@@ -222,10 +216,10 @@ class CrmController
                 H::str($b['phone'] ?? null, 'phone', false, 40),
                 H::str($b['telegram'] ?? null, 'telegram', false, 60),
                 H::str($b['source'] ?? null, 'source', false, 60),
-                $b['status'] ?? null, $b['org_id'] ?? null,
+                $b['status'] ?? null, H::tenantRef($ctx, $b['org_id'] ?? null, 'organizations', 'kompaniya'),
                 !array_key_exists('consent_marketing', $b) ? null : (!empty($b['consent_marketing']) ? 1 : 0),
                 !array_key_exists('consent_calls', $b) ? null : (!empty($b['consent_calls']) ? 1 : 0),
-                $b['owner_id'] ?? null, H::now(), $ctx->params['id'], $ctx->tenantId,
+                H::memberRef($ctx, $b['owner_id'] ?? null, 'mas’ul xodim'), H::now(), $ctx->params['id'], $ctx->tenantId,
             ]
         );
         H::audit($ctx, 'contact.updated', 'contact', $ctx->params['id']);

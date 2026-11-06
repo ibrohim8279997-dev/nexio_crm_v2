@@ -22,7 +22,7 @@ export default function PlatformSettings() {
   return <div className="space-y-4 sm:space-y-5">
     <PageHeader title="Platforma sozlamalari" subtitle="Global provayderlar, xavfsiz kalitlar va platforma holatini boshqaring." breadcrumbs={[{ label: 'Nexio Platform', to: '/platform' }, { label: 'Sozlamalar' }]} />
     <Grid cols={4}><StatCard label="Kompaniyalar" value={num(settings.data?.counts.tenants ?? 0)} icon={<Layers className="size-4" />} /><StatCard label="Foydalanuvchilar" value={num(settings.data?.counts.users ?? 0)} icon={<Users className="size-4" />} tone="primary" /><StatCard label="Integratsiyalar" value={num(settings.data?.counts.integrations ?? 0)} icon={<Database className="size-4" />} /><StatCard label="AI agentlar" value={num(settings.data?.counts.agents ?? 0)} tone="ai" icon={<ShieldCheck className="size-4" />} /></Grid>
-    <SectionCard title="API kalitlari va provayderlar" subtitle="Kalitlar qayta ko‘rsatilmaydi va AES-GCM bilan shifrlangan holda saqlanadi.">
+    <SectionCard title="API kalitlari va provayderlar" subtitle="Kalitlar qayta ko‘rsatilmaydi va shifrlangan holda saqlanadi.">
       <QueryState loading={providers.isLoading} error={providers.error} onRetry={() => providers.refetch()} skeleton={<Card className="h-48 animate-pulse" />}>
         <div className="grid gap-3 lg:grid-cols-2">{['groq', 'telephony', 'payment', 'email'].map((provider) => {
           const stored = providers.data?.data.find((item) => item.provider === provider); const form = current(provider)

@@ -21,6 +21,12 @@ interface CallsResponse {
   byOutcome: { outcome: string; count: number }[]
 }
 
+function formatToolArgs(args: unknown): string {
+  if (args === null || args === undefined) return ''
+  if (typeof args !== 'object') return String(args)
+  return Object.entries(args).map(([key, value]) => `${key}: ${formatToolArgs(value)}`).join(' · ')
+}
+
 export default function AiCalls() {
   const [status, setStatus] = useState('')
   const [outcome, setOutcome] = useState('')
@@ -171,7 +177,7 @@ function CallDrawer({ call, onClose }: { call: Call | null; onClose: () => void 
               {d!.tools.map((t, i) => (
                 <li key={i} className="flex items-center gap-2 rounded-lg border border-line px-3 py-2 text-[11px]">
                   <code className="font-semibold text-ink">{t.tool}</code>
-                  <span className="min-w-0 flex-1 truncate text-muted">{JSON.stringify(t.args)}</span>
+                  <span className="min-w-0 flex-1 truncate text-muted">{formatToolArgs(t.args)}</span>
                   <Badge tone="success">{t.result}</Badge>
                 </li>
               ))}

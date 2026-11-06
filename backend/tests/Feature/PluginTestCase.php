@@ -55,11 +55,10 @@ abstract class PluginTestCase extends TestCase
         $now = '2026-01-01 00:00:00';
 
         foreach (['starter' => 'plan_starter', 'business' => 'plan_business', 'enterprise' => 'plan_enterprise'] as $code => $id) {
-            DB::insert(
-                'INSERT INTO plans (id, code, name, price_monthly, price_yearly, currency, seats, api_requests, ai_minutes, storage_gb, modules, is_public, position)
-                 VALUES (?,?,?,?,?,?,?,?,?,?,?,1,?)',
-                [$id, $code, ucfirst($code), 0, 0, 'USD', 5, 10000, 0, 5, '[]', 1]
-            );
+            DB::table('plans')->updateOrInsert(['id' => $id], [
+                'code' => $code, 'name' => ucfirst($code), 'price_monthly' => 0, 'price_yearly' => 0, 'currency' => 'USD',
+                'seats' => 5, 'api_requests' => 10000, 'ai_minutes' => 0, 'storage_gb' => 5, 'modules' => '[]', 'is_public' => 1, 'position' => 1,
+            ]);
         }
 
         $tenants = [

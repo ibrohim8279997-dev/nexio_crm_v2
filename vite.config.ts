@@ -12,6 +12,10 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react(), tailwindcss()],
+    // .tsx/.ts are the sources: the tracked .js twins are stale compiler output and must not shadow them.
+    resolve: {
+      extensions: ['.tsx', '.ts', '.jsx', '.js', '.mjs', '.json'],
+    },
     build: {
       outDir: 'dist',
       sourcemap: false,

@@ -23,7 +23,8 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
   let data: any = null
   try { data = text ? JSON.parse(text) : null } catch { data = text }
   if (!res.ok) {
-    const msg = data?.error?.message ?? (typeof data === 'string' && data ? data : 'Не удалось выполнить запрос')
+    const plainText = typeof data === 'string' && data && !data.trimStart().startsWith('<')
+    const msg = data?.error?.message ?? (plainText ? data : `Не удалось выполнить запрос (код ${res.status})`)
     throw new ApiError(res.status, msg, data?.error?.code ?? 'error', data?.error?.details)
   }
   return data as T
@@ -52,4 +53,9 @@ export function download(path: string) {
   document.body.appendChild(a)
   a.click()
   a.remove()
+}
+
+/** An empty select means "none": dropping it keeps '' away from columns that hold record ids. */
+export function withoutBlankIds(form: Record<string, unknown>): Record<string, unknown> {
+  return Object.fromEntries(Object.entries(form).filter(([key, value]) => !(key.endsWith('_id') && value === '')))
 }

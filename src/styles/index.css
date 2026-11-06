@@ -33,6 +33,10 @@ html {
   -webkit-text-size-adjust: 100%;
 }
 
+html:not([data-theme='dark']) .text-slate-400 {
+  color: #64748b;
+}
+
 body {
   margin: 0;
   background: var(--color-bg);

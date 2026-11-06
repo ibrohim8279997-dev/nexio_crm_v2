@@ -90,7 +90,7 @@ export default function Orders() {
         skeleton={<div className="grid grid-cols-2 gap-4 xl:grid-cols-4">{Array.from({ length: 4 }).map((_, i) => <Card key={i} className="h-24 animate-pulse" />)}</div>}>
         {s && (
           <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
-            <StatCard label="Всего заказов" value={num(s.total)} hint={`${s.draft} черновиков`} icon={<ShoppingCart className="size-4" />} />
+            <StatCard label="Всего заказов" value={num(s.total)} hint={`${num(s.draft)} черновиков`} icon={<ShoppingCart className="size-4" />} />
             <StatCard label="В работе" value={num(s.in_progress + s.confirmed)} hint="подтверждены и выполняются" icon={<FolderKanban className="size-4" />} tone="primary" />
             <StatCard label="Выполнено" value={compact(s.fulfilled_value)} hint={`${s.fulfilled} заказов`} icon={<CheckCircle2 className="size-4" />} tone="success" />
             <StatCard label="Дебиторка" value={compact(s.receivable)} hint="неоплаченные и просроченные" icon={<Wallet className="size-4" />} tone="warning" />
@@ -208,7 +208,7 @@ function CreateOrderModal({ open, onClose }: { open: boolean; onClose: () => voi
   return (
     <Modal open={open} onClose={onClose} title="Новый заказ" description="Заказ создаётся черновиком. Подтверждение зафиксирует состав и цену." size="lg"
       footer={<><Button variant="secondary" size="sm" onClick={onClose}>Отмена</Button>
-        <Button size="sm" loading={create.isPending}
+        <Button size="sm" loading={create.isPending} disabled={!items.some((i) => i.product_id)}
           onClick={() => create.mutate({ org_id: orgId || undefined, notes, items: items.filter((i) => i.product_id) })}>
           Создать черновик
         </Button></>}>

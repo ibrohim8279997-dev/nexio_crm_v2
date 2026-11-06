@@ -8,15 +8,18 @@ export function Modal({ open, onClose, title, description, children, footer, siz
   open: boolean; onClose: () => void; title: ReactNode; description?: ReactNode; children: ReactNode; footer?: ReactNode; size?: 'sm' | 'md' | 'lg' | 'xl'
 }) {
   const ref = useRef<HTMLDivElement>(null)
+  // Callers pass inline handlers: depending on onClose would re-run this on every keystroke and steal focus.
+  const onCloseRef = useRef(onClose)
+  onCloseRef.current = onClose
   useEffect(() => {
     if (!open) return
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onCloseRef.current() }
     document.addEventListener('keydown', onKey)
     const prev = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     ref.current?.querySelector<HTMLElement>('input,select,textarea,button')?.focus()
     return () => { document.removeEventListener('keydown', onKey); document.body.style.overflow = prev }
-  }, [open, onClose])
+  }, [open])
 
   if (!open) return null
   const width = { sm: 'max-w-sm', md: 'max-w-lg', lg: 'max-w-2xl', xl: 'max-w-4xl' }[size]

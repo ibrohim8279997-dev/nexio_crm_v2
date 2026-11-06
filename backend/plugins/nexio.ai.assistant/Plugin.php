@@ -6,6 +6,7 @@ use App\Plugins\Contracts\OfficialPlugin;
 use App\Plugins\PluginContext;
 use App\Services\GroqAi;
 use App\Support\ApiException;
+use Illuminate\Support\Facades\DB;
 
 class Plugin implements OfficialPlugin
 {
@@ -45,8 +46,45 @@ class Plugin implements OfficialPlugin
         }
         $system = trim((string) ($context->setting('system_prompt', '') ?: ''));
         $model = trim((string) ($context->setting('model', '') ?: '')) ?: null;
-        $result = (new GroqAi())->complete($system !== '' ? $system . "\n\nUser savoli:\n" . $prompt : $prompt, $model);
+        $crm = $this->crmContext($context);
+        $instruction = "\n\nCRM konteksti (faqat joriy kompaniya):\n" . json_encode($crm, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        $result = (new GroqAi())->complete($system !== '' ? $system . $instruction . "\n\nUser savoli:\n" . $prompt : $instruction . "\n\nUser savoli:\n" . $prompt, $model);
         return ['content' => $result['content'], 'model' => $result['model'], 'provider' => $result['provider'], 'usage' => $result['usage']];
+    }
+
+    /**
+     * Read-only, tenant-scoped CRM context for the assistant. No tenant id is accepted from input;
+     * PluginContext is the trusted source and every query carries it explicitly.
+     */
+    private function crmContext(PluginContext $context): array
+    {
+        $tenant = $context->tenantId;
+        return [
+            'contacts' => array_map(fn ($row) => (array) $row, DB::select(
+                'SELECT id, first_name, last_name, email, phone, status FROM contacts WHERE tenant_id = ? ORDER BY updated_at DESC LIMIT 50', [$tenant]
+            )),
+            'companies' => array_map(fn ($row) => (array) $row, DB::select(
+                'SELECT id, name, industry, status FROM organizations WHERE tenant_id = ? ORDER BY updated_at DESC LIMIT 50', [$tenant]
+            )),
+            'deals' => array_map(fn ($row) => (array) $row, DB::select(
+                'SELECT id, title, amount, currency, status, expected_close_at FROM deals WHERE tenant_id = ? ORDER BY updated_at DESC LIMIT 50', [$tenant]
+            )),
+            'orders' => array_map(fn ($row) => (array) $row, DB::select(
+                'SELECT id, number, status, amount, currency, payment_status, created_at FROM orders WHERE tenant_id = ? ORDER BY created_at DESC LIMIT 50', [$tenant]
+            )),
+            'tasks' => array_map(fn ($row) => (array) $row, DB::select(
+                'SELECT id, title, status, priority, due_date FROM tasks WHERE tenant_id = ? ORDER BY updated_at DESC LIMIT 50', [$tenant]
+            )),
+            'catalog' => array_map(fn ($row) => (array) $row, DB::select(
+                'SELECT id, name, sku, category, price, cost, currency, is_active FROM products WHERE tenant_id = ? ORDER BY name LIMIT 100', [$tenant]
+            )),
+            'inventory' => array_map(fn ($row) => (array) $row, DB::select(
+                'SELECT p.sku, p.name, w.code AS warehouse, s.quantity, s.reserved_quantity
+                   FROM inventory_stock s JOIN inventory_products p ON p.id = s.product_id AND p.tenant_id = s.tenant_id
+                   JOIN inventory_warehouses w ON w.id = s.warehouse_id AND w.tenant_id = s.tenant_id
+                  WHERE s.tenant_id = ? ORDER BY p.name LIMIT 200', [$tenant]
+            )),
+        ];
     }
 
     public function health(PluginContext $context): array

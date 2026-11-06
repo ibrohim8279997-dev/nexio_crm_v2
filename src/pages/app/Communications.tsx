@@ -4,7 +4,7 @@ import { Badge, Button, Card, PageHeader, QueryState, SectionCard, StatCard, Sta
 import { Field, Input, Select, Textarea } from '../../components/ui/form'
 import { Modal } from '../../components/ui/overlay'
 import { useApi, useApiMutation } from '../../lib/hooks'
-import { api } from '../../lib/api'
+import { api, withoutBlankIds } from '../../lib/api'
 import { label, num, relative } from '../../lib/format'
 import { useCan } from '../../lib/auth'
 import { useToast } from '../../components/ui/toast'
@@ -24,7 +24,7 @@ export default function Communications() {
   const toast = useToast()
   const q = useApi<CommResponse>(['comms', channel], `/api/v1/communications?channel=${channel}&limit=60`)
 
-  const send = useApiMutation((p: Record<string, unknown>) => api.post<{ delivered?: boolean; status?: string; note?: string }>('/api/v1/communications', p), {
+  const send = useApiMutation((p: Record<string, unknown>) => api.post<{ delivered?: boolean; status?: string; note?: string }>('/api/v1/communications', withoutBlankIds(p)), {
     invalidate: [['comms']], success: 'Сообщение сохранено в журнале',
     onDone: (r) => { setOpen(false); if (r.note && !r.delivered) toast.info('Provider holati', r.note) },
   })

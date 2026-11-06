@@ -137,14 +137,14 @@ function SidebarContent({ onNavigate, tenantName, logoText, logoUrl, showUpgrade
   const { t } = useI18n()
   const installed = useApi<{ data: InstalledPlugin[] }>(['plugins', 'installed'], '/api/v1/plugins/installed')
   const pluginItems = (installed.data?.data ?? [])
-    .filter((plugin) => plugin.status === 'enabled' && plugin.entitlement?.can_use !== false)
+    .filter((plugin) => ['enabled', 'installed'].includes(plugin.status) && plugin.entitlement?.can_use !== false)
     .flatMap((plugin) => (plugin.navigation ?? []).map((item) => ({ ...item, pluginId: plugin.plugin_id })))
   return (
     <div className="flex h-full flex-col">
       <div className="px-4 py-4">
         <Logo text={logoText} logoUrl={logoUrl} name={tenantName} />
       </div>
-      <nav className="no-scrollbar flex-1 space-y-5 overflow-y-auto px-2.5 pb-4" aria-label="Основная навигация">
+      <nav className="no-scrollbar flex-1 space-y-5 overflow-y-auto px-2.5 pb-4" aria-label={t('primaryNavigation')}>
         {GROUPS.map((g) => (
           <div key={g.label}>
             <p className="px-2.5 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">{t(groupKey(g.items[0].to))}</p>
@@ -172,7 +172,7 @@ function SidebarContent({ onNavigate, tenantName, logoText, logoUrl, showUpgrade
         ))}
         {pluginItems.length > 0 && (
           <div>
-            <p className="px-2.5 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">Plugins</p>
+            <p className="px-2.5 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">{t('pluginsHeading')}</p>
             <ul className="space-y-0.5">
               {pluginItems.map((item) => (
                 <li key={`${item.pluginId}:${item.path}`}>
@@ -193,7 +193,7 @@ function SidebarContent({ onNavigate, tenantName, logoText, logoUrl, showUpgrade
             <p className="px-2.5 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">Nexio Lab</p>
             <NavLink to="/platform" onClick={onNavigate}
               className={({ isActive }) => cn('flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-[13px] font-medium', isActive ? 'bg-violet-50 text-violet-700' : 'text-muted hover:bg-subtle hover:text-ink')}>
-              <ShieldCheck className={ICON} /> Platform Superadmin
+              <ShieldCheck className={ICON} /> {t('platformSuperadmin')}
             </NavLink>
           </div>
         )}
@@ -202,16 +202,16 @@ function SidebarContent({ onNavigate, tenantName, logoText, logoUrl, showUpgrade
         <div className="mx-3 mb-3 rounded-card border border-blue-100 bg-gradient-to-b from-blue-50 to-white p-3.5">
           <div className="flex items-center gap-2">
             <span className="inline-flex size-7 items-center justify-center rounded-lg bg-primary text-white"><Zap className="size-4" /></span>
-            <p className="text-[13px] font-bold text-ink">Upgrade to Pro</p>
+            <p className="text-[13px] font-bold text-ink">{t('upgrade')}</p>
           </div>
-          <p className="mt-1.5 text-[11px] leading-relaxed text-muted">Откройте AI-агентов, голосовые звонки и расширенную аналитику.</p>
+          <p className="mt-1.5 text-[11px] leading-relaxed text-muted">{t('upgradeDescription')}</p>
           <Link to="/app/billing" className="mt-2.5 block">
-            <Button size="sm" className="w-full">Смотреть тарифы</Button>
+            <Button size="sm" className="w-full">{t('viewPlans')}</Button>
           </Link>
         </div>
       )}
       <div className="border-t border-line px-4 py-3">
-        <p className="text-[10px] text-slate-400">Роль: {role ?? '—'}</p>
+        <p className="text-[10px] text-slate-400">{t('roleLabel')}: {role ?? '—'}</p>
       </div>
     </div>
   )
@@ -308,20 +308,38 @@ function NotificationsMenu() {
 function PersistentNotificationsMenu() {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
-  const query = useApi<{ data: { id: string; type: string; title: string; body: string | null; read_at: string | null }[]; unread: number }>(['notifications'], '/api/v1/notifications', { refetchInterval: 30_000 })
+  const navigate = useNavigate()
+  const toast = useToast()
+  const query = useApi<{ data: { id: string; type: string; title: string; body: string | null; action_url: string | null; read_at: string | null }[]; unread: number; telegram?: { configured: boolean; linked: boolean } }>(['notifications'], '/api/v1/notifications', { refetchInterval: 30_000 })
   const read = useApiMutation((id: string) => api.post(`/api/v1/notifications/${id}/read`), { invalidate: [['notifications']] })
   const readAll = useApiMutation(() => api.post('/api/v1/notifications/read-all'), { invalidate: [['notifications']] })
+  const [telegramWarning, setTelegramWarning] = useState<string | null>(null)
+  const linkTelegram = useApiMutation(() => api.post<{ url: string | null; warning: string | null }>('/api/v1/notifications/telegram-link'), {
+    invalidate: [['notifications']],
+    onDone: (result) => {
+      setTelegramWarning(result.warning)
+      if (!result.url) { toast.error('Telegram bot sozlanmagan', result.warning ?? 'Administrator bot token va nomini kiritishi kerak.'); return }
+      if (!window.open(result.url, '_blank')) window.location.assign(result.url)
+    },
+  })
+  const unlinkTelegram = useApiMutation(() => api.post('/api/v1/notifications/telegram-unlink'), { invalidate: [['notifications']], success: 'Telegram uzildi' })
   useEffect(() => {
     const onDoc = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false) }
     document.addEventListener('mousedown', onDoc)
     return () => document.removeEventListener('mousedown', onDoc)
   }, [])
   const items = query.data?.data ?? []
+  const unread = query.data?.unread ?? 0
+  const telegram = query.data?.telegram
+  const openItem = (id: string, isRead: boolean, url: string | null) => {
+    if (!isRead) read.mutate(id)
+    if (url) { setOpen(false); navigate(url) }
+  }
   return (
     <div className="relative" ref={ref}>
-      <IconButton onClick={() => setOpen((v) => !v)} title="Уведомления" className="relative">
+      <IconButton onClick={() => { if (!open) void query.refetch(); setOpen(!open) }} title="Уведомления" className="relative">
         <Bell className="size-[18px]" />
-        {!!query.data?.unread && <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-danger ring-2 ring-white" />}
+        {unread > 0 && <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[10px] font-bold leading-none text-white ring-2 ring-surface">{unread > 99 ? '99+' : unread}</span>}
       </IconButton>
       {open && <div className="absolute right-0 z-50 mt-1.5 w-80 overflow-hidden rounded-card border border-line bg-surface shadow-[var(--shadow-pop)]">
         <div className="flex items-center justify-between border-b border-line px-3.5 py-2.5">
@@ -330,17 +348,36 @@ function PersistentNotificationsMenu() {
         </div>
         <div className="max-h-80 overflow-y-auto">
           {items.length === 0 && <p className="px-3.5 py-6 text-center text-xs text-muted">Новых уведомлений нет</p>}
-          {items.map((n) => <button key={n.id} onClick={() => !n.read_at && read.mutate(n.id)} className={cn('flex w-full gap-2.5 border-b border-line/70 px-3.5 py-2.5 text-left last:border-0 hover:bg-subtle', !n.read_at && 'bg-blue-50/40')}>
+          {items.map((n) => <button key={n.id} onClick={() => openItem(n.id, !!n.read_at, n.action_url)} className={cn('flex w-full gap-2.5 border-b border-line/70 px-3.5 py-2.5 text-left last:border-0 hover:bg-subtle', !n.read_at && 'bg-blue-50/40')}>
             <span className={cn('mt-1 size-2 shrink-0 rounded-full', n.type === 'error' ? 'bg-danger' : n.type === 'warning' ? 'bg-warning' : 'bg-primary')} />
             <span className="min-w-0"><span className="block text-[12px] font-semibold text-ink">{n.title}</span><span className="block truncate text-[11px] text-muted">{n.body}</span></span>
           </button>)}
         </div>
+        <div className="flex items-center justify-between gap-2 border-t border-line px-3.5 py-2">
+          <p className="text-[11px] text-muted">{telegram?.linked ? 'Telegram ulangan' : 'Telegram’da ham oling'}</p>
+          {telegram?.linked
+            ? <button className="text-[11px] font-semibold text-primary hover:underline" onClick={() => unlinkTelegram.mutate(undefined)}>Uzish</button>
+            : <button className="text-[11px] font-semibold text-primary hover:underline" onClick={() => linkTelegram.mutate(undefined)}>Telegram’ni ulash</button>}
+        </div>
+        {telegramWarning && !telegram?.linked && <p role="alert" className="border-t border-line bg-amber-50 px-3.5 py-2 text-[11px] text-amber-900">{telegramWarning}</p>}
       </div>}
     </div>
   )
 }
 
 void NotificationsMenu
+
+function EmailVerificationBanner() {
+  const me = useApi<{ emailVerificationRequired?: boolean }>(['auth', 'verification'], '/api/v1/auth/me')
+  const resend = useApiMutation(() => api.post('/api/v1/auth/resend-verification'), { success: 'Xat qayta yuborildi' })
+  if (!me.data?.emailVerificationRequired) return null
+  return (
+    <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-card border border-amber-200 bg-amber-50 px-4 py-2.5">
+      <p className="text-[12px] text-amber-900">Emailingizni tasdiqlang: pochtangizga havola yuborildi.</p>
+      <Button size="sm" variant="secondary" loading={resend.isPending} onClick={() => resend.mutate(undefined)}>Qayta yuborish</Button>
+    </div>
+  )
+}
 
 function ProfileMenu() {
   const { user, logout } = useAuth()
@@ -461,6 +498,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </header>
 
         <main id="main" className="min-w-0 flex-1 px-3 py-4 pb-24 sm:px-4 sm:py-5 lg:pb-8">
+          <EmailVerificationBanner />
           {children}
         </main>
 

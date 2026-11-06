@@ -5,7 +5,7 @@ import { DataTable, Pagination, type Column } from '../../components/ui/table'
 import { Checkbox, Field, Input, SearchInput, Select } from '../../components/ui/form'
 import { Modal } from '../../components/ui/overlay'
 import { useApi, useApiMutation } from '../../lib/hooks'
-import { api, download } from '../../lib/api'
+import { api, download, withoutBlankIds } from '../../lib/api'
 import { label, num, relative } from '../../lib/format'
 import { useCan } from '../../lib/auth'
 
@@ -107,7 +107,7 @@ function CreateContactModal({ open, onClose }: { open: boolean; onClose: () => v
   const orgs = useApi<{ data: { id: string; name: string }[] }>(['orgs-mini'], '/api/v1/organizations?limit=100', { enabled: open })
   const empty = { first_name: '', last_name: '', position: '', email: '', phone: '', telegram: '', org_id: '', source: 'website', consent_calls: false, consent_marketing: false, is_primary: false }
   const [form, setForm] = useState(empty)
-  const create = useApiMutation((p: Record<string, unknown>) => api.post('/api/v1/contacts', p), {
+  const create = useApiMutation((p: Record<string, unknown>) => api.post('/api/v1/contacts', withoutBlankIds(p)), {
     invalidate: [['contacts'], ['orgs']], success: 'Контакт добавлен', onDone: () => { onClose(); setForm(empty) },
   })
   const set = (k: keyof typeof empty) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setForm({ ...form, [k]: e.target.value })

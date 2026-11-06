@@ -3,23 +3,39 @@
 namespace App\Services;
 
 use App\Support\ApiException;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 
 class GroqAi
 {
+    /** @return array{0: string, 1: ?string} A key saved in superadmin settings wins over the .env default. */
+    private function credentials(): array
+    {
+        try {
+            $row = DB::table('platform_provider_configs')->where('provider', 'groq')->where('enabled', 1)->first();
+            if ($row && $row->encrypted_secret) {
+                return [Crypt::decryptString($row->encrypted_secret), $row->model];
+            }
+        } catch (\Throwable) {
+            // An unreadable stored key (rotated APP_KEY) falls back to the environment key.
+        }
+        return [(string) config('ai.api_key'), null];
+    }
+
     public function complete(string $prompt, ?string $model = null): array
     {
-        $key = (string) config('ai.api_key');
+        [$key, $storedModel] = $this->credentials();
         if ($key === '') {
             throw new ApiException(503, 'Groq API key sozlanmagan', 'ai_not_configured');
         }
 
         $response = Http::withToken($key)
             ->acceptJson()
-            ->withOptions(['verify' => config('ai.ca_bundle') ?: true])
+            ->withOptions(config('ai.ca_bundle') ? ['verify' => config('ai.ca_bundle')] : [])
             ->timeout((int) config('ai.timeout', 30))
             ->post(config('ai.base_url') . '/chat/completions', [
-                'model' => $model ?: config('ai.model'),
+                'model' => $model ?: ($storedModel ?: config('ai.model')),
                 'messages' => [
                     ['role' => 'system', 'content' => 'You are Nexio CRM assistant. Be concise, accurate, and protect confidential CRM data.'],
                     ['role' => 'user', 'content' => $prompt],
@@ -62,7 +78,7 @@ class GroqAi
         $started = microtime(true);
         $response = Http::withToken($key)
             ->acceptJson()
-            ->withOptions(['verify' => config('ai.ca_bundle') ?: true])
+            ->withOptions(config('ai.ca_bundle') ? ['verify' => config('ai.ca_bundle')] : [])
             ->timeout((int) config('ai.timeout', 30))
             ->get(config('ai.base_url') . '/models');
         if ($response->failed()) {

@@ -54,8 +54,9 @@ export async function hashPassword(password) {
     const salt = crypto.getRandomValues(new Uint8Array(16));
     const saltHex = [...salt].map((x) => x.toString(16).padStart(2, '0')).join('');
     const key = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveBits']);
-    const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt, iterations: 120000, hash: 'SHA-256' }, key, 256);
-    return `pbkdf2$120000$${saltHex}$${bytesToB64(bits)}`;
+    const iterations = 100000;
+    const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt, iterations, hash: 'SHA-256' }, key, 256);
+    return `pbkdf2$${iterations}$${saltHex}$${bytesToB64(bits)}`;
 }
 export async function verifyPassword(password, stored) {
     const parts = stored.split('$');

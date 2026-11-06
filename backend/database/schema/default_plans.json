@@ -1,0 +1,229 @@
+{
+ "plans": [
+  {
+   "id": "plan_starter",
+   "code": "starter",
+   "name": "Starter",
+   "tagline": "Для небольших команд, которые только начинают",
+   "price_monthly": 49,
+   "price_yearly": 490,
+   "currency": "USD",
+   "seats": 5,
+   "api_requests": 10000,
+   "ai_minutes": 0,
+   "storage_gb": 5,
+   "modules": "[\"crm\",\"projects\"]",
+   "is_public": 1,
+   "position": 1
+  },
+  {
+   "id": "plan_business",
+   "code": "business",
+   "name": "Business",
+   "tagline": "Полный набор для растущей компании",
+   "price_monthly": 129,
+   "price_yearly": 1290,
+   "currency": "USD",
+   "seats": 25,
+   "api_requests": 100000,
+   "ai_minutes": 300,
+   "storage_gb": 50,
+   "modules": "[\"crm\",\"projects\",\"finance\",\"helpdesk\",\"analytics\",\"automations\",\"api\",\"portal\",\"documents\"]",
+   "is_public": 1,
+   "position": 2
+  },
+  {
+   "id": "plan_enterprise",
+   "code": "enterprise",
+   "name": "Enterprise",
+   "tagline": "Для крупных организаций и AI-продаж",
+   "price_monthly": 249,
+   "price_yearly": 2490,
+   "currency": "USD",
+   "seats": 150,
+   "api_requests": 2000000,
+   "ai_minutes": 3000,
+   "storage_gb": 500,
+   "modules": "[\"crm\",\"projects\",\"finance\",\"helpdesk\",\"analytics\",\"automations\",\"api\",\"ai_agents\",\"voice\",\"portal\",\"documents\"]",
+   "is_public": 1,
+   "position": 3
+  }
+ ],
+ "features": [
+  {
+   "id": "pf_0008",
+   "plan_id": "plan_business",
+   "label": "До 25 пользователей",
+   "included": 1,
+   "position": 0
+  },
+  {
+   "id": "pf_0009",
+   "plan_id": "plan_business",
+   "label": "Полная воронка продаж",
+   "included": 1,
+   "position": 1
+  },
+  {
+   "id": "pf_000a",
+   "plan_id": "plan_business",
+   "label": "Финансы и счета",
+   "included": 1,
+   "position": 2
+  },
+  {
+   "id": "pf_000b",
+   "plan_id": "plan_business",
+   "label": "Helpdesk и SLA",
+   "included": 1,
+   "position": 3
+  },
+  {
+   "id": "pf_000c",
+   "plan_id": "plan_business",
+   "label": "Расширенная аналитика",
+   "included": 1,
+   "position": 4
+  },
+  {
+   "id": "pf_000d",
+   "plan_id": "plan_business",
+   "label": "Автоматизации",
+   "included": 1,
+   "position": 5
+  },
+  {
+   "id": "pf_000e",
+   "plan_id": "plan_business",
+   "label": "API и вебхуки",
+   "included": 1,
+   "position": 6
+  },
+  {
+   "id": "pf_000f",
+   "plan_id": "plan_business",
+   "label": "Клиентский портал",
+   "included": 1,
+   "position": 7
+  },
+  {
+   "id": "pf_000g",
+   "plan_id": "plan_business",
+   "label": "White label / свой домен",
+   "included": 0,
+   "position": 8
+  },
+  {
+   "id": "pf_000h",
+   "plan_id": "plan_enterprise",
+   "label": "До 150 пользователей",
+   "included": 1,
+   "position": 0
+  },
+  {
+   "id": "pf_000i",
+   "plan_id": "plan_enterprise",
+   "label": "Мультивалютность и прайсы",
+   "included": 1,
+   "position": 1
+  },
+  {
+   "id": "pf_000j",
+   "plan_id": "plan_enterprise",
+   "label": "AI-агенты продаж",
+   "included": 1,
+   "position": 2
+  },
+  {
+   "id": "pf_000k",
+   "plan_id": "plan_enterprise",
+   "label": "Голосовые AI-звонки",
+   "included": 1,
+   "position": 3
+  },
+  {
+   "id": "pf_000l",
+   "plan_id": "plan_enterprise",
+   "label": "Кастомные домены",
+   "included": 1,
+   "position": 4
+  },
+  {
+   "id": "pf_000m",
+   "plan_id": "plan_enterprise",
+   "label": "Enterprise SSO",
+   "included": 1,
+   "position": 5
+  },
+  {
+   "id": "pf_000n",
+   "plan_id": "plan_enterprise",
+   "label": "Аудит и журналы",
+   "included": 1,
+   "position": 6
+  },
+  {
+   "id": "pf_000o",
+   "plan_id": "plan_enterprise",
+   "label": "SLA 99.9%",
+   "included": 1,
+   "position": 7
+  },
+  {
+   "id": "pf_000p",
+   "plan_id": "plan_enterprise",
+   "label": "Выделенный менеджер",
+   "included": 1,
+   "position": 8
+  },
+  {
+   "id": "pf_0001",
+   "plan_id": "plan_starter",
+   "label": "До 5 пользователей",
+   "included": 1,
+   "position": 0
+  },
+  {
+   "id": "pf_0002",
+   "plan_id": "plan_starter",
+   "label": "Контакты, лиды, сделки",
+   "included": 1,
+   "position": 1
+  },
+  {
+   "id": "pf_0003",
+   "plan_id": "plan_starter",
+   "label": "Канбан и таблицы",
+   "included": 1,
+   "position": 2
+  },
+  {
+   "id": "pf_0004",
+   "plan_id": "plan_starter",
+   "label": "Задачи и проекты",
+   "included": 1,
+   "position": 3
+  },
+  {
+   "id": "pf_0005",
+   "plan_id": "plan_starter",
+   "label": "AI-агенты и звонки",
+   "included": 0,
+   "position": 4
+  },
+  {
+   "id": "pf_0006",
+   "plan_id": "plan_starter",
+   "label": "Клиентский портал",
+   "included": 0,
+   "position": 5
+  },
+  {
+   "id": "pf_0007",
+   "plan_id": "plan_starter",
+   "label": "Email поддержка",
+   "included": 1,
+   "position": 6
+  }
+ ]
+}

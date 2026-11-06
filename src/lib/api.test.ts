@@ -1,11 +1,15 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { ApiError, api, qs } from './api'
+import { ApiError, api, qs, withoutBlankIds } from './api'
 
 afterEach(() => vi.restoreAllMocks())
 
 describe('api client', () => {
   it('builds query strings while omitting empty values', () => {
     expect(qs({ page: 2, search: 'inventory', empty: '', missing: null })).toBe('?page=2&search=inventory')
+  })
+
+  it('drops empty id fields but keeps other values', () => {
+    expect(withoutBlankIds({ name: 'Project', org_id: '', manager_id: 'usr_1', description: '' })).toEqual({ name: 'Project', manager_id: 'usr_1', description: '' })
   })
 
   it('sends JSON and parses successful responses', async () => {

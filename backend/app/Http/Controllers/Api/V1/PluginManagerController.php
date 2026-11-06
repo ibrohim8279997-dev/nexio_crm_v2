@@ -261,6 +261,9 @@ class PluginManagerController
         }
 
         PluginAudit::log($ctx, 'settings_updated', $pluginId, 'success', ['keys' => $saved], $installation->id);
+        if ($saved !== []) {
+            (new \App\Services\NotificationDispatcher())->pluginChanged($ctx->tenantId, $pluginId, 'info', 'Plugin sozlamalari yangilandi');
+        }
         return H::json(['ok' => true, 'saved' => $saved]);
     }
 

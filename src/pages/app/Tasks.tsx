@@ -5,7 +5,7 @@ import { DataTable, Pagination, type Column } from '../../components/ui/table'
 import { Field, Input, SearchInput, Select, Textarea } from '../../components/ui/form'
 import { Modal } from '../../components/ui/overlay'
 import { useApi, useApiMutation } from '../../lib/hooks'
-import { api } from '../../lib/api'
+import { api, withoutBlankIds } from '../../lib/api'
 import { label, num, shortDate } from '../../lib/format'
 import { useCan } from '../../lib/auth'
 
@@ -78,7 +78,7 @@ export default function Tasks() {
         {s && (
           <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
             <StatCard label="Мои задачи" value={num(s.mine)} hint="назначены на меня" icon={<ListChecks className="size-4" />} />
-            <StatCard label="В работе" value={num(s.in_progress)} hint={`${s.todo} к выполнению`} icon={<Clock className="size-4" />} tone="primary" />
+            <StatCard label="В работе" value={num(s.in_progress)} hint={`${num(s.todo)} к выполнению`} icon={<Clock className="size-4" />} tone="primary" />
             <StatCard label="Просрочено" value={num(s.overdue)} hint="срок истёк" icon={<AlertTriangle className="size-4" />} tone={s.overdue > 0 ? 'danger' : 'neutral'} />
             <StatCard label="Выполнено" value={num(s.done)} hint={`из ${s.total}`} icon={<CheckCircle2 className="size-4" />} tone="success" />
           </div>
@@ -115,7 +115,7 @@ function CreateTaskModal({ open, onClose }: { open: boolean; onClose: () => void
   const projects = useApi<{ data: { id: string; name: string }[] }>(['projects-mini'], '/api/v1/projects?limit=100', { enabled: open })
   const empty = { title: '', description: '', project_id: '', assignee_id: '', priority: 'medium', due_date: '' }
   const [form, setForm] = useState(empty)
-  const create = useApiMutation((p: Record<string, unknown>) => api.post('/api/v1/tasks', p), {
+  const create = useApiMutation((p: Record<string, unknown>) => api.post('/api/v1/tasks', withoutBlankIds(p)), {
     invalidate: [['tasks'], ['dashboard']], success: 'Задача создана', onDone: () => { onClose(); setForm(empty) },
   })
   const set = (k: keyof typeof empty) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => setForm({ ...form, [k]: e.target.value })

@@ -133,6 +133,40 @@ class H
         return $s;
     }
 
+    // ── references from request input ───────────────────────────────────────
+    /** A row of this tenant, or null when nothing was chosen. Missing and foreign ids look alike on purpose. */
+    public static function tenantRef(Ctx $ctx, mixed $v, string $table, string $label): ?string
+    {
+        $id = self::refId($v, $label);
+        if ($id !== null && !DB::table($table)->where('id', $id)->where('tenant_id', $ctx->tenantId)->exists()) {
+            throw self::invalidRef($label);
+        }
+        return $id;
+    }
+
+    /** An active member of this tenant, or null when nobody was chosen. */
+    public static function memberRef(Ctx $ctx, mixed $v, string $label): ?string
+    {
+        $id = self::refId($v, $label);
+        if ($id !== null && !DB::table('tenant_memberships')->where('user_id', $id)->where('tenant_id', $ctx->tenantId)->where('status', 'active')->exists()) {
+            throw self::invalidRef($label);
+        }
+        return $id;
+    }
+
+    /** A select left on "none" posts '', which is a value to the database: it fails the foreign key. */
+    private static function refId(mixed $v, string $label): ?string
+    {
+        if ($v !== null && !is_string($v) && !is_int($v)) throw self::invalidRef($label);
+        $id = trim((string) $v);
+        return $id === '' ? null : $id;
+    }
+
+    private static function invalidRef(string $label): ApiException
+    {
+        return new ApiException(422, "Tanlangan {$label} ushbu CRMga tegishli emas. Ro‘yxatdan qayta tanlang.", 'invalid_reference');
+    }
+
     /** @return array{0:int,1:int,2:int} [limit, page, offset] */
     public static function paginate(Ctx $ctx, int $defaultLimit = 25): array
     {
@@ -175,6 +209,12 @@ class H
         return Rbac::can($ctx->role, $permission);
     }
 
+    /** Platform operators pass permission checks without a tenant, but tenant records cannot exist without one. */
+    public static function requireTenant(Ctx $ctx): void
+    {
+        if (!$ctx->tenantId) throw new ApiException(422, 'CRM tenant tanlanmagan', 'tenant_required');
+    }
+
     public static function requirePlatform(Ctx $ctx): void
     {
         $ctx->auth();
@@ -198,6 +238,7 @@ class H
             'ip' => $ctx->request->ip(),
             'created_at' => self::now(),
         ]);
+        (new \App\Services\NotificationDispatcher())->fromAudit($ctx->tenantId, $ctx->user['id'] ?? null, $action, $meta);
     }
 
     /** Resolves the current request context (bound as a singleton by the middleware). */

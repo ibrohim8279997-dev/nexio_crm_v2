@@ -50,6 +50,15 @@ class ModulesController
             'billing_type' => H::oneOf($b['billing_type'] ?? null, 'billing_type', ['one_time', 'monthly', 'hourly'], 'one_time'),
             'is_active' => 1, 'created_at' => H::now(),
         ]);
+        // When Inventory is enabled, the CRM catalog product is also the inventory product.
+        // The tenant check is explicit so one company's catalog can never populate another's stock.
+        if (DB::table('plugin_installations')->where('tenant_id', $ctx->tenantId)->where('plugin_id', 'nexio.inventory')->where('status', 'enabled')->exists()) {
+            DB::insert(
+                'INSERT OR IGNORE INTO inventory_products (id, tenant_id, sku, name, unit, category, cost, min_stock, created_by, created_at, updated_at)
+                 VALUES (?,?,?,?,?,?,?,?,?,?,?)',
+                [$id, $ctx->tenantId, (string) ($b['sku'] ?? ''), (string) ($b['name'] ?? ''), (string) ($b['unit'] ?? 'pcs'), $b['category'] ?? null, (float) ($b['cost'] ?? 0), (float) ($b['min_stock'] ?? 0), $ctx->user['id'] ?? null, H::now(), H::now()]
+            );
+        }
         H::audit($ctx, 'product.created', 'product', $id);
         return H::json(['id' => $id], 201);
     }
@@ -94,12 +103,12 @@ class ModulesController
         );
         $total = DB::selectOne("SELECT COUNT(*) AS c FROM tickets k WHERE {$w}", $binds);
         $stats = DB::selectOne(
-            "SELECT COUNT(*) AS total, SUM(CASE WHEN status='open' THEN 1 ELSE 0 END) AS open,
-                    SUM(CASE WHEN status='pending' THEN 1 ELSE 0 END) AS pending,
-                    SUM(CASE WHEN status='resolved' THEN 1 ELSE 0 END) AS resolved,
-                    SUM(CASE WHEN status='closed' THEN 1 ELSE 0 END) AS closed,
-                    SUM(CASE WHEN priority IN ('high','urgent') AND status NOT IN ('resolved','closed') THEN 1 ELSE 0 END) AS escalated,
-                    SUM(CASE WHEN status NOT IN ('resolved','closed') AND sla_due_at < " . SqlDialect::now() . " THEN 1 ELSE 0 END) AS breached
+            "SELECT COUNT(*) AS total, COALESCE(SUM(CASE WHEN status='open' THEN 1 ELSE 0 END),0) AS open,
+                    COALESCE(SUM(CASE WHEN status='pending' THEN 1 ELSE 0 END),0) AS pending,
+                    COALESCE(SUM(CASE WHEN status='resolved' THEN 1 ELSE 0 END),0) AS resolved,
+                    COALESCE(SUM(CASE WHEN status='closed' THEN 1 ELSE 0 END),0) AS closed,
+                    COALESCE(SUM(CASE WHEN priority IN ('high','urgent') AND status NOT IN ('resolved','closed') THEN 1 ELSE 0 END),0) AS escalated,
+                    COALESCE(SUM(CASE WHEN status NOT IN ('resolved','closed') AND sla_due_at < " . SqlDialect::now() . " THEN 1 ELSE 0 END),0) AS breached
                FROM tickets WHERE tenant_id = ?",
             [$t]
         );
@@ -110,9 +119,11 @@ class ModulesController
     {
         $ctx->auth();
         H::requirePermission($ctx, 'crm.write');
+        H::requireTenant($ctx);
         $t = $ctx->tenantId;
         $b = H::body($ctx);
         $id = H::newId('tkt');
+        $assigneeId = H::memberRef($ctx, $b['assignee_id'] ?? null, 'ijrochi');
         $cnt = DB::selectOne('SELECT COUNT(*) AS c FROM tickets WHERE tenant_id = ?', [$t]);
         $priority = H::oneOf($b['priority'] ?? null, 'priority', ['low', 'normal', 'high', 'urgent'], 'normal');
         $slaHours = $priority === 'urgent' ? 4 : ($priority === 'high' ? 8 : ($priority === 'normal' ? 24 : 48));
@@ -120,28 +131,39 @@ class ModulesController
             'id' => $id, 'tenant_id' => $t,
             'number' => 'TCK-' . substr((string) (3000 + (int) ($cnt->c ?? 0) + 1), -4),
             'subject' => H::str($b['subject'] ?? null, 'subject', true, 250),
-            'org_id' => $b['org_id'] ?? null,
+            'org_id' => H::tenantRef($ctx, $b['org_id'] ?? null, 'organizations', 'kompaniya'),
             'requester' => H::str($b['requester'] ?? null, 'requester', false, 190),
             'channel' => H::oneOf($b['channel'] ?? null, 'channel', ['email', 'telegram', 'portal', 'phone'], 'email'),
             'priority' => $priority, 'status' => 'open',
             'sla_due_at' => gmdate('Y-m-d H:i:s', time() + $slaHours * 3600),
-            'assignee_id' => $b['assignee_id'] ?? null,
+            'assignee_id' => $assigneeId,
             'body' => H::str($b['body'] ?? null, 'body', false, 4000),
             'created_at' => H::now(), 'updated_at' => H::now(),
         ]);
         H::audit($ctx, 'ticket.created', 'ticket', $id, ['priority' => $priority]);
+        $notifier = new NotificationDispatcher();
+        $subject = (string) $b['subject'];
+        if ($assigneeId) {
+            $notifier->notifyMember($t, $assigneeId, 'info', 'Yangi murojaat', $subject, '/app/helpdesk');
+        } else {
+            $notifier->notifyAdmins($t, 'info', 'Yangi murojaat', $subject, '/app/helpdesk');
+        }
         return H::json(['id' => $id], 201);
     }
 
     public function setTicketStatus(Ctx $ctx)
     {
-        $ctx->auth();
+        $user = $ctx->auth();
         H::requirePermission($ctx, 'crm.write');
-        if (!$this->owned($ctx, 'tickets', $ctx->params['id'])) throw new ApiException(404, 'Обращение не найдено', 'not_found');
+        $ticket = DB::selectOne('SELECT subject, assignee_id FROM tickets WHERE id = ? AND tenant_id = ?', [$ctx->params['id'], $ctx->tenantId]);
+        if (!$ticket) throw new ApiException(404, 'Обращение не найдено', 'not_found');
         $b = H::body($ctx);
         $status = H::oneOf($b['status'] ?? null, 'status', ['open', 'pending', 'resolved', 'closed']);
         DB::update('UPDATE tickets SET status=?, updated_at=? WHERE id=? AND tenant_id=?', [$status, H::now(), $ctx->params['id'], $ctx->tenantId]);
         H::audit($ctx, 'ticket.status_changed', 'ticket', $ctx->params['id'], ['status' => $status]);
+        if ($ticket->assignee_id && $ticket->assignee_id !== $user['id']) {
+            (new NotificationDispatcher())->notifyMember($ctx->tenantId, $ticket->assignee_id, 'info', 'Murojaat holati o‘zgardi', "{$ticket->subject}: {$status}", '/app/helpdesk');
+        }
         return H::json(['ok' => true]);
     }
 
@@ -170,8 +192,12 @@ class ModulesController
     {
         $user = $ctx->auth();
         H::requirePermission($ctx, 'crm.write');
+        H::requireTenant($ctx);
         $b = H::body($ctx);
         $id = H::newId('com');
+        // Validated before dispatching: a refused request must not have sent anything.
+        $orgId = H::tenantRef($ctx, $b['org_id'] ?? null, 'organizations', 'kompaniya');
+        $contactId = H::tenantRef($ctx, $b['contact_id'] ?? null, 'contacts', 'kontakt');
         $channel = H::oneOf($b['channel'] ?? null, 'channel', ['email', 'telegram', 'whatsapp', 'phone', 'portal'], 'email');
         $subject = H::str($b['subject'] ?? null, 'subject', false, 250);
         $body = H::str($b['body'] ?? null, 'body', false, 8000);
@@ -189,7 +215,7 @@ class ModulesController
             'direction' => 'outbound',
             'subject' => $subject,
             'body' => $body,
-            'org_id' => $b['org_id'] ?? null, 'contact_id' => $b['contact_id'] ?? null,
+            'org_id' => $orgId, 'contact_id' => $contactId,
             'user_id' => $user['id'], 'status' => $status, 'created_at' => H::now(),
         ]);
         H::audit($ctx, 'communication.sent', 'communication', $id, ['channel' => $channel, 'delivered' => $delivered]);
@@ -274,13 +300,15 @@ class ModulesController
     {
         $user = $ctx->auth();
         H::requirePermission($ctx, 'crm.write');
+        H::requireTenant($ctx);
         $b = H::body($ctx);
         $id = H::newId('doc');
         DB::table('documents')->insert([
             'id' => $id, 'tenant_id' => $ctx->tenantId,
             'name' => H::str($b['name'] ?? null, 'name', true, 250),
             'kind' => H::oneOf($b['kind'] ?? null, 'kind', ['proposal', 'contract', 'invoice', 'act', 'other'], 'proposal'),
-            'org_id' => $b['org_id'] ?? null, 'order_id' => $b['order_id'] ?? null,
+            'org_id' => H::tenantRef($ctx, $b['org_id'] ?? null, 'organizations', 'kompaniya'),
+            'order_id' => H::tenantRef($ctx, $b['order_id'] ?? null, 'orders', 'buyurtma'),
             'version' => 1, 'size_kb' => 0, 'status' => 'draft',
             'created_by' => $user['id'], 'created_at' => H::now(), 'updated_at' => H::now(),
         ]);

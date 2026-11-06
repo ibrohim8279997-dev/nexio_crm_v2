@@ -57,7 +57,7 @@ export function SectionCard({ title, subtitle, action, children, className, body
       {(title || action) && (
         <div className="flex items-start justify-between gap-3 border-b border-line px-4 py-3 sm:px-5">
           <div className="min-w-0">
-            {title && <h3 className="truncate text-[15px] font-semibold text-ink">{title}</h3>}
+            {title && <h2 className="truncate text-[15px] font-semibold text-ink">{title}</h2>}
             {subtitle && <p className="mt-0.5 text-xs text-muted">{subtitle}</p>}
           </div>
           {action && <div className="shrink-0">{action}</div>}
@@ -114,7 +114,7 @@ export function Avatar({ name, color, size = 32, className }: { name?: string | 
 export function ProgressBar({ value, tone = 'primary', className }: { value: number; tone?: 'primary' | 'success' | 'warning' | 'ai'; className?: string }) {
   const bg = { primary: 'bg-primary', success: 'bg-success', warning: 'bg-warning', ai: 'bg-ai' }[tone]
   return (
-    <div className={cn('h-1.5 w-full overflow-hidden rounded-full bg-slate-100', className)} role="progressbar" aria-valuenow={Math.round(value)} aria-valuemin={0} aria-valuemax={100}>
+    <div className={cn('h-1.5 w-full overflow-hidden rounded-full bg-slate-100', className)} role="progressbar" aria-label="Progress" aria-valuenow={Math.round(value)} aria-valuemin={0} aria-valuemax={100}>
       <div className={cn('h-full rounded-full transition-[width] duration-300', bg)} style={{ width: `${Math.min(100, Math.max(0, value))}%` }} />
     </div>
   )

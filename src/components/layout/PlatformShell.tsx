@@ -35,7 +35,7 @@ const PLATFORM_LABELS: Record<string, string> = {
 function Nav({ onNavigate }: { onNavigate?: () => void }) {
   const { t } = useI18n()
   return (
-    <nav className="no-scrollbar flex-1 space-y-0.5 overflow-y-auto px-2.5 py-3" aria-label="Навигация платформы">
+    <nav className="no-scrollbar flex-1 space-y-0.5 overflow-y-auto px-2.5 py-3" aria-label={t('platformNavigation')}>
       {NAV.map((n) => (
         <NavLink key={n.to} to={n.to} end={n.end} onClick={onNavigate}
           className={({ isActive }) => cn('flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-[13px] font-medium transition-colors',
@@ -68,7 +68,7 @@ export function PlatformShell({ children }: { children: ReactNode }) {
         </div>
         <Nav />
         <div className="border-t border-line p-3">
-          <Link to="/app"><Button variant="secondary" size="sm" className="w-full"><ArrowLeft className="size-3.5" /> В рабочее пространство</Button></Link>
+          <Link to="/app"><Button variant="secondary" size="sm" className="w-full"><ArrowLeft className="size-3.5" /> {t('platformWorkspace')}</Button></Link>
         </div>
       </aside>
 
@@ -78,7 +78,7 @@ export function PlatformShell({ children }: { children: ReactNode }) {
           <div className="absolute inset-y-0 left-0 flex w-[280px] flex-col border-r border-line bg-surface">
             <div className="flex items-center justify-between p-3">
               <span className="flex items-center gap-2 font-bold text-ink"><ShieldCheck className="size-4 text-ai" /> Nexio Platform</span>
-              <IconButton onClick={() => setOpen(false)} title="Закрыть"><X className="size-4" /></IconButton>
+              <IconButton onClick={() => setOpen(false)} title={t('close')}><X className="size-4" /></IconButton>
             </div>
             <Nav onNavigate={() => setOpen(false)} />
           </div>
@@ -88,14 +88,14 @@ export function PlatformShell({ children }: { children: ReactNode }) {
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-40 flex h-14 items-center gap-2 border-b border-line bg-surface/85 px-3 backdrop-blur-md sm:px-4">
           <IconButton className="lg:hidden" onClick={() => setOpen(true)} title="Меню"><Menu className="size-5" /></IconButton>
-          <p className="text-[13px] font-semibold text-ink">Панель оператора Nexio Lab</p>
+          <p className="text-[13px] font-semibold text-ink">{t('platformPanel')}</p>
           <div className="ml-auto flex items-center gap-2">
             <ThemeToggle />
             <span className="hidden items-center gap-1.5 rounded-full border border-violet-100 bg-violet-50 px-2.5 py-1 text-[11px] font-semibold text-violet-700 sm:inline-flex">
               <ShieldCheck className="size-3.5" /> {user.platform_role ?? t('platformSuperadmin')}
             </span>
             <Avatar name={user.name} color={user.avatar_color} size={30} />
-            <IconButton title="Выйти" onClick={async () => { await logout(); navigate('/login') }}><LogOut className="size-4" /></IconButton>
+            <IconButton title={t('logout')} onClick={async () => { await logout(); navigate('/login') }}><LogOut className="size-4" /></IconButton>
           </div>
         </header>
         <main className="min-w-0 flex-1 px-3 py-4 sm:px-4 sm:py-5">{children}</main>

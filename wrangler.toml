@@ -11,8 +11,8 @@ run_worker_first = true
 
 [[d1_databases]]
 binding = "DB"
-database_name = "nexio-crm"
-database_id = "local-nexio-crm"
+database_name = "nexio-crm-prod"
+database_id = "521c8bab-09d0-4ae1-8df4-5cdc2b70550c"
 migrations_dir = "migrations"
 
 [vars]
