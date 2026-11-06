@@ -16,7 +16,7 @@ class Manifest
     public const ALLOWED = [
         'id', 'name', 'display_name', 'version', 'type', 'author', 'category', 'description', 'tagline',
         'icon', 'homepage', 'api_version', 'min_nexio_version', 'dependencies', 'permissions', 'hooks',
-        'settings_schema', 'feature_flags', 'usage_metrics', 'runtime', 'signature', 'pricing', 'entry',
+        'settings_schema', 'feature_flags', 'usage_metrics', 'navigation', 'runtime', 'signature', 'pricing', 'entry',
         'data_tables',
     ];
 
@@ -60,18 +60,27 @@ class Manifest
         'crm.clients.write' => false,
         'crm.clients.delete' => true,
         'crm.clients.export' => true,
+        'crm.read' => false,
         'crm.contacts.read' => false,
         'crm.contacts.write' => false,
         'crm.orders.read' => false,
         'crm.orders.create' => false,
         'crm.orders.update' => false,
         'crm.products.read' => false,
+        // AI assistant
+        'ai.read' => false,
+        'ai.write' => false,
         // Delivery (universal layer)
         'delivery.read' => false,
         'delivery.create' => false,
         'delivery.update' => false,
         'delivery.cancel' => false,
         'delivery.track' => false,
+        'inventory.read' => false,
+        'inventory.products.write' => false,
+        'inventory.warehouses.write' => false,
+        'inventory.movements.write' => false,
+        'inventory.reservations.write' => false,
         // Telephony
         'telephony.calls.read' => false,
         'telephony.calls.create' => false,
@@ -282,6 +291,7 @@ class Manifest
             'permissions' => self::permissionsOf($m),
             'dependencies' => self::dependenciesOf($m),
             'usage_metrics' => self::metricsOf($m),
+            'navigation' => self::navigationOf($m),
             'data_tables' => self::dataTablesOf($m),
             'hooks' => array_values(array_filter((array) ($m['hooks'] ?? []), 'is_string')),
             'settings_schema' => is_array($m['settings_schema'] ?? null) ? $m['settings_schema'] : [],
@@ -289,5 +299,28 @@ class Manifest
             'runtime' => is_array($m['runtime'] ?? null) ? $m['runtime'] : [],
             'entry' => isset($m['runtime']['entry']) ? (string) $m['runtime']['entry'] : null,
         ];
+    }
+
+    /** Shared CRM navigation declared by the plugin manifest, never executable code. */
+    public static function navigationOf(array $m): array
+    {
+        $out = [];
+        foreach ((array) ($m['navigation'] ?? []) as $item) {
+            if (!is_array($item) || empty($item['path']) || empty($item['label'])) {
+                continue;
+            }
+            $path = (string) $item['path'];
+            if (!str_starts_with($path, '/app/') || str_contains($path, '?') || str_contains($path, '#')) {
+                continue;
+            }
+            $out[] = [
+                'path' => $path,
+                'label' => (string) $item['label'],
+                'icon' => preg_replace('/[^a-z0-9_-]/i', '', (string) ($item['icon'] ?? 'plug')),
+                'order' => (int) ($item['order'] ?? 100),
+            ];
+        }
+        usort($out, fn (array $a, array $b) => $a['order'] <=> $b['order']);
+        return $out;
     }
 }

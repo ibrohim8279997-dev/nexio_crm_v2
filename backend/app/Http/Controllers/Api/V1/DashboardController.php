@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Support\Ctx;
 use App\Support\H;
+use App\Support\SqlDialect;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController
@@ -64,12 +65,12 @@ class DashboardController
         $arpu = $wonCount > 0 ? ($revenue['v'] ?? 0) / $wonCount : 0;
 
         $monthly = DB::select(
-            "SELECT strftime('%Y-%m', created_at) AS ym,
+            "SELECT " . SqlDialect::month('created_at') . " AS ym,
                     COALESCE(SUM(CASE WHEN status='won' THEN amount END),0) AS won,
                     COALESCE(SUM(CASE WHEN status IN ('open','won') THEN amount END),0) AS pipeline,
                     COUNT(*) AS total,
                     SUM(CASE WHEN status='won' THEN 1 ELSE 0 END) AS won_count
-               FROM deals WHERE tenant_id = ? AND created_at >= datetime('now','-12 months')
+               FROM deals WHERE tenant_id = ? AND created_at >= " . SqlDialect::ago(12, 'month') . "
               GROUP BY ym ORDER BY ym",
             [$t]
         );
@@ -91,7 +92,7 @@ class DashboardController
                     SUM(CASE WHEN d.status='won' THEN 1 ELSE 0 END) AS won_count
                FROM users u
                JOIN tenant_memberships m ON m.user_id = u.id AND m.tenant_id = ?
-               LEFT JOIN deals d ON d.owner_id = u.id AND d.created_at >= datetime('now','-12 months')
+               LEFT JOIN deals d ON d.owner_id = u.id AND d.created_at >= " . SqlDialect::ago(12, 'month') . "
               GROUP BY u.id ORDER BY won_value DESC",
             [$t]
         );
@@ -172,6 +173,85 @@ class DashboardController
         return H::json(['tasks' => $tasks, 'orders' => $orders, 'activity' => $activity, 'leads' => $recentLeads]);
     }
 
+    /**
+     * Authenticated employee's daily workspace. This deliberately composes existing CRM tables
+     * instead of introducing a second task or calendar store.
+     */
+    public function myDay(Ctx $ctx)
+    {
+        $user = $ctx->auth();
+        $tenant = $ctx->tenantId;
+        $timezone = (string) (DB::selectOne('SELECT timezone FROM tenants WHERE id = ?', [$tenant])->timezone ?? 'UTC');
+        try { $zone = new \DateTimeZone($timezone ?: 'UTC'); } catch (\Throwable) { $zone = new \DateTimeZone('UTC'); $timezone = 'UTC'; }
+        $localNow = new \DateTimeImmutable('now', $zone);
+        $today = $localNow->format('Y-m-d');
+        $dayStart = $localNow->setTime(0, 0, 0)->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:s');
+        $dayEnd = $localNow->setTime(23, 59, 59)->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:s');
+
+        $tasks = DB::select(
+            "SELECT t.id, t.title, t.description, t.status, t.priority, t.due_date, t.assignee_id,
+                    p.name AS project_name
+               FROM tasks t LEFT JOIN projects p ON p.id = t.project_id
+              WHERE t.tenant_id = ? AND t.status != 'done'
+                AND (t.assignee_id = ? OR t.assignee_id IS NULL)
+                AND (t.due_date IS NULL OR t.due_date <= ?)
+              ORDER BY CASE WHEN t.due_date IS NULL THEN 1 ELSE 0 END, t.due_date,
+                       CASE t.priority WHEN 'critical' THEN 0 WHEN 'high' THEN 1 WHEN 'medium' THEN 2 ELSE 3 END
+              LIMIT 50",
+            [$tenant, $user['id'], $dayEnd]
+        );
+
+        $calls = DB::select(
+            "SELECT c.id, c.phone, c.status, c.outcome, c.started_at, c.duration_sec,
+                    a.name AS agent_name, ct.first_name, ct.last_name
+               FROM ai_calls c
+               LEFT JOIN ai_agents a ON a.id = c.agent_id
+               LEFT JOIN contacts ct ON ct.id = c.contact_id
+              WHERE c.tenant_id = ? AND c.started_at BETWEEN ? AND ?
+              ORDER BY c.started_at LIMIT 50",
+            [$tenant, $dayStart, $dayEnd]
+        );
+
+        $leads = DB::select(
+            "SELECT id, title, status, score, source, owner_id, created_at
+               FROM leads WHERE tenant_id = ? AND status IN ('new','contacted','qualified')
+              ORDER BY CASE status WHEN 'new' THEN 0 WHEN 'qualified' THEN 1 ELSE 2 END, score DESC, created_at DESC
+              LIMIT 25",
+            [$tenant]
+        );
+
+        $deals = DB::select(
+            "SELECT d.id, d.title, d.amount, d.currency, d.status, d.expected_close_at,
+                    d.owner_id, o.name AS org_name
+               FROM deals d LEFT JOIN organizations o ON o.id = d.org_id
+              WHERE d.tenant_id = ? AND d.status = 'open'
+                AND d.expected_close_at IS NOT NULL AND d.expected_close_at <= ?
+              ORDER BY d.expected_close_at LIMIT 25",
+            [$tenant, $dayEnd]
+        );
+
+        $suggestions = [];
+        if (count($tasks) > 0) {
+            $suggestions[] = ['type' => 'task', 'title' => 'Bugungi va kechikkan vazifalarni yopish', 'reason' => count($tasks) . ' ta bajarilmagan vazifa bor.', 'target_id' => $tasks[0]->id, 'ai_generated' => false];
+        }
+        if (count($leads) > 0) {
+            $suggestions[] = ['type' => 'lead', 'title' => 'Yangi leadlarga javob berish', 'reason' => count($leads) . ' ta lead e’tibor kutmoqda.', 'target_id' => $leads[0]->id, 'ai_generated' => false];
+        }
+        if (count($deals) > 0) {
+            $suggestions[] = ['type' => 'deal', 'title' => 'Muddati kelgan dealni yangilash', 'reason' => count($deals) . ' ta dealning kutilgan yopilish sanasi o‘tgan.', 'target_id' => $deals[0]->id, 'ai_generated' => false];
+        }
+
+        return H::json([
+            'date' => $today,
+            'tasks' => $tasks,
+            'calls' => array_map(fn ($call) => [...(array) $call, 'contact_name' => trim(($call->first_name ?? '') . ' ' . ($call->last_name ?? '')) ?: null], $calls),
+            'leads' => $leads,
+            'deals' => $deals,
+            'suggestions' => $suggestions,
+            'timezone' => $timezone,
+        ]);
+    }
+
     /** Full analytics view: funnel, reasons, cycle time, managers, cohorts. */
     public function analytics(Ctx $ctx)
     {
@@ -209,9 +289,9 @@ class DashboardController
             [$t, $lo, $hi]
         );
         $cohorts = DB::select(
-            "SELECT strftime('%Y-%m', l.created_at) AS ym, COUNT(*) AS leads,
+            "SELECT " . SqlDialect::month('l.created_at') . " AS ym, COUNT(*) AS leads,
                     SUM(CASE WHEN l.status='converted' THEN 1 ELSE 0 END) AS converted
-               FROM leads l WHERE l.tenant_id = ? AND l.created_at >= datetime('now','-6 months')
+               FROM leads l WHERE l.tenant_id = ? AND l.created_at >= " . SqlDialect::ago(6, 'month') . "
               GROUP BY ym ORDER BY ym",
             [$t]
         );
@@ -221,7 +301,7 @@ class DashboardController
             [$t, $lo, $hi]
         );
         $aiByHour = DB::select(
-            "SELECT CAST(strftime('%H', started_at) AS INTEGER) AS hour, COUNT(*) AS calls,
+            "SELECT " . SqlDialect::hour('started_at') . " AS hour, COUNT(*) AS calls,
                     SUM(CASE WHEN outcome IN ('interested','qualified') THEN 1 ELSE 0 END) AS positive
                FROM ai_calls WHERE tenant_id = ? AND started_at IS NOT NULL GROUP BY hour ORDER BY hour",
             [$t]
@@ -254,10 +334,50 @@ class DashboardController
         $leads = DB::select('SELECT id, title, COALESCE(source, status) AS subtitle FROM leads WHERE tenant_id=? AND title LIKE ? LIMIT 5', [$t, $s]);
         $orders = DB::select('SELECT id, number AS title, status AS subtitle FROM orders WHERE tenant_id=? AND number LIKE ? LIMIT 5', [$t, $s]);
         $projects = DB::select('SELECT id, name AS title, status AS subtitle FROM projects WHERE tenant_id=? AND name LIKE ? LIMIT 5', [$t, $s]);
+        $activities = DB::select(
+            "SELECT id, subject AS title, body AS subtitle, entity_type, entity_id
+               FROM activities WHERE tenant_id=? AND (subject LIKE ? OR body LIKE ?) ORDER BY created_at DESC LIMIT 8",
+            [$t, $s, $s]
+        );
+        $calls = DB::select(
+            "SELECT id, COALESCE(summary, phone, 'AI call') AS title, transcript, contact_id
+               FROM ai_calls WHERE tenant_id=? AND (summary LIKE ? OR transcript LIKE ? OR phone LIKE ?) ORDER BY created_at DESC LIMIT 8",
+            [$t, $s, $s, $s]
+        );
+        // Natural-language queries are split into meaningful terms so “customers who asked
+        // for a proposal” can still find a transcript containing only “proposal”.
+        $stop = ['the', 'and', 'who', 'for', 'with', 'that', 'this', 'customers', 'mijozlar', 'клиенты', 'которые', 'uchun', 'bilan'];
+        $terms = array_values(array_filter(array_unique(preg_split('/[^\p{L}\p{N}]+/u', mb_strtolower($q)) ?: []), fn ($term) => mb_strlen($term) >= 3 && !in_array($term, $stop, true)));
+        foreach (array_slice($terms, 0, 6) as $term) {
+            $termLike = H::like($term);
+            $activities = array_merge($activities, DB::select(
+                "SELECT id, subject AS title, body AS subtitle, entity_type, entity_id
+                   FROM activities WHERE tenant_id=? AND (subject LIKE ? OR body LIKE ?) ORDER BY created_at DESC LIMIT 8",
+                [$t, $termLike, $termLike]
+            ));
+            $calls = array_merge($calls, DB::select(
+                "SELECT id, COALESCE(summary, phone, 'AI call') AS title, transcript, contact_id
+                   FROM ai_calls WHERE tenant_id=? AND (summary LIKE ? OR transcript LIKE ? OR phone LIKE ?) ORDER BY created_at DESC LIMIT 8",
+                [$t, $termLike, $termLike, $termLike]
+            ));
+        }
         $map = fn (array $rows, string $type) => array_map(fn ($r) => [...(array) $r, 'type' => $type], $rows);
+        $evidence = fn (string $text) => mb_substr(preg_replace('/\s+/', ' ', $text) ?? '', 0, 180);
+        $activitySeen = [];
+        $activityHits = array_values(array_filter(array_map(fn ($r) => [...(array) $r, 'subtitle' => $evidence((string) ($r->subtitle ?? '')), 'type' => 'activity'], $activities), function ($r) use (&$activitySeen) {
+            if (isset($activitySeen[$r['id']])) return false;
+            $activitySeen[$r['id']] = true;
+            return true;
+        }));
+        $callSeen = [];
+        $callHits = array_values(array_filter(array_map(fn ($r) => ['id' => $r->id, 'title' => $r->title, 'subtitle' => $evidence((string) ($r->transcript ?? '')), 'type' => 'call'], $calls), function ($r) use (&$callSeen) {
+            if (isset($callSeen[$r['id']])) return false;
+            $callSeen[$r['id']] = true;
+            return true;
+        }));
         return H::json(['results' => array_merge(
             $map($orgs, 'company'), $map($contacts, 'contact'), $map($deals, 'deal'),
-            $map($leads, 'lead'), $map($orders, 'order'), $map($projects, 'project'),
+            $map($leads, 'lead'), $map($orders, 'order'), $map($projects, 'project'), $activityHits, $callHits,
         )]);
     }
 }

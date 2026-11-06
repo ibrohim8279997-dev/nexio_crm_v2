@@ -19,6 +19,26 @@ class OpsController
         return (bool) DB::selectOne("SELECT 1 AS x FROM {$table} WHERE id = ? AND tenant_id = ?", [$id, $ctx->tenantId]);
     }
 
+    /** Optional project reference: '' → null; must belong to the tenant (avoids FK 500s). */
+    private function projectRef(Ctx $ctx, mixed $v): ?string
+    {
+        $id = H::str($v, 'project_id', false, 60);
+        if ($id !== null && !$this->owned($ctx, 'projects', $id)) {
+            throw new ApiException(400, 'Проект не найден', 'bad_request');
+        }
+        return $id;
+    }
+
+    /** Optional user reference: '' → null; must be a member of the tenant (avoids FK 500s). */
+    private function memberRef(Ctx $ctx, mixed $v, string $field): ?string
+    {
+        $id = H::str($v, $field, false, 60);
+        if ($id !== null && !DB::selectOne('SELECT 1 AS x FROM tenant_memberships WHERE user_id = ? AND tenant_id = ?', [$id, $ctx->tenantId])) {
+            throw new ApiException(400, 'Исполнитель не найден', 'bad_request');
+        }
+        return $id;
+    }
+
     // ── Orders ───────────────────────────────────────────────────────────────
     public function listOrders(Ctx $ctx)
     {
@@ -329,7 +349,7 @@ class OpsController
         if ($projectId) { $where[] = 't.project_id = ?'; $binds[] = $projectId; }
         if ($q) { $where[] = 't.title LIKE ?'; $binds[] = "%{$q}%"; }
         if ($scope === 'mine') { $where[] = 't.assignee_id = ?'; $binds[] = $user['id']; }
-        if ($scope === 'overdue') { $where[] = "t.status != 'done' AND t.due_date < date('now')"; }
+        if ($scope === 'overdue') { $where[] = "t.status != 'done' AND t.due_date < CURRENT_DATE"; }
         $w = implode(' AND ', $where);
         $rows = DB::select(
             "SELECT t.*, u.name AS assignee_name, u.avatar_color AS assignee_color, p.name AS project_name
@@ -346,7 +366,7 @@ class OpsController
                     SUM(CASE WHEN status='in_progress' THEN 1 ELSE 0 END) AS in_progress,
                     SUM(CASE WHEN status='review' THEN 1 ELSE 0 END) AS review,
                     SUM(CASE WHEN status='done' THEN 1 ELSE 0 END) AS done,
-                    SUM(CASE WHEN status != 'done' AND due_date < date('now') THEN 1 ELSE 0 END) AS overdue,
+                    SUM(CASE WHEN status != 'done' AND due_date < CURRENT_DATE THEN 1 ELSE 0 END) AS overdue,
                     SUM(CASE WHEN assignee_id = ? AND status != 'done' THEN 1 ELSE 0 END) AS mine
                FROM tasks WHERE tenant_id = ?",
             [$user['id'], $t]
@@ -364,10 +384,10 @@ class OpsController
             'id' => $id, 'tenant_id' => $ctx->tenantId,
             'title' => H::str($b['title'] ?? null, 'title', true, 250),
             'description' => H::str($b['description'] ?? null, 'description', false, 4000),
-            'project_id' => $b['project_id'] ?? null,
+            'project_id' => $this->projectRef($ctx, $b['project_id'] ?? null),
             'entity_type' => H::str($b['entity_type'] ?? null, 'entity_type', false, 40),
             'entity_id' => H::str($b['entity_id'] ?? null, 'entity_id', false, 60),
-            'assignee_id' => $b['assignee_id'] ?? $user['id'],
+            'assignee_id' => $this->memberRef($ctx, $b['assignee_id'] ?? null, 'assignee_id') ?? $user['id'],
             'status' => H::oneOf($b['status'] ?? null, 'status', self::TASK_STATES, 'todo'),
             'priority' => H::oneOf($b['priority'] ?? null, 'priority', self::PRIORITIES, 'medium'),
             'due_date' => H::str($b['due_date'] ?? null, 'due_date', false, 30),
@@ -406,9 +426,9 @@ class OpsController
         DB::update('UPDATE tasks SET title=COALESCE(?,title), description=?, priority=COALESCE(?,priority), due_date=?, assignee_id=?, updated_at=? WHERE id=? AND tenant_id=?', [
             H::str($b['title'] ?? null, 'title', false, 250),
             H::str($b['description'] ?? null, 'description', false, 4000),
-            $b['priority'] ?? null,
+            H::oneOf($b['priority'] ?? null, 'priority', self::PRIORITIES, null),
             H::str($b['due_date'] ?? null, 'due_date', false, 30),
-            $b['assignee_id'] ?? null,
+            $this->memberRef($ctx, $b['assignee_id'] ?? null, 'assignee_id'),
             H::now(), $ctx->params['id'], $ctx->tenantId,
         ]);
         return H::json(['ok' => true]);

@@ -17,6 +17,21 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
+    protected $table = 'users';
+    protected $primaryKey = 'id';
+    public $incrementing = false;
+    protected $keyType = 'string';
+
+    public function getAuthPassword(): string
+    {
+        return (string) ($this->attributes['password_hash'] ?? '');
+    }
+
+    public function setPasswordAttribute(mixed $value): void
+    {
+        $this->attributes['password_hash'] = \App\Support\H::hashPassword((string) $value);
+    }
+
     /**
      * Get the attributes that should be cast.
      *
@@ -26,7 +41,6 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
         ];
     }
 }

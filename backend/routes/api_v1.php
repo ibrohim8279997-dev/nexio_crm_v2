@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\DeveloperController;
 use App\Http\Controllers\Api\V1\MarketplaceController;
 use App\Http\Controllers\Api\V1\ModulesController;
+use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\OpsController;
 use App\Http\Controllers\Api\V1\PlatformController;
 use App\Http\Controllers\Api\V1\PluginManagerController;
@@ -15,15 +16,14 @@ use App\Http\Controllers\Api\V1\PluginOperationsController;
 use App\Http\Controllers\Api\V1\PortalController;
 use App\Http\Controllers\Api\V1\SalesController;
 use App\Http\Controllers\Api\V1\TeamController;
-use App\Support\Ctx;
 use Illuminate\Support\Facades\Route;
 
-/** Binds the controller method with the resolved Ctx (named route parameters merged in). */
-$h = fn (string $controller, string $method) => function (\Illuminate\Http\Request $request) use ($controller, $method) {
-    $ctx = app(Ctx::class);
-    $ctx->params = $request->route()?->parameters() ?? [];
-    return app($controller)->{$method}($ctx);
-};
+/**
+ * Plain [controller, method] action so `artisan route:cache` can serialize it — a closure
+ * factory here was cached as the outer fn and broke every /v1 route. The controller method
+ * receives the request Ctx (bound by ApiContext, which also fills Ctx::$params).
+ */
+$h = fn (string $controller, string $method) => [$controller, $method];
 
 Route::prefix('v1')->group(function () use ($h) {
     // ── auth ────────────────────────────────────────────────────────────────
@@ -39,7 +39,12 @@ Route::prefix('v1')->group(function () use ($h) {
 
     // ── dashboard, analytics, search ───────────────────────────────────────
     Route::get('/dashboard', $h(DashboardController::class, 'summary'));
+    Route::get('/notifications', $h(NotificationController::class, 'index'));
+    Route::post('/notifications/read-all', $h(NotificationController::class, 'readAll'));
+    Route::post('/notifications/telegram-link', $h(NotificationController::class, 'telegramLink'));
+    Route::post('/notifications/{id}/read', $h(NotificationController::class, 'read'));
     Route::get('/dashboard/workpanel', $h(DashboardController::class, 'workpanel'));
+    Route::get('/dashboard/my-day', $h(DashboardController::class, 'myDay'));
     Route::get('/analytics', $h(DashboardController::class, 'analytics'));
     Route::get('/search', $h(DashboardController::class, 'search'));
 
@@ -97,8 +102,11 @@ Route::prefix('v1')->group(function () use ($h) {
     Route::get('/communications', $h(ModulesController::class, 'listCommunications'));
     Route::post('/communications', $h(ModulesController::class, 'sendCommunication'));
     Route::get('/documents', $h(ModulesController::class, 'listDocuments'));
+    Route::get('/documents/{id}', $h(ModulesController::class, 'getDocument'));
     Route::post('/documents', $h(ModulesController::class, 'createDocument'));
+    Route::post('/documents/proposal-draft', $h(ModulesController::class, 'generateProposal'));
     Route::post('/documents/{id}/status', $h(ModulesController::class, 'setDocumentStatus'));
+    Route::patch('/documents/{id}/content', $h(ModulesController::class, 'updateDocumentContent'));
     Route::get('/automations', $h(ModulesController::class, 'listAutomations'));
     Route::post('/automations', $h(ModulesController::class, 'createAutomation'));
     Route::get('/automations/dry-run', $h(ModulesController::class, 'dryRunAutomation'));
@@ -143,11 +151,13 @@ Route::prefix('v1')->group(function () use ($h) {
     Route::post('/ai/calls/simulate', $h(AiController::class, 'simulateCall'));
     Route::get('/ai/calls', $h(AiController::class, 'listCalls'));
     Route::get('/ai/calls/{id}', $h(AiController::class, 'getCall'));
+    Route::post('/ai/calls/{id}/finalize', $h(AiController::class, 'finalizeCall'));
     Route::get('/ai/approvals', $h(AiController::class, 'approvals'));
     Route::post('/ai/approvals/{id}', $h(AiController::class, 'decideApproval'));
     Route::get('/ai/suppression', $h(AiController::class, 'suppression'));
     Route::post('/ai/suppression', $h(AiController::class, 'addSuppression'));
     Route::get('/ai/analytics', $h(AiController::class, 'analytics'));
+    Route::post('/ai/complete', $h(AiController::class, 'complete'));
 
     // ── client portal ───────────────────────────────────────────────────────
     Route::get('/portal', $h(PortalController::class, 'overview'));
@@ -188,6 +198,7 @@ Route::prefix('v1')->group(function () use ($h) {
     Route::get('/marketplace/install-check/{id}', $h(MarketplaceController::class, 'installCheck'));
     Route::get('/marketplace/plugins', $h(MarketplaceController::class, 'plugins'));
     Route::get('/marketplace/plugins/{id}', $h(MarketplaceController::class, 'plugin'));
+    Route::post('/marketplace/plugins/{id}/purchase', $h(MarketplaceController::class, 'purchase'));
 
     // ── plugin manager ────────────────────────────────────────────────────────────
     Route::get('/plugins/installed', $h(PluginManagerController::class, 'installed'));

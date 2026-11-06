@@ -21,6 +21,7 @@ import { agentRoutes } from './routes/ai'
 import { callRoutes } from './routes/aiCalls'
 import { platformRoutes } from './routes/platform'
 import { portalRoutes } from './routes/portal'
+import { notificationRoutes } from './routes/notifications'
 
 type Handler = (ctx: Ctx) => Promise<Response>
 interface Route { method: string; path: string; handler: Handler }
@@ -28,6 +29,7 @@ interface Route { method: string; path: string; handler: Handler }
 const R = (method: string, path: string, handler: Handler): Route => ({ method, path, handler })
 
 const routes: Route[] = [
+  R('POST', '/api/webhooks/telegram', notificationRoutes.telegramWebhook),
   // ── auth ────────────────────────────────────────────────────────────────
   R('POST', '/api/v1/auth/register', authRoutes.register),
   R('POST', '/api/v1/auth/login', authRoutes.login),
@@ -42,6 +44,10 @@ const routes: Route[] = [
   // ── dashboard, analytics, search ───────────────────────────────────────
   R('GET', '/api/v1/dashboard', dashboardRoutes.summary),
   R('GET', '/api/v1/dashboard/workpanel', dashboardRoutes.workpanel),
+  R('GET', '/api/v1/notifications', notificationRoutes.list),
+  R('POST', '/api/v1/notifications/read-all', notificationRoutes.readAll),
+  R('POST', '/api/v1/notifications/telegram-link', notificationRoutes.telegramLink),
+  R('POST', '/api/v1/notifications/:id/read', notificationRoutes.read),
   R('GET', '/api/v1/analytics', dashboardRoutes.analytics),
   R('GET', '/api/v1/search', dashboardRoutes.search),
 

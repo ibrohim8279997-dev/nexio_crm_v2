@@ -37,6 +37,14 @@ class PluginOperationsController
 
         unset($body['idempotency_key']);
 
+        // The browser cannot choose how many AI tokens to reserve. Reserve a
+        // server-side upper bound (prompt estimate + configured completion cap)
+        // before the provider is called, so the plugin cannot cross its plan limit.
+        if ($pluginId === 'nexio.ai.assistant' && $operation === 'ask') {
+            $promptLength = mb_strlen((string) ($body['prompt'] ?? ''));
+            $body['amount'] = max(1, (int) ceil($promptLength / 4) + (int) config('ai.max_tokens', 2048));
+        }
+
         return H::json(PluginRuntime::invoke($ctx, $pluginId, $operation, $body, $idempotencyKey));
     }
 

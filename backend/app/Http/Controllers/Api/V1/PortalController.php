@@ -18,11 +18,13 @@ class PortalController
     {
         $user = $ctx->auth();
         if (!$ctx->tenantId) throw new ApiException(403, 'Портал доступен только пользователям, привязанным к компании', 'forbidden');
-        $m = DB::selectOne('SELECT org_id, role FROM tenant_memberships WHERE tenant_id = ? AND user_id = ? AND status = ?', [$ctx->tenantId, $user['id'], 'active']);
+        $m = DB::selectOne('SELECT org_id, contact_id, role FROM tenant_memberships WHERE tenant_id = ? AND user_id = ? AND status = ?', [$ctx->tenantId, $user['id'], 'active']);
         if (!$m) throw new ApiException(403, 'Нет активного доступа к порталу', 'forbidden');
         if (!$m->org_id) throw new ApiException(403, 'Учётная запись не привязана к организации заказчика', 'forbidden');
+        if (!$m->contact_id) throw new ApiException(403, 'Portal akkaunti kompaniya va CRM clientiga biriktirilmagan', 'forbidden');
         $org = DB::selectOne('SELECT id, name, industry, tier, status, city, country FROM organizations WHERE id = ? AND tenant_id = ?', [$m->org_id, $ctx->tenantId]);
         if (!$org) throw new ApiException(404, 'Организация не найдена', 'not_found');
+        $org->contact_id = $m->contact_id;
         return $org;
     }
 
@@ -33,12 +35,13 @@ class PortalController
         $org = $this->portalOrg($ctx);
         $t = $ctx->tenantId;
 
-        $orders = DB::select('SELECT id, number, status, amount, currency, payment_status, created_at, confirmed_at FROM orders WHERE tenant_id = ? AND org_id = ? ORDER BY created_at DESC LIMIT 50', [$t, $org->id]);
-        $projects = DB::select('SELECT id, name, status, progress, priority, budget, currency, start_date, due_date, description FROM projects WHERE tenant_id = ? AND org_id = ? ORDER BY created_at DESC LIMIT 30', [$t, $org->id]);
-        $milestones = DB::select('SELECT m.project_id, m.name, m.status, m.due_date, m.position FROM project_milestones m JOIN projects p ON p.id = m.project_id WHERE m.tenant_id = ? AND p.org_id = ? ORDER BY m.position', [$t, $org->id]);
-        $docs = DB::select('SELECT id, name, kind, version, size_kb, status, created_at FROM documents WHERE tenant_id = ? AND org_id = ? ORDER BY created_at DESC LIMIT 30', [$t, $org->id]);
-        $tickets = DB::select('SELECT id, number, subject, priority, status, channel, sla_due_at, created_at, updated_at FROM tickets WHERE tenant_id = ? AND org_id = ? ORDER BY created_at DESC LIMIT 40', [$t, $org->id]);
-        $messages = DB::select("SELECT id, channel, direction, subject, body, status, created_at FROM communications WHERE tenant_id = ? AND org_id = ? AND channel = 'portal' ORDER BY created_at DESC LIMIT 40", [$t, $org->id]);
+        $deals = DB::select('SELECT id, title, status, amount, currency, probability, expected_close_at, created_at FROM deals WHERE tenant_id = ? AND org_id = ? AND contact_id = ? ORDER BY created_at DESC LIMIT 50', [$t, $org->id, $org->contact_id]);
+        $orders = DB::select('SELECT id, number, status, amount, currency, payment_status, created_at, confirmed_at FROM orders WHERE tenant_id = ? AND org_id = ? AND contact_id = ? ORDER BY created_at DESC LIMIT 50', [$t, $org->id, $org->contact_id]);
+        $projects = DB::select('SELECT id, name, status, progress, priority, budget, currency, start_date, due_date, description FROM projects WHERE tenant_id = ? AND org_id = ? AND order_id IN (SELECT id FROM orders WHERE tenant_id = ? AND contact_id = ?) ORDER BY created_at DESC LIMIT 30', [$t, $org->id, $t, $org->contact_id]);
+        $milestones = DB::select('SELECT m.project_id, m.name, m.status, m.due_date, m.position FROM project_milestones m JOIN projects p ON p.id = m.project_id WHERE m.tenant_id = ? AND p.org_id = ? AND p.order_id IN (SELECT id FROM orders WHERE tenant_id = ? AND contact_id = ?) ORDER BY m.position', [$t, $org->id, $t, $org->contact_id]);
+        $docs = DB::select('SELECT id, name, kind, version, size_kb, status, created_at FROM documents WHERE tenant_id = ? AND org_id = ? AND order_id IN (SELECT id FROM orders WHERE tenant_id = ? AND contact_id = ?) ORDER BY created_at DESC LIMIT 30', [$t, $org->id, $t, $org->contact_id]);
+        $tickets = DB::select('SELECT id, number, subject, priority, status, channel, sla_due_at, created_at, updated_at FROM tickets WHERE tenant_id = ? AND org_id = ? AND requester = ? ORDER BY created_at DESC LIMIT 40', [$t, $org->id, $user['email']]);
+        $messages = DB::select("SELECT id, channel, direction, subject, body, status, created_at FROM communications WHERE tenant_id = ? AND org_id = ? AND contact_id = ? AND channel = 'portal' ORDER BY created_at DESC LIMIT 40", [$t, $org->id, $org->contact_id]);
         $requests = DB::select('SELECT id, service, title, description, budget, currency, status, priority, created_at, updated_at FROM nexio_service_requests WHERE tenant_id = ? AND created_by = ? ORDER BY created_at DESC LIMIT 30', [$t, $user['id']]);
         $tenant = DB::selectOne('SELECT name, currency FROM tenants WHERE id = ?', [$t]);
 
@@ -50,7 +53,7 @@ class PortalController
         return H::json([
             'org' => $org,
             'supplier' => ['name' => $tenant->name ?? 'Nexio CRM', 'currency' => $tenant->currency ?? 'UZS'],
-            'orders' => $orders, 'projects' => $projects, 'milestones' => $milestones,
+            'deals' => $deals, 'orders' => $orders, 'projects' => $projects, 'milestones' => $milestones,
             'documents' => $docs, 'tickets' => $tickets, 'messages' => $messages,
             'serviceRequests' => $requests,
             'summary' => [
@@ -91,7 +94,7 @@ class PortalController
         DB::table('communications')->insert([
             'id' => H::newId('com'), 'tenant_id' => $ctx->tenantId, 'channel' => 'portal', 'direction' => 'inbound',
             'subject' => "Новая заявка: {$title}", 'body' => $description, 'org_id' => $org->id,
-            'contact_id' => null, 'user_id' => $user['id'], 'status' => 'received', 'created_at' => H::now(),
+            'contact_id' => $org->contact_id, 'user_id' => $user['id'], 'status' => 'received', 'created_at' => H::now(),
         ]);
         H::audit($ctx, 'portal.service_requested', 'nexio_service_request', $id, ['service' => $service, 'title' => $title, 'org' => $org->id]);
         return H::json(['ok' => true, 'id' => $id, 'note' => 'Заявка отправлена в Nexio Lab. Статус будет виден в портале.'], 201);
@@ -132,7 +135,7 @@ class PortalController
         DB::table('communications')->insert([
             'id' => $id, 'tenant_id' => $ctx->tenantId, 'channel' => 'portal', 'direction' => 'inbound',
             'subject' => H::str($b['subject'] ?? null, 'subject', false, 160), 'body' => $text,
-            'org_id' => $org->id, 'contact_id' => null, 'user_id' => $user['id'],
+            'org_id' => $org->id, 'contact_id' => $org->contact_id, 'user_id' => $user['id'],
             'status' => 'received', 'created_at' => H::now(),
         ]);
         H::audit($ctx, 'portal.message_sent', 'communication', $id, ['org' => $org->id]);

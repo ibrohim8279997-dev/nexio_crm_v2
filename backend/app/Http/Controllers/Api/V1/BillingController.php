@@ -4,7 +4,10 @@ namespace App\Http\Controllers\Api\V1;
 use App\Support\ApiException;
 use App\Support\Ctx;
 use App\Support\H;
+use App\Support\SqlDialect;
 use Illuminate\Support\Facades\DB;
+use App\Services\CbuExchangeRateService;
+use App\Services\SubscriptionEntitlementService;
 
 /**
  * Nexio Billing + Finance. Plan changes are computed server-side with proration;
@@ -12,28 +15,34 @@ use Illuminate\Support\Facades\DB;
  */
 class BillingController
 {
-    private const PLAN_MODULES = [
-        'starter' => ['crm', 'projects'],
-        'business' => ['crm', 'projects', 'finance', 'helpdesk', 'analytics', 'automations', 'api', 'portal', 'documents'],
-        'enterprise' => ['crm', 'projects', 'finance', 'helpdesk', 'analytics', 'automations', 'api', 'portal', 'documents', 'ai_agents', 'voice'],
-    ];
-
+    /* Legacy virtual-wallet implementation removed from routing and database. */
+    /*
+        if ($amount < 1000) throw new ApiException(422, 'Minimal wallet to‘ldirish summasi 1000 UZS', 'invalid_amount');
+        $invoiceId = H::newId('inv');
+        $number = 'WAL-' . gmdate('Y') . '-' . strtoupper(substr($invoiceId, -6));
+        DB::table('invoices')->insert([
+            'id' => $invoiceId, 'tenant_id' => $ctx->tenantId, 'number' => $number,
+            'amount' => $amount, 'tax' => 0, 'total' => $amount, 'currency' => 'UZS',
+            'status' => 'open', 'line_items' => json_encode([['kind' => 'wallet_topup', 'label' => 'Virtual wallet top-up', 'qty' => 1, 'amount' => $amount]]),
+            'issued_at' => H::now(), 'due_at' => gmdate('Y-m-d H:i:s', time() + 86400), 'created_at' => H::now(),
+        ]);
+        $provider = config('payments.provider', 'sandbox');
+        if ($provider !== 'click') return H::json(['invoice_id' => $invoiceId, 'provider' => $provider, 'payment_url' => null]);
+        $click = config('payments.click');
+        foreach (['merchant_id', 'service_id', 'return_url'] as $key) {
+            if (empty($click[$key])) throw new ApiException(503, 'Click konfiguratsiyasi to‘liq emas', 'payment_not_configured');
+        }
+        $url = 'https://my.click.uz/services/pay?' . http_build_query([
+            'service_id' => $click['service_id'], 'merchant_id' => $click['merchant_id'],
+            'amount' => number_format($amount, 2, '.', ''), 'transaction_param' => $invoiceId,
+            'return_url' => $click['return_url'],
+        ]);
+        return H::json(['invoice_id' => $invoiceId, 'provider' => 'click', 'payment_url' => $url], 201);
+    }
+    */
     private function applyEntitlements(string $tenantId, string $planCode): void
     {
-        $modules = self::PLAN_MODULES[$planCode] ?? [];
-        $flags = [
-            'ai_agents' => in_array('ai_agents', $modules, true) ? 1 : 0,
-            'voice_minutes' => in_array('voice', $modules, true) ? 1 : 0,
-            'custom_domain' => $planCode === 'enterprise' ? 1 : 0,
-            'automations' => in_array('automations', $modules, true) ? 1 : 0,
-        ];
-        foreach ($flags as $k => $v) {
-            DB::statement(
-                'INSERT INTO feature_flags (id,tenant_id,key,enabled,created_at) VALUES (?,?,?,?,?) ON CONFLICT(id) DO NOTHING',
-                ["ff_{$tenantId}_{$k}", $tenantId, $k, $v, H::now()]
-            );
-            DB::update('UPDATE feature_flags SET enabled = ? WHERE tenant_id = ? AND key = ?', [$v, $tenantId, $k]);
-        }
+        (new SubscriptionEntitlementService())->apply($tenantId, $planCode);
     }
 
     /** Public catalogue used by /pricing and the in-app billing screen. */
@@ -68,7 +77,9 @@ class BillingController
         $usage = DB::select('SELECT metric, quantity, limit_value, period FROM usage_records WHERE tenant_id = ? ORDER BY recorded_at DESC', [$t]);
         $tenant = DB::selectOne('SELECT name FROM tenants WHERE id = ?', [$t]);
         $unpaid = DB::selectOne("SELECT COALESCE(SUM(total),0) AS v, COUNT(*) AS c FROM invoices WHERE tenant_id = ? AND status IN ('open','overdue')", [$t]);
-        $paidYtd = DB::selectOne("SELECT COALESCE(SUM(total),0) AS v FROM invoices WHERE tenant_id = ? AND status='paid' AND strftime('%Y', issued_at) = strftime('%Y','now')", [$t]);
+        $yearStart = gmdate('Y-01-01 00:00:00');
+        $nextYearStart = gmdate('Y-01-01 00:00:00', strtotime('+1 year'));
+        $paidYtd = DB::selectOne("SELECT COALESCE(SUM(total),0) AS v FROM invoices WHERE tenant_id = ? AND status='paid' AND issued_at >= ? AND issued_at < ?", [$t, $yearStart, $nextYearStart]);
         $seatUsage = DB::selectOne("SELECT COUNT(*) AS c FROM tenant_memberships WHERE tenant_id = ? AND status='active'", [$t]);
 
         $latestUsage = function (string $metric) use ($usage) {
@@ -76,9 +87,10 @@ class BillingController
             return null;
         };
         return H::json([
+            'paymentProvider' => config('payments.provider', 'sandbox'),
             'subscription' => $sub ? [...(array) $sub, 'modules' => H::parseJson($sub->modules, []), 'cancel_at_period_end' => (bool) $sub->cancel_at_period_end] : null,
             'company' => $tenant->name ?? null,
-            'invoices' => array_map(fn ($i) => [...(array) $i, 'line_items' => H::parseJson($i->line_items, [])], $invoices),
+            'invoices' => array_map(fn ($i) => $this->invoiceView($i), $invoices),
             'payments' => $payments,
             'usage' => [
                 'seats' => ['used' => (int) ($seatUsage->c ?? 0), 'limit' => $sub->plan_seats ?? 5],
@@ -133,6 +145,30 @@ class BillingController
             $lineItems[] = ['label' => 'Пропорциональный пересчёт', 'qty' => 1, 'amount' => $proration];
         }
         $total = round(($price + ($proration > 0 ? $proration : 0)) * 100) / 100;
+        $clickQuote = null;
+        if (config('payments.provider', 'sandbox') === 'click') {
+            $clickQuote = (new CbuExchangeRateService())->quote($total, (string) $plan->currency);
+        }
+
+        // Click confirms the invoice asynchronously. Do not activate an unpaid
+        // plan before the merchant webhook arrives.
+        if (config('payments.provider', 'sandbox') === 'click') {
+            DB::table('invoices')->insert([
+                'id' => $invoiceId, 'tenant_id' => $t, 'number' => $invoiceNumber,
+                'amount' => $price, 'tax' => 0, 'total' => $total, 'currency' => $plan->currency,
+                'status' => 'open', 'line_items' => json_encode(array_merge($lineItems, $clickQuote ? [['kind' => 'click_conversion', 'amount' => 0, 'click_quote' => $clickQuote]] : [], [[
+                    'kind' => 'subscription_plan', 'plan_code' => $code, 'interval' => $interval,
+                ]]), JSON_UNESCAPED_UNICODE), 'issued_at' => H::now(),
+                'due_at' => gmdate('Y-m-d H:i:s', time() + 86400), 'created_at' => H::now(),
+            ]);
+            $this->assertClickConfigured();
+            return H::json([
+                'ok' => true, 'invoiceId' => $invoiceId, 'invoiceNumber' => $invoiceNumber,
+                'provider' => 'click', 'payment_url' => $this->clickPaymentUrl($invoiceId, (float) $clickQuote['target_amount']),
+                'click_amount_uzs' => $clickQuote['target_amount'], 'exchange_rate' => $clickQuote['rate'], 'exchange_rate_date' => $clickQuote['rate_date'],
+                'note' => 'Click to‘lovi tasdiqlangach tarif avtomatik faollashadi.',
+            ], 201);
+        }
 
         DB::transaction(function () use ($t, $plan, $price, $interval, $periodEnd, $invoiceId, $invoiceNumber, $lineItems, $total) {
             DB::update("UPDATE subscriptions SET status='cancelled', cancelled_at=?, cancel_at_period_end=0 WHERE tenant_id=? AND status IN ('active','trialing','grace','past_due')", [H::now(), $t]);
@@ -154,8 +190,9 @@ class BillingController
         return H::json([
             'ok' => true, 'invoiceId' => $invoiceId, 'invoiceNumber' => $invoiceNumber,
             'proration' => $proration, 'plan' => $plan->name, 'interval' => $interval,
-            'sandbox' => true,
-            'note' => 'Платёжный провайдер не подключён: платёж не списан, счёт выставлен в режиме sandbox.',
+            'sandbox' => config('payments.provider', 'sandbox') === 'sandbox',
+            'provider' => config('payments.provider', 'sandbox'),
+            'note' => config('payments.provider', 'sandbox') === 'sandbox' ? 'Payment provider sozlanmagan.' : 'Payment provider konfiguratsiyasi mavjud.',
         ]);
     }
 
@@ -201,6 +238,11 @@ class BillingController
         $invoice = DB::selectOne('SELECT * FROM invoices WHERE id = ? AND tenant_id = ?', [$ctx->params['id'], $t]);
         if (!$invoice) throw new ApiException(404, 'Счёт не найден', 'not_found');
         if ($invoice->status === 'paid') return H::json(['ok' => true, 'alreadyPaid' => true]);
+        if (config('payments.provider') === 'click') {
+            $this->assertClickConfigured();
+            $quote = $this->clickQuoteForInvoice($invoice);
+            return H::json(['ok' => true, 'provider' => 'click', 'payment_url' => $this->clickPaymentUrl($invoice->id, (float) $quote['target_amount']), 'click_amount_uzs' => $quote['target_amount'], 'exchange_rate' => $quote['rate'], 'exchange_rate_date' => $quote['rate_date']]);
+        }
         $b = H::body($ctx);
         $key = H::str($b['idempotency_key'] ?? null, 'idempotency_key', false, 120);
         if ($key && DB::selectOne('SELECT id FROM payments WHERE idempotency_key = ?', [$key])) {
@@ -210,16 +252,16 @@ class BillingController
             DB::update("UPDATE invoices SET status='paid', paid_at=? WHERE id=? AND tenant_id=?", [H::now(), $ctx->params['id'], $t]);
             DB::table('payments')->insert([
                 'id' => H::newId('pay'), 'tenant_id' => $t, 'invoice_id' => $ctx->params['id'],
-                'provider' => 'sandbox', 'provider_ref' => H::newId('sbx'), 'amount' => $invoice->total,
+                'provider' => config('payments.provider', 'sandbox'), 'provider_ref' => H::newId('sbx'), 'amount' => $invoice->total,
                 'currency' => $invoice->currency, 'status' => 'succeeded', 'idempotency_key' => $key, 'created_at' => H::now(),
             ]);
             DB::table('billing_events')->insert([
                 'id' => H::newId('bev'), 'tenant_id' => $t, 'kind' => 'invoice.paid',
-                'detail' => $invoice->number . ' · sandbox', 'created_at' => H::now(),
+                'detail' => $invoice->number . ' · ' . config('payments.provider', 'sandbox'), 'created_at' => H::now(),
             ]);
         });
         H::audit($ctx, 'invoice.paid', 'invoice', $ctx->params['id'], ['amount' => $invoice->total]);
-        return H::json(['ok' => true, 'sandbox' => true, 'note' => 'Оплата проведена в sandbox-режиме, реальные средства не списаны.']);
+        return H::json(['ok' => true, 'sandbox' => config('payments.provider', 'sandbox') === 'sandbox', 'provider' => config('payments.provider', 'sandbox')]);
     }
 
     /** Finance module: revenue, receivables, expenses, product margins. */
@@ -232,7 +274,7 @@ class BillingController
         $receivable = DB::selectOne("SELECT COALESCE(SUM(amount),0) AS v, COUNT(*) AS c FROM orders WHERE tenant_id = ? AND payment_status IN ('unpaid','overdue','partial') AND status NOT IN ('cancelled','refunded')", [$t]);
         $paid = DB::selectOne("SELECT COALESCE(SUM(amount),0) AS v FROM orders WHERE tenant_id = ? AND payment_status='paid' AND status='fulfilled'", [$t]);
         $planned = DB::selectOne("SELECT COALESCE(SUM(amount),0) AS v FROM orders WHERE tenant_id = ? AND status IN ('confirmed','in_progress')", [$t]);
-        $byMonth = DB::select("SELECT strftime('%Y-%m', created_at) AS ym, COALESCE(SUM(amount),0) AS value, COUNT(*) AS orders FROM orders WHERE tenant_id = ? AND created_at >= datetime('now','-12 months') GROUP BY ym ORDER BY ym", [$t]);
+        $byMonth = DB::select("SELECT " . SqlDialect::month('created_at') . " AS ym, COALESCE(SUM(amount),0) AS value, COUNT(*) AS orders FROM orders WHERE tenant_id = ? AND created_at >= " . SqlDialect::ago(12, 'month') . " GROUP BY ym ORDER BY ym", [$t]);
         $margins = DB::select(
             "SELECT oi.name, SUM(oi.qty) AS qty, SUM(oi.total) AS revenue,
                     SUM(oi.qty * COALESCE(p.cost,0)) AS cost,
@@ -271,5 +313,49 @@ class BillingController
             'byMonth' => $byMonth, 'margins' => $margins, 'topClients' => $topClients, 'overdue' => $overdue,
             'disclaimer' => 'Счёт в Nexio CRM не является юридически значимым электронным документом до подключения ЭДО.',
         ]);
+    }
+
+    private function assertClickConfigured(): void
+    {
+        $click = config('payments.click', []);
+        foreach (['merchant_id', 'service_id', 'return_url'] as $key) {
+            if (empty($click[$key])) {
+                throw new ApiException(503, 'Click konfiguratsiyasi to‘liq emas', 'payment_not_configured');
+            }
+        }
+    }
+
+    private function clickPaymentUrl(string $invoiceId, float $amount): string
+    {
+        $click = config('payments.click');
+        return 'https://my.click.uz/services/pay?' . http_build_query([
+            'service_id' => $click['service_id'], 'merchant_id' => $click['merchant_id'],
+            'amount' => number_format($amount, 2, '.', ''), 'transaction_param' => $invoiceId,
+            'return_url' => $click['return_url'],
+        ]);
+    }
+
+    private function clickQuoteForInvoice(object $invoice): array
+    {
+        $items = H::parseJson($invoice->line_items, []);
+        foreach (is_array($items) ? $items : [] as $item) {
+            if (($item['kind'] ?? null) === 'click_conversion' && is_array($item['click_quote'] ?? null)) {
+                return $item['click_quote'];
+            }
+        }
+        $quote = (new CbuExchangeRateService())->quote((float) $invoice->total, (string) $invoice->currency);
+        $items[] = ['kind' => 'click_conversion', 'amount' => 0, 'click_quote' => $quote];
+        DB::table('invoices')->where('id', $invoice->id)->update(['line_items' => json_encode($items, JSON_UNESCAPED_UNICODE)]);
+        return $quote;
+    }
+
+    private function invoiceView(object $invoice): array
+    {
+        $items = H::parseJson($invoice->line_items, []);
+        $quote = null;
+        foreach (is_array($items) ? $items : [] as $item) {
+            if (($item['kind'] ?? null) === 'click_conversion' && is_array($item['click_quote'] ?? null)) $quote = $item['click_quote'];
+        }
+        return [...(array) $invoice, 'line_items' => array_values(array_filter(is_array($items) ? $items : [], fn ($item) => ($item['kind'] ?? null) !== 'click_conversion')), 'click_amount_uzs' => $quote['target_amount'] ?? null, 'exchange_rate' => $quote['rate'] ?? null, 'exchange_rate_date' => $quote['rate_date'] ?? null];
     }
 }

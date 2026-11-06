@@ -50,6 +50,7 @@ CREATE TABLE tenant_memberships (
   title       TEXT,
   status      TEXT NOT NULL DEFAULT 'active',  -- active | invited | suspended
   org_id      TEXT,                          -- customer organization for client_portal_user (validated at write time)
+  contact_id  TEXT,                          -- CRM contact for client_portal_user (validated at write time)
   invited_by  TEXT REFERENCES users(id),
   created_at  TEXT NOT NULL,
   UNIQUE (tenant_id, user_id)
@@ -73,6 +74,8 @@ CREATE TABLE invitations (
   tenant_id  TEXT REFERENCES tenants(id) ON DELETE CASCADE,  -- nullable: password-reset tokens are tenant-less
   email      TEXT NOT NULL,
   role       TEXT NOT NULL,
+  org_id     TEXT,                          -- customer organization for client_portal_user
+  contact_id TEXT,                          -- CRM contact for client_portal_user
   token      TEXT NOT NULL UNIQUE,
   invited_by TEXT REFERENCES users(id),
   status     TEXT NOT NULL DEFAULT 'pending',  -- pending | accepted | revoked | expired

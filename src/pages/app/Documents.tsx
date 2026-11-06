@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { Download, FileSignature, FileText, Plus, Search } from 'lucide-react'
+import { Download, FileSignature, FileText, Plus, Search, Sparkles } from 'lucide-react'
 import { Badge, Button, Card, PageHeader, QueryState, SectionCard, StatCard, StatusPill } from '../../components/ui/core'
 import { DataTable, type Column } from '../../components/ui/table'
-import { Field, Input, Select } from '../../components/ui/form'
+import { Field, Input, Select, Textarea } from '../../components/ui/form'
 import { Modal } from '../../components/ui/overlay'
 import { useApi, useApiMutation } from '../../lib/hooks'
 import { api } from '../../lib/api'
@@ -11,13 +11,14 @@ import { useCan } from '../../lib/auth'
 
 interface Doc {
   id: string; name: string; kind: string; org_name: string | null; version: number; size_kb: number
-  status: string; created_by_name: string | null; created_at: string; order_id: string | null
+  status: string; created_by_name: string | null; created_at: string; order_id: string | null; source_deal_id?: string | null
 }
 interface DocsResponse { data: Doc[]; stats: { total: number; signed: number; draft: number } }
 
 export default function Documents() {
   const [kind, setKind] = useState('')
   const [open, setOpen] = useState(false)
+  const [proposalOpen, setProposalOpen] = useState(false)
   const can = useCan()
   const q = useApi<DocsResponse>(['documents', kind], `/api/v1/documents?kind=${kind}`)
   const setStatus = useApiMutation(({ id, next }: { id: string; next: string }) => api.post(`/api/v1/documents/${id}/status`, { status: next }), {
@@ -53,6 +54,8 @@ export default function Documents() {
         actions={can('crm.write') ? <Button onClick={() => setOpen(true)}><Plus className="size-4" /> Новый документ</Button> : undefined}
       />
 
+      {can('crm.write') && <div className="flex justify-end"><Button variant="secondary" onClick={() => setProposalOpen(true)}><Sparkles className="size-4" /> AI proposal draft</Button></div>}
+
       <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         <StatCard label="Всего документов" value={num(q.data?.stats.total)} hint="в пространстве" icon={<FileText className="size-4" />} />
         <StatCard label="Подписано" value={num(q.data?.stats.signed)} hint="завершённые" icon={<FileSignature className="size-4" />} tone="success" />
@@ -82,6 +85,7 @@ export default function Documents() {
       </Card>
 
       <NewDocModal open={open} onClose={() => setOpen(false)} />
+      <ProposalModal open={proposalOpen} onClose={() => setProposalOpen(false)} />
     </div>
   )
 }
@@ -108,6 +112,35 @@ function NewDocModal({ open, onClose }: { open: boolean; onClose: () => void }) 
       </div>
     </Modal>
   )
+}
+
+function ProposalModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const deals = useApi<{ data: { id: string; title: string; amount: number; currency: string }[] }>(['proposal-deals'], '/api/v1/deals?limit=100', { enabled: open })
+  const [dealId, setDealId] = useState('')
+  const [name, setName] = useState('')
+  const [documentId, setDocumentId] = useState('')
+  const [content, setContent] = useState('')
+  const generate = useApiMutation((payload: Record<string, unknown>) => api.post<{ id: string; content: string }>('/api/v1/documents/proposal-draft', payload), {
+    success: 'Proposal draft yaratildi',
+    onDone: (result) => { setDocumentId(result.id); setContent(result.content) },
+  })
+  const save = useApiMutation((payload: Record<string, unknown>) => api.patch('/api/v1/documents/' + documentId + '/content', payload), { success: 'Draft saqlandi' })
+  const close = () => {
+    setDealId(''); setName(''); setDocumentId(''); setContent(''); onClose()
+  }
+  const approve = useApiMutation(() => api.post('/api/v1/documents/' + documentId + '/status', { status: 'approved' }), { success: 'Proposal tasdiqlandi', invalidate: [['documents']], onDone: close })
+  const download = () => {
+    const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a'); a.href = url; a.download = (name || 'proposal') + '.md'; a.click(); URL.revokeObjectURL(url)
+  }
+  return <Modal open={open} onClose={close} title="AI commercial proposal" description="Faqat CRM’dagi tasdiqlangan ma’lumotlardan draft yaratiladi. Yuborishdan oldin xodim tahrirlaydi va tasdiqlaydi." size="lg"
+    footer={<><Button variant="secondary" size="sm" onClick={close}>Yopish</Button>{documentId && <><Button size="sm" variant="secondary" onClick={download}>Yuklab olish</Button><Button size="sm" loading={approve.isPending} onClick={() => approve.mutate()}>Tasdiqlash</Button></>}</>}>
+    <div className="space-y-4">
+      {!documentId && <><Field label="Deal" required><Select value={dealId} onChange={(e) => setDealId(e.target.value)}><option value="">Deal tanlang</option>{(deals.data?.data ?? []).map((deal) => <option key={deal.id} value={deal.id}>{deal.title} · {deal.amount} {deal.currency}</option>)}</Select></Field><Field label="Hujjat nomi"><Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Commercial proposal" /></Field><div className="flex justify-end"><Button loading={generate.isPending} disabled={!dealId} onClick={() => generate.mutate({ deal_id: dealId, name })}><Sparkles className="size-4" /> Draft yaratish</Button></div></>}
+      {documentId && <Field label="Draft matni" hint="AI yaratgan matnni tahrirlash mumkin."><Textarea className="min-h-[360px] font-mono text-xs" value={content} onChange={(e) => setContent(e.target.value)} /><div className="mt-2 flex justify-end"><Button size="sm" variant="secondary" loading={save.isPending} onClick={() => save.mutate({ content, name })}>O‘zgarishni saqlash</Button></div></Field>}
+    </div>
+  </Modal>
 }
 
 export const _docIcons = { Download, Search }

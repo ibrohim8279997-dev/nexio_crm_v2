@@ -6,9 +6,11 @@ import {
 } from 'lucide-react'
 import { Avatar, Badge, Button, Card, Grid, ProgressBar, QueryState, SectionCard, Skeleton, StatCard, StatusPill, Tabs } from '../../components/ui/core'
 import { BarsChart, DonutChart, TrendChart } from '../../components/charts'
-import { useApi } from '../../lib/hooks'
+import { useApi, useApiMutation } from '../../lib/hooks'
+import { api } from '../../lib/api'
 import { compact, label, money, monthLabel, num, pct, relative, shortDate } from '../../lib/format'
 import { useAuth } from '../../lib/auth'
+import { useI18n } from '../../lib/i18n'
 
 interface Summary {
   period: { from: string; to: string; label: string }
@@ -39,12 +41,21 @@ const PERIODS = [
 
 export default function Dashboard() {
   const { tenant } = useAuth()
+  const { t } = useI18n()
+  const [telegramPrompt, setTelegramPrompt] = useState(() => localStorage.getItem('nexio_telegram_prompt_seen') !== '1')
   const [period, setPeriod] = useState('30d')
   const [granularity, setGranularity] = useState<'monthly' | 'quarterly' | 'yearly'>('monthly')
   const currency = tenant?.currency ?? 'UZS'
 
   const summary = useApi<Summary>(['dashboard', period], `/api/v1/dashboard?period=${period}`)
   const panel = useApi<Workpanel>(['workpanel'], '/api/v1/dashboard/workpanel')
+  const telegram = useApiMutation(() => api.post<{ configured: boolean; url: string | null }>('/api/v1/notifications/telegram-link'), {
+    onDone: (result) => {
+      localStorage.setItem('nexio_telegram_prompt_seen', '1')
+      setTelegramPrompt(false)
+      if (result.url) window.open(result.url, '_blank', 'noopener,noreferrer')
+    },
+  })
 
   const trend = useMemo(() => {
     const rows = summary.data?.monthly ?? []
@@ -75,11 +86,21 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-4 sm:space-y-5">
+      {telegramPrompt && (
+        <Card className="flex flex-wrap items-center gap-3 border-blue-100 bg-blue-50/70">
+          <div className="min-w-0 flex-1">
+            <p className="text-[13px] font-semibold text-ink">Telegram botni ulang</p>
+            <p className="mt-0.5 text-[11px] text-muted">CRM bildirishnomalarini Telegram’da ham oling.</p>
+          </div>
+          <Button size="sm" loading={telegram.isPending} onClick={() => telegram.mutate(undefined)}>Ulash</Button>
+          <Button size="sm" variant="ghost" onClick={() => { localStorage.setItem('nexio_telegram_prompt_seen', '1'); setTelegramPrompt(false) }}>Keyinroq</Button>
+        </Card>
+      )}
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-[20px] font-bold tracking-tight text-ink sm:text-[24px]">Here&apos;s what&apos;s happening with your business</h1>
-          <p className="mt-1 text-[13px] text-muted">Track performance, manage your tasks, and stay on top of everything in one place.</p>
+          <h1 className="text-[20px] font-bold tracking-tight text-ink sm:text-[24px]">{t('dashboardTitle')}</h1>
+          <p className="mt-1 text-[13px] text-muted">{t('dashboardSubtitle')}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex items-center gap-1.5 rounded-xl border border-line bg-surface px-3 py-2 text-[12px] text-muted">
@@ -99,11 +120,11 @@ export default function Dashboard() {
       >
         {k && (
           <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-5">
-            <StatCard label="Total Revenue" value={compact(k.revenue, currency)} hint={`${k.revenueDeals} выигранных сделок`} icon={<Wallet className="size-4" />} tone="primary" />
-            <StatCard label="New Leads" value={num(k.newLeads)} hint={`${k.activeLeads} в работе`} icon={<Target className="size-4" />} tone="success" />
-            <StatCard label="Active Deals" value={num(k.activeDeals)} hint={compact(k.activeDealsValue, currency)} icon={<BarChart3 className="size-4" />} tone="ai" />
-            <StatCard label="Conversion Rate" value={pct(k.conversion)} hint={`средний чек ${compact(k.averageDeal, currency)}`} icon={<Percent className="size-4" />} tone="warning" />
-            <StatCard label="Forecast" value={compact(k.forecast, currency)} hint="взвешенный пайплайн" icon={<TrendingUp className="size-4" />} tone="primary" />
+            <StatCard label={t('totalRevenue')} value={compact(k.revenue, currency)} hint={`${k.revenueDeals} deals`} icon={<Wallet className="size-4" />} tone="primary" />
+            <StatCard label={t('newLeads')} value={num(k.newLeads)} hint={`${k.activeLeads} active`} icon={<Target className="size-4" />} tone="success" />
+            <StatCard label={t('activeDeals')} value={num(k.activeDeals)} hint={compact(k.activeDealsValue, currency)} icon={<BarChart3 className="size-4" />} tone="ai" />
+            <StatCard label={t('conversionRate')} value={pct(k.conversion)} hint={`average ${compact(k.averageDeal, currency)}`} icon={<Percent className="size-4" />} tone="warning" />
+            <StatCard label={t('forecast')} value={compact(k.forecast, currency)} hint="weighted pipeline" icon={<TrendingUp className="size-4" />} tone="primary" />
           </div>
         )}
       </QueryState>
@@ -111,7 +132,7 @@ export default function Dashboard() {
       {/* Charts row */}
       <div className="grid gap-4 xl:grid-cols-[1.7fr_1fr]">
         <SectionCard
-          title="Sales & Revenue"
+          title={t('salesRevenue')}
           subtitle="Выигранная выручка и общий пайплайн по месяцам"
           action={<Tabs tabs={[{ value: 'monthly', label: 'Monthly' }, { value: 'quarterly', label: 'Quarterly' }, { value: 'yearly', label: 'Yearly' }]} value={granularity} onChange={setGranularity} />}
         >
@@ -142,7 +163,7 @@ export default function Dashboard() {
       {/* Tasks + AI activity */}
       <div className="grid gap-4 xl:grid-cols-3">
         <SectionCard
-          title="My Tasks"
+          title={t('myTasks')}
           subtitle="Ваши задачи без учёта завершённых"
           action={<Link to="/app/tasks" className="text-[12px] font-medium text-primary hover:text-primary-dark">Все задачи <ArrowRight className="inline size-3" /></Link>}
           padded={false}
@@ -172,7 +193,7 @@ export default function Dashboard() {
         </SectionCard>
 
         <SectionCard
-          title="AI Agent Activity"
+          title={t('aiAgentActivity')}
           subtitle="За собственную работу"
           action={<Link to="/app/ai-agents" className="text-[12px] font-medium text-primary hover:text-primary-dark">Центр AI <ArrowRight className="inline size-3" /></Link>}
           padded={false}
@@ -217,7 +238,7 @@ export default function Dashboard() {
           </div>
         </SectionCard>
 
-        <SectionCard title="Recent Leads" subtitle="Последние входящие заявки" padded={false}
+        <SectionCard title={t('recentLeads')} subtitle="" padded={false}
           action={<Link to="/app/leads" className="text-[12px] font-medium text-primary hover:text-primary-dark">Все <ArrowRight className="inline size-3" /></Link>}>
           <QueryState loading={panel.isLoading} error={panel.error} empty={(panel.data?.leads.length ?? 0) === 0} emptyTitle="Нет новых лидов" onRetry={() => panel.refetch()} skeleton={<div className="space-y-3 p-4">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-9 w-full" />)}</div>}>
             <ul className="divide-y divide-line">
@@ -238,7 +259,7 @@ export default function Dashboard() {
 
       {/* Orders + sources + owners */}
       <div className="grid gap-4 xl:grid-cols-[1.7fr_1fr]">
-        <SectionCard title="Recent Orders" subtitle="Последние заказы компании" padded={false}
+        <SectionCard title={t('recentOrders')} subtitle="" padded={false}
           action={<Link to="/app/orders" className="text-[12px] font-medium text-primary hover:text-primary-dark">Все заказы <ArrowRight className="inline size-3" /></Link>}>
           <QueryState loading={panel.isLoading} error={panel.error} empty={(panel.data?.orders.length ?? 0) === 0}
             emptyTitle="Заказов пока нет" emptyDescription="Заказ создаётся вручную, из интеграции, портала или AI-агента."

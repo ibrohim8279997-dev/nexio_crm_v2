@@ -62,6 +62,16 @@ class ProviderRegistry
             return self::sandbox();
         }
 
+        // The built-in HTTP bridge is configured per company connection. It deliberately does
+        // not read TELEPHONY_API_KEY from .env, so one company's credentials cannot affect another.
+        if (in_array(strtolower($requested), ['http', 'rest'], true)) {
+            $provider = new HttpTelephonyProvider();
+            if (!$provider->isConfigured($context)) {
+                throw new ApiException(409, 'Telefoniya connection uchun HTTPS API URL va token kiriting', 'provider_not_configured');
+            }
+            return $provider;
+        }
+
         foreach (self::adaptersFor($context->tenantId) as $code => $provider) {
             if ($code === $requested) {
                 if (!$provider->isConfigured($context)) {

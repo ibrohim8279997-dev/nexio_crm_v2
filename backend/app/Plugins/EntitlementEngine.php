@@ -87,6 +87,9 @@ class EntitlementEngine
      */
     public static function canInstall(?string $pluginId, ?string $planId): array
     {
+        if ($pluginId !== null && self::hasPurchased($pluginId)) {
+            return ['allowed' => true, 'code' => 'purchased', 'reason' => ''];
+        }
         $row = self::resolve($pluginId, $planId);
         $default = (bool) config('nexio.plugins.default_policy.can_install', false);
 
@@ -109,6 +112,9 @@ class EntitlementEngine
     /** @return array{allowed:bool,code:string,reason:string} */
     public static function canUse(?string $pluginId, ?string $planId): array
     {
+        if ($pluginId !== null && self::hasPurchased($pluginId)) {
+            return ['allowed' => true, 'code' => 'purchased', 'reason' => ''];
+        }
         $row = self::resolve($pluginId, $planId);
         $default = (bool) config('nexio.plugins.default_policy.can_use', false);
 
@@ -121,6 +127,13 @@ class EntitlementEngine
             return ['allowed' => true, 'code' => 'ok', 'reason' => ''];
         }
         return ['allowed' => false, 'code' => 'plan_use_denied', 'reason' => 'Использование этого плагина не входит в ваш тариф. Обратитесь к администратору Nexio.'];
+    }
+
+    private static function hasPurchased(string $pluginId): bool
+    {
+        $tenantId = app()->bound(Ctx::class) ? app(Ctx::class)->tenantId : null;
+        return $tenantId !== null && DB::table('plugin_purchases')
+            ->where('tenant_id', (string) $tenantId)->where('plugin_id', $pluginId)->where('status', 'active')->exists();
     }
 
     /** NULL = unlimited, 0 = none, int = cap. */

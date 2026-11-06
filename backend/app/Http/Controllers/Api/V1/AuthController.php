@@ -118,7 +118,7 @@ class AuthController
     {
         $b = H::body($ctx);
         $name = H::str($b['name'] ?? null, 'name', true, 120);
-        $email = strtolower(H::str($b['email'] ?? null, 'email', true, 190));
+        $email = strtolower(trim(H::str($b['email'] ?? null, 'email', true, 190)));
         $password = H::str($b['password'] ?? null, 'password', true, 200);
         $company = H::str($b['company'] ?? null, 'company', true, 160);
         if (!preg_match('/^[^@\s]+@[^@\s]+\.[^@\s]+$/', $email)) {
@@ -153,7 +153,9 @@ class AuthController
         $b = H::body($ctx);
         $email = strtolower(H::str($b['email'] ?? null, 'email', true, 190));
         $password = H::str($b['password'] ?? null, 'password', true, 200);
-        $u = DB::selectOne('SELECT id, email, name, password_hash, avatar_color, is_platform_admin FROM users WHERE email = ?', [$email]);
+        // Older accounts may have been created before email normalization was added.
+        // Match them case-insensitively while keeping the canonical lowercase value for new accounts.
+        $u = DB::selectOne('SELECT id, email, name, password_hash, avatar_color, is_platform_admin FROM users WHERE LOWER(TRIM(email)) = ?', [$email]);
         // Uniform failure message so the endpoint does not reveal which emails exist.
         if (!$u || !H::verifyPassword($password, $u->password_hash)) {
             throw new ApiException(401, 'Неверный email или пароль', 'unauthorized');
@@ -271,7 +273,7 @@ class AuthController
     public function inviteInfo(Ctx $ctx)
     {
         $inv = DB::selectOne(
-            "SELECT id, tenant_id, email, role FROM invitations WHERE token = ? AND status = 'pending' AND expires_at > ?",
+            "SELECT id, tenant_id, email, role, org_id, contact_id FROM invitations WHERE token = ? AND status = 'pending' AND expires_at > ?",
             [$ctx->params['token'], H::now()]
         );
         if (!$inv) throw new ApiException(410, 'Приглашение недействительно или истекло', 'gone');
@@ -282,7 +284,7 @@ class AuthController
     public function acceptInvite(Ctx $ctx)
     {
         $inv = DB::selectOne(
-            "SELECT id, tenant_id, email, role FROM invitations WHERE token = ? AND status = 'pending' AND expires_at > ?",
+            "SELECT id, tenant_id, email, role, org_id, contact_id FROM invitations WHERE token = ? AND status = 'pending' AND expires_at > ?",
             [$ctx->params['token'], H::now()]
         );
         if (!$inv) throw new ApiException(410, 'Приглашение недействительно или истекло', 'gone');
@@ -306,7 +308,7 @@ class AuthController
         if (!DB::selectOne('SELECT 1 FROM tenant_memberships WHERE tenant_id = ? AND user_id = ?', [$inv->tenant_id, $user->id])) {
             DB::table('tenant_memberships')->insert([
                 'id' => H::newId('mem'), 'tenant_id' => $inv->tenant_id, 'user_id' => $user->id,
-                'role' => $inv->role, 'status' => 'active', 'created_at' => H::now(),
+                'role' => $inv->role, 'status' => 'active', 'org_id' => $inv->org_id ?? null, 'contact_id' => $inv->contact_id ?? null, 'created_at' => H::now(),
             ]);
         }
         DB::table('invitations')->where('id', $inv->id)->update(['status' => 'accepted']);

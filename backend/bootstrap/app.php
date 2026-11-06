@@ -12,10 +12,17 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
+    ->withCommands([__DIR__.'/../app/Console/Commands'])
     ->withMiddleware(function (Middleware $middleware) {
         // Resolve session → tenant context, same-origin check, auth rate limit, portal scope.
         $middleware->api(prepend: [
             \App\Http\Middleware\ApiContext::class,
+        ]);
+        // API authentication is handled by ApiContext and the nexio_session cookie.
+        // Do not start Laravel's separate session handler: its database driver expects
+        // payload/last_activity columns that the CRM session table does not contain.
+        $middleware->api(remove: [
+            \Illuminate\Session\Middleware\StartSession::class,
         ]);
         $middleware->redirectGuestsTo(fn () => null);
     })

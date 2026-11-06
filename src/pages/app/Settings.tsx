@@ -9,10 +9,12 @@ import { api } from '../../lib/api'
 import { dateTime, label, num } from '../../lib/format'
 import { useAuth, useCan } from '../../lib/auth'
 import { useToast } from '../../components/ui/toast'
+import { useI18n, type Locale } from '../../lib/i18n'
+import { TIMEZONES, formatUtcOffset } from '../../lib/timezones'
 
 interface Stage { id: string; key: string; name: string; position: number; probability: number; kind: string; color: string }
 interface SettingsData {
-  tenant: { id: string; name: string; slug: string; legal_name: string | null; logo_text: string | null; brand_color: string; locale: string; timezone: string; currency: string; country: string; industry: string | null; status: string }
+  tenant: { id: string; name: string; slug: string; legal_name: string | null; logo_text: string | null; logo_url?: string | null; brand_color: string; locale: string; timezone: string; currency: string; country: string; industry: string | null; status: string }
   settings: { work_hours?: string; week_start?: string; default_pipeline?: string; tax_rate?: number; date_format?: string }
   flags: Record<string, boolean>
   stages: Stage[]
@@ -35,6 +37,7 @@ export default function SettingsPage() {
   const can = useCan()
   const toast = useToast()
   const { user, refresh } = useAuth()
+  const { setLocale } = useI18n()
 
   const q = useApi<SettingsData>(['settings'], '/api/v1/settings')
   const audit = useApi<{ data: AuditRow[] }>(['settings', 'audit'], '/api/v1/settings/audit', { enabled: tab === 'audit' })
@@ -85,7 +88,7 @@ export default function SettingsPage() {
                     <Field label="Название компании" htmlFor="name"><Input id="name" value={form.name ?? ''} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} /></Field>
                     <Field label="Юридическое название" htmlFor="legal"><Input id="legal" value={form.legal_name ?? ''} onChange={(e) => setForm((f) => ({ ...f, legal_name: e.target.value }))} /></Field>
                     <Field label="Отрасль" htmlFor="industry"><Input id="industry" value={form.industry ?? ''} onChange={(e) => setForm((f) => ({ ...f, industry: e.target.value }))} /></Field>
-                    <Field label="Логотип (текст, 1–2 символа)" htmlFor="logo"><Input id="logo" maxLength={2} value={form.logo_text ?? ''} onChange={(e) => setForm((f) => ({ ...f, logo_text: e.target.value }))} /></Field>
+                    <Field label="Logo rasmi URL yoki data URL" htmlFor="logo-url"><Input id="logo-url" value={form.logo_url ?? ''} onChange={(e) => setForm((f) => ({ ...f, logo_url: e.target.value }))} placeholder="https://.../logo.png" /></Field>
                     <Field label="Рабочие часы" hint="Влияет на SLA и напоминания" htmlFor="hours">
                       <Input id="hours" value={(prefs.work_hours as string) ?? '09:00–18:00'} onChange={(e) => setPrefs((p) => ({ ...p, work_hours: e.target.value }))} />
                     </Field>
@@ -102,7 +105,7 @@ export default function SettingsPage() {
                 <div className="space-y-3">
                   <p className="text-[12px] font-semibold text-ink">Локализация</p>
                   <Field label="Язык интерфейса" htmlFor="locale">
-                    <Select id="locale" value={form.locale ?? 'ru'} disabled={!can('settings.write')} onChange={(e) => setForm((f) => ({ ...f, locale: e.target.value }))}>
+                    <Select id="locale" value={form.locale ?? 'ru'} disabled={!can('settings.write')} onChange={(e) => { const next = e.target.value as Locale; setLocale(next); setForm((f) => ({ ...f, locale: next })) }}>
                       <option value="ru">Русский</option><option value="uz">O‘zbekcha</option><option value="en">English</option>
                     </Select>
                   </Field>
@@ -113,7 +116,7 @@ export default function SettingsPage() {
                   </Field>
                   <Field label="Часовой пояс" htmlFor="tz">
                     <Select id="tz" value={form.timezone ?? 'Asia/Tashkent'} disabled={!can('settings.write')} onChange={(e) => setForm((f) => ({ ...f, timezone: e.target.value }))}>
-                      <option value="Asia/Tashkent">Asia/Tashkent (UTC+5)</option><option value="Asia/Almaty">Asia/Almaty (UTC+5)</option><option value="Europe/Moscow">Europe/Moscow (UTC+3)</option><option value="UTC">UTC</option>
+                      {TIMEZONES.map((zone) => <option key={zone.name} value={zone.name}>{zone.name} ({formatUtcOffset(zone.offset)})</option>)}
                     </Select>
                   </Field>
                   <div className="rounded-xl bg-bg p-3 text-[11px] text-muted">

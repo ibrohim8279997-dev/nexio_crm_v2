@@ -105,7 +105,7 @@ export const authRoutes = {
     if (!ctx.user) return json({ user: null, tenants: [], tenant: null, role: null, isPlatformAdmin: false })
     if (ctx.user.is_platform_admin) return json({ user: ctx.user, tenants: [], tenant: null, role: null, isPlatformAdmin: true })
     const tenants = await ctx.env.DB.prepare(
-      `SELECT t.id, t.name, t.slug, t.brand_color, t.logo_text, t.status, t.currency, t.timezone, t.locale,
+      `SELECT t.id, t.name, t.slug, t.brand_color, t.logo_text, t.logo_url, t.status, t.currency, t.timezone, t.locale,
               m.role, s.status AS subscription_status
          FROM tenant_memberships m
          JOIN tenants t ON t.id = m.tenant_id
@@ -115,7 +115,7 @@ export const authRoutes = {
     ).bind(ctx.user.id).all<any>()
 
     const current = ctx.tenantId
-      ? await ctx.env.DB.prepare('SELECT id, name, slug, brand_color, logo_text, locale, timezone, currency, status, legal_name FROM tenants WHERE id = ?').bind(ctx.tenantId).first<any>()
+      ? await ctx.env.DB.prepare('SELECT id, name, slug, brand_color, logo_text, logo_url, locale, timezone, currency, status, legal_name FROM tenants WHERE id = ?').bind(ctx.tenantId).first<any>()
       : null
     return json({ user: ctx.user, role: ctx.role, tenant: current, tenants: tenants.results, isPlatformAdmin: !!ctx.user.is_platform_admin })
   },
@@ -170,7 +170,7 @@ export const authRoutes = {
   },
 
   async inviteInfo(ctx: Ctx) {
-    const inv = await ctx.env.DB.prepare("SELECT id, tenant_id, email, role FROM invitations WHERE token = ? AND status = 'pending' AND expires_at > ?")
+    const inv = await ctx.env.DB.prepare("SELECT id, tenant_id, email, role, org_id, contact_id FROM invitations WHERE token = ? AND status = 'pending' AND expires_at > ?")
       .bind(ctx.params.token, now()).first<any>()
     if (!inv) throw new ApiError(410, 'Приглашение недействительно или истекло', 'gone')
     const tenant = await ctx.env.DB.prepare('SELECT name FROM tenants WHERE id = ?').bind(inv.tenant_id).first<any>()
@@ -178,7 +178,7 @@ export const authRoutes = {
   },
 
   async acceptInvite(ctx: Ctx) {
-    const inv = await ctx.env.DB.prepare("SELECT id, tenant_id, email, role FROM invitations WHERE token = ? AND status = 'pending' AND expires_at > ?")
+    const inv = await ctx.env.DB.prepare("SELECT id, tenant_id, email, role, org_id, contact_id FROM invitations WHERE token = ? AND status = 'pending' AND expires_at > ?")
       .bind(ctx.params.token, now()).first<any>()
     if (!inv) throw new ApiError(410, 'Приглашение недействительно или истекло', 'gone')
     const b = await body<any>(ctx)
@@ -193,7 +193,7 @@ export const authRoutes = {
       user = { id, name, email: inv.email, avatar_color: randomColor(inv.email), is_platform_admin: 0 }
     }
     await ctx.env.DB.batch([
-      ctx.env.DB.prepare('INSERT OR IGNORE INTO tenant_memberships (id,tenant_id,user_id,role,status,created_at) VALUES (?,?,?,?,?,?)').bind(newId('mem'), inv.tenant_id, user.id, inv.role, 'active', now()),
+      ctx.env.DB.prepare('INSERT OR IGNORE INTO tenant_memberships (id,tenant_id,user_id,role,status,org_id,contact_id,created_at) VALUES (?,?,?,?,?,?,?,?)').bind(newId('mem'), inv.tenant_id, user.id, inv.role, 'active', inv.org_id ?? null, inv.contact_id ?? null, now()),
       ctx.env.DB.prepare("UPDATE invitations SET status = 'accepted' WHERE id = ?").bind(inv.id),
     ])
     const sid = await createSession(ctx.env, user.id, inv.tenant_id, ctx.req)

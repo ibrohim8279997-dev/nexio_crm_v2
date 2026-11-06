@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Briefcase, Building2, Contact, FileText, FolderKanban, Search, ShoppingCart, Target } from 'lucide-react'
+import { Activity, Briefcase, Building2, Contact, FileText, FolderKanban, PhoneCall, Search, ShoppingCart, Target } from 'lucide-react'
 import { cn } from '../../lib/cn'
 import { useApi } from '../../lib/hooks'
 import { qs } from '../../lib/api'
@@ -15,10 +15,13 @@ const TYPE_META: Record<string, { icon: React.ReactNode; label: string; route: (
   lead: { icon: <Target className="size-4" />, label: 'Лид', route: () => `/app/leads` },
   order: { icon: <ShoppingCart className="size-4" />, label: 'Заказ', route: () => `/app/orders` },
   project: { icon: <FolderKanban className="size-4" />, label: 'Проект', route: () => `/app/projects` },
+  activity: { icon: <Activity className="size-4" />, label: 'CRM activity', route: () => '/app' },
+  call: { icon: <PhoneCall className="size-4" />, label: 'Call evidence', route: () => '/app/ai-calls' },
 }
 
 const QUICK = [
   { label: 'Dashboard', to: '/app' },
+  { label: 'My Day', to: '/app/my-day' },
   { label: 'Лиды', to: '/app/leads' },
   { label: 'Сделки', to: '/app/deals' },
   { label: 'Компании', to: '/app/companies' },

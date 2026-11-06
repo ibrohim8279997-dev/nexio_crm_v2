@@ -10,6 +10,7 @@
   "description": "Плагин телефонии Nexio CRM. Реализует абстракцию SIP-провайдера, историю звонков, связь звонка с клиентом и заказом, учёт минут и событий звонков. Архитектурно готов к подключению Voice AI как отдельного потребителя через Nexio AI Gateway. Реальный провайдер подключается через credentials; без них плагин работает в sandbox-режиме и не утверждает, что звонок был совершён оператором связи.",
   "api_version": "1.0",
   "min_nexio_version": "1.0.0",
+  "navigation": [{"path": "/app/plugins/nexio.telephony", "label": "Telephony", "icon": "phone-call", "order": 10}],
   "dependencies": [],
   "permissions": [
     "crm.contacts.read",

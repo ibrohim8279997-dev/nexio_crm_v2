@@ -19,11 +19,20 @@ function Booting() {
 
 /** Requires an authenticated session; otherwise returns to login preserving the target. */
 export function RequireAuth({ children }: { children: ReactNode }) {
-  const { user, isPlatformAdmin, loading } = useAuth()
+  const { user, role, isPlatformAdmin, loading } = useAuth()
   const location = useLocation()
   if (loading) return <Booting />
   if (!user) return <Navigate to="/login" replace state={{ from: location.pathname }} />
   if (isPlatformAdmin && location.pathname.startsWith('/app')) return <Navigate to="/platform" replace />
+  if (role === 'client_portal_user' && !location.pathname.startsWith('/portal')) return <Navigate to="/portal" replace />
+  return <>{children}</>
+}
+
+export function RequirePortal({ children }: { children: ReactNode }) {
+  const { user, role, loading } = useAuth()
+  if (loading) return <Booting />
+  if (!user) return <Navigate to="/login" replace state={{ from: '/portal' }} />
+  if (role !== 'client_portal_user') return <Navigate to="/app" replace />
   return <>{children}</>
 }
 

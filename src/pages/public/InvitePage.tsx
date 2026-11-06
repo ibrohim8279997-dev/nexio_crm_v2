@@ -25,10 +25,10 @@ export default function InvitePage() {
   async function accept(e: React.FormEvent) {
     e.preventDefault(); setLoading(true); setErr(null)
     try {
-      await api.post(`/api/v1/invites/${token}/accept`, form)
+      const accepted = await api.post<{ role?: string }>(`/api/v1/invites/${token}/accept`, form)
       await refresh()
       toast.success('Приглашение принято', 'Добро пожаловать в рабочее пространство')
-      navigate('/app', { replace: true })
+      navigate(accepted.role === 'client_portal_user' ? '/portal' : '/app', { replace: true })
     } catch (e2) { setErr(e2 instanceof ApiError ? e2.message : 'Не удалось принять приглашение') } finally { setLoading(false) }
   }
 

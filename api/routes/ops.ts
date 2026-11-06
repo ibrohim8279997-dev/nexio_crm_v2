@@ -1,5 +1,5 @@
 import {
-  audit, badRequest, body, json, newId, notFound, now, num, oneOf, paginate, requireAuth, requirePermission, str,
+  audit, badRequest, body, json, newId, notFound, now, notifyUser, num, oneOf, paginate, requireAuth, requirePermission, str,
 } from '../core'
 import type { Ctx } from '../core'
 
@@ -276,6 +276,7 @@ export const taskRoutes = {
       'INSERT INTO tasks (id,tenant_id,title,description,project_id,entity_type,entity_id,assignee_id,status,priority,due_date,created_by,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)'
     ).bind(id, ctx.tenantId, str(b.title, 'title', { max: 250 }), str(b.description, 'description', { required: false, max: 4000 }), b.project_id ?? null, str(b.entity_type, 'entity_type', { required: false, max: 40 }), str(b.entity_id, 'entity_id', { required: false, max: 60 }), b.assignee_id ?? ctx.user!.id, oneOf(b.status, 'status', TASK_STATES, 'todo'), oneOf(b.priority, 'priority', PRIORITIES, 'medium'), str(b.due_date, 'due_date', { required: false, max: 30 }), ctx.user!.id, now(), now()).run()
     await audit(ctx, 'task.created', 'task', id, null)
+    await notifyUser(ctx, String(b.assignee_id ?? ctx.user!.id), 'task', 'Yangi vazifa', String(b.title), '/app/tasks')
     return json({ id }, 201)
   },
 

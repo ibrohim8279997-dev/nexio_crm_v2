@@ -8,6 +8,8 @@ use App\Plugins\PluginRegistry;
 use App\Support\ApiException;
 use App\Support\Ctx;
 use App\Support\H;
+use App\Services\CbuExchangeRateService;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Marketplace, read side. Everything returned here is already filtered and computed server-side:
@@ -75,6 +77,41 @@ class MarketplaceController
             'can_manage' => $canManage,
             'permissions' => $plugin['declared_permissions'],
         ]);
+    }
+
+    public function purchase(Ctx $ctx)
+    {
+        $ctx->auth();
+        H::requirePermission($ctx, 'billing.write');
+        $pluginId = (string) ($ctx->params['id'] ?? '');
+        $plugin = PluginRegistry::detail($ctx, $pluginId);
+        if (!$plugin) throw new ApiException(404, 'Plugin topilmadi', 'not_found');
+        if ($plugin['pricing_model'] !== 'paid' || (float) $plugin['price_monthly'] <= 0) {
+            throw new ApiException(422, 'Bu plugin alohida sotilmaydi', 'not_paid_plugin');
+        }
+        if (DB::table('plugin_purchases')->where('tenant_id', $ctx->tenantId)->where('plugin_id', $pluginId)->where('status', 'active')->exists()) {
+            return H::json(['ok' => true, 'alreadyPurchased' => true]);
+        }
+
+        $invoiceId = H::newId('inv');
+        $quote = (new CbuExchangeRateService())->quote((float) $plugin['price_monthly'], (string) $plugin['currency']);
+        $items = [[
+            'kind' => 'plugin_purchase', 'plugin_id' => $pluginId, 'label' => 'Plugin: ' . $plugin['name'],
+            'qty' => 1, 'amount' => (float) $plugin['price_monthly'],
+        ], ['kind' => 'click_conversion', 'amount' => 0, 'click_quote' => $quote]];
+        DB::table('invoices')->insert([
+            'id' => $invoiceId, 'tenant_id' => $ctx->tenantId, 'number' => 'PLG-' . strtoupper(substr($invoiceId, -8)),
+            'amount' => $plugin['price_monthly'], 'tax' => 0, 'total' => $plugin['price_monthly'], 'currency' => $plugin['currency'],
+            'status' => 'open', 'line_items' => json_encode($items, JSON_UNESCAPED_UNICODE), 'issued_at' => H::now(),
+            'due_at' => gmdate('Y-m-d H:i:s', time() + 86400), 'created_at' => H::now(),
+        ]);
+        $click = config('payments.click', []);
+        $url = null;
+        if (config('payments.provider', 'sandbox') === 'click') {
+            foreach (['merchant_id', 'service_id', 'return_url'] as $key) if (empty($click[$key])) throw new ApiException(503, 'Click konfiguratsiyasi to‘liq emas', 'payment_not_configured');
+            $url = 'https://my.click.uz/services/pay?' . http_build_query(['service_id' => $click['service_id'], 'merchant_id' => $click['merchant_id'], 'amount' => number_format($quote['target_amount'], 2, '.', ''), 'transaction_param' => $invoiceId, 'return_url' => $click['return_url']]);
+        }
+        return H::json(['ok' => true, 'invoice_id' => $invoiceId, 'purchased' => false, 'provider' => config('payments.provider', 'sandbox'), 'payment_url' => $url, 'click_amount_uzs' => $quote['target_amount'], 'exchange_rate' => $quote['rate'], 'exchange_rate_date' => $quote['rate_date'], 'note' => 'Click to‘lovi tasdiqlangach plugin xarid qilinadi.'], 201);
     }
 
     public function updates(Ctx $ctx)

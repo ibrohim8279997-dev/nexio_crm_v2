@@ -17,6 +17,8 @@ export interface Env {
   GROQ_API_KEY?: string
   GROQ_MODEL?: string
   PLATFORM_SECRETS_KEY?: string
+  TELEGRAM_BOT_TOKEN?: string
+  TELEGRAM_BOT_USERNAME?: string
   [key: string]: unknown
 }
 
@@ -229,6 +231,14 @@ export function requireAuth(ctx: Ctx): asserts ctx is Ctx & { user: SessionUser 
 
 // ── helpers ─────────────────────────────────────────────────────────────────
 export const now = () => new Date().toISOString().slice(0, 19).replace('T', ' ')
+export async function notifyUser(ctx: Ctx, userId: string, type: string, title: string, body: string, actionUrl?: string) {
+  await ctx.env.DB.prepare('INSERT INTO notifications (id,tenant_id,user_id,type,title,body,action_url,created_at) VALUES (?,?,?,?,?,?,?,?)')
+    .bind(newId('ntf'), ctx.tenantId, userId, type, title, body, actionUrl ?? null, now()).run()
+  const link = await ctx.env.DB.prepare("SELECT chat_id FROM user_telegram_links WHERE user_id = ? AND chat_id IS NOT NULL AND chat_id <> ''").bind(userId).first<any>()
+  if (link?.chat_id && ctx.env.TELEGRAM_BOT_TOKEN) {
+    await fetch(`https://api.telegram.org/bot${ctx.env.TELEGRAM_BOT_TOKEN}/sendMessage`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ chat_id: link.chat_id, text: `${title}\n${body}` }) }).catch(() => undefined)
+  }
+}
 
 export async function audit(ctx: Ctx, action: string, target: string, targetId: string | null, meta: unknown = null) {
   await ctx.env.DB.prepare(

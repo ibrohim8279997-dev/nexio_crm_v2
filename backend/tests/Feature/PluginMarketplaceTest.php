@@ -124,7 +124,7 @@ class PluginMarketplaceTest extends PluginTestCase
 
     public function test_a_developer_sees_only_their_own_submissions_and_status(): void
     {
-        $this->actingAsAlpha()->postJson('/api/v1/developer/profile', [
+        $this->actingAsBeta()->postJson('/api/v1/developer/profile', [
             'display_name' => 'Alpha Dev', 'email' => 'dev@alpha.test',
         ])->assertStatus(201);
 
@@ -233,18 +233,18 @@ class PluginMarketplaceTest extends PluginTestCase
         ], ['Accept' => 'application/json'])->assertStatus(201)->json('version_id');
 
         // Review queue is empty until there is a submitted version.
-        $this->actingAsAlpha()->getJson('/api/v1/platform/marketplace/reviews')->assertStatus(200)->assertJsonPath('data', []);
+        $this->actingAsPlatform()->getJson('/api/v1/platform/marketplace/reviews')->assertStatus(200)->assertJsonPath('data', []);
 
         // Submit for review: status moves, platform review queue sees it.
         $this->actingAsBeta()->postJson("/api/v1/developer/versions/{$versionId}/submit")->assertStatus(200);
-        $this->actingAsAlpha()->getJson('/api/v1/platform/marketplace/reviews')->assertStatus(200)->assertJsonCount(1, 'data');
+        $this->actingAsPlatform()->getJson('/api/v1/platform/marketplace/reviews')->assertStatus(200)->assertJsonCount(1, 'data');
 
         // Approve and publish as platform operator.
-        $this->actingAsAlpha()->postJson("/api/v1/platform/marketplace/versions/{$versionId}/review", [
+        $this->actingAsPlatform()->postJson("/api/v1/platform/marketplace/versions/{$versionId}/review", [
             'decision' => 'approve',
             'notes' => 'Принято.',
         ])->assertStatus(200);
-        $this->actingAsAlpha()->postJson("/api/v1/platform/marketplace/versions/{$versionId}/publish")->assertStatus(200);
+        $this->actingAsPlatform()->postJson("/api/v1/platform/marketplace/versions/{$versionId}/publish")->assertStatus(200);
 
         // End customer now sees the published plugin.
         $plugin = $this->actingAsAlpha()->getJson('/api/v1/marketplace/plugins/review.demo');

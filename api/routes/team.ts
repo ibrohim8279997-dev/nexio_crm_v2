@@ -12,12 +12,15 @@ export const teamRoutes = {
     requireAuth(ctx); requirePermission(ctx, 'team.read')
     const t = ctx.tenantId!
     const rows = await ctx.env.DB.prepare(
-      `SELECT m.id AS membership_id, m.role, m.department, m.title, m.status AS member_status, m.created_at AS joined_at,
+      `SELECT m.id AS membership_id, m.role, m.org_id, m.contact_id, o.name AS org_name,
+              CASE WHEN c.id IS NOT NULL THEN TRIM(c.first_name || ' ' || COALESCE(c.last_name, '')) END AS contact_name,
+              m.department, m.title, m.status AS member_status, m.created_at AS joined_at,
               u.id, u.name, u.email, u.avatar_color, u.last_login_at, u.mfa_enabled,
               (SELECT COUNT(*) FROM deals d WHERE d.owner_id = u.id AND d.tenant_id = m.tenant_id AND d.status='open') AS open_deals,
               (SELECT COUNT(*) FROM tasks k WHERE k.assignee_id = u.id AND k.tenant_id = m.tenant_id AND k.status!='done') AS open_tasks,
               (SELECT COALESCE(SUM(d.amount),0) FROM deals d WHERE d.owner_id = u.id AND d.tenant_id = m.tenant_id AND d.status='won') AS won_value
-         FROM tenant_memberships m JOIN users u ON u.id = m.user_id
+         FROM tenant_memberships m JOIN users u ON u.id = m.user_id LEFT JOIN organizations o ON o.id = m.org_id
+              LEFT JOIN contacts c ON c.id = m.contact_id AND c.tenant_id = m.tenant_id
         WHERE m.tenant_id = ? ORDER BY m.role, u.name`
     ).bind(t).all<any>()
     const invites = await ctx.env.DB.prepare("SELECT id, email, role, status, expires_at, created_at FROM invitations WHERE tenant_id = ? AND role != 'password_reset' ORDER BY created_at DESC").bind(t).all<any>()
@@ -43,6 +46,15 @@ export const teamRoutes = {
     const b = await body<any>(ctx)
     const email = str(b.email, 'email', { max: 190 })!.toLowerCase()
     const role = oneOf(b.role, 'role', ROLES)
+    const orgId = role === 'client_portal_user' ? str(b.org_id, 'org_id', { max: 64 }) : null
+    const contactId = role === 'client_portal_user' ? str(b.contact_id, 'contact_id', { max: 64 }) : null
+    if (role === 'client_portal_user' && (!orgId || !contactId)) throw badRequest('Portal klienti uchun kompaniya va clientni tanlang')
+    if (orgId) {
+      const org = await ctx.env.DB.prepare('SELECT id FROM organizations WHERE id = ? AND tenant_id = ?').bind(orgId, t).first()
+      if (!org) throw notFound('Kompaniya topilmadi')
+      const contact = await ctx.env.DB.prepare('SELECT id FROM contacts WHERE id = ? AND org_id = ? AND tenant_id = ?').bind(contactId, orgId, t).first()
+      if (!contact) throw notFound('Client topilmadi yoki kompaniyaga tegishli emas')
+    }
     if (role === 'tenant_owner' && ctx.role !== 'tenant_owner') throw badRequest('Только владелец компании может назначить роль владельца')
 
     const sub = await ctx.env.DB.prepare(
@@ -60,9 +72,9 @@ export const teamRoutes = {
     }
     const token = newToken()
     const id = newId('inv')
-    await ctx.env.DB.prepare('INSERT INTO invitations (id,tenant_id,email,role,token,invited_by,status,expires_at,created_at) VALUES (?,?,?,?,?,?,?,?,?)')
-      .bind(id, t, email, role, token, ctx.user!.id, 'pending', new Date(Date.now() + 7 * 864e5).toISOString().slice(0, 19).replace('T', ' '), now()).run()
-    await audit(ctx, 'user.invited', 'invitation', id, { email, role })
+    await ctx.env.DB.prepare('INSERT INTO invitations (id,tenant_id,email,role,org_id,contact_id,token,invited_by,status,expires_at,created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)')
+      .bind(id, t, email, role, orgId, contactId, token, ctx.user!.id, 'pending', new Date(Date.now() + 7 * 864e5).toISOString().slice(0, 19).replace('T', ' '), now()).run()
+    await audit(ctx, 'user.invited', 'invitation', id, { email, role, org_id: orgId, contact_id: contactId })
     // No mail provider configured: return the link so the admin can deliver it manually.
     return json({ id, inviteUrl: `/invite/${token}`, emailed: false, note: 'Почтовый провайдер не подключён — передайте ссылку вручную.' }, 201)
   },
@@ -78,14 +90,24 @@ export const teamRoutes = {
     requireAuth(ctx); requirePermission(ctx, 'roles.write')
     const t = ctx.tenantId!
     const b = await body<any>(ctx)
-    const member = await ctx.env.DB.prepare('SELECT id, user_id, role FROM tenant_memberships WHERE id = ? AND tenant_id = ?').bind(ctx.params.id, t).first<any>()
+    const member = await ctx.env.DB.prepare('SELECT id, user_id, role, org_id, contact_id FROM tenant_memberships WHERE id = ? AND tenant_id = ?').bind(ctx.params.id, t).first<any>()
     if (!member) throw notFound('Участник не найден')
     const owners = await ctx.env.DB.prepare("SELECT COUNT(*) AS c FROM tenant_memberships WHERE tenant_id = ? AND role = 'tenant_owner'").bind(t).first<any>()
     if (member.role === 'tenant_owner' && owners.c <= 1 && b.role && b.role !== 'tenant_owner') throw badRequest('У компании должен остаться хотя бы один владелец')
     const role = b.role ? oneOf(b.role, 'role', ROLES) : null
     const status = b.status ? oneOf(b.status, 'status', ['active', 'suspended'] as const) : null
-    await ctx.env.DB.prepare('UPDATE tenant_memberships SET role=COALESCE(?,role), department=?, title=?, status=COALESCE(?,status) WHERE id=? AND tenant_id=?')
-      .bind(role, str(b.department, 'department', { required: false, max: 80 }), str(b.title, 'title', { required: false, max: 80 }), status, ctx.params.id, t).run()
+    const finalRole = role ?? member.role
+    const orgId = finalRole === 'client_portal_user' ? (str(b.org_id, 'org_id', { max: 64 }) ?? member.org_id) : null
+    const contactId = finalRole === 'client_portal_user' ? (str(b.contact_id, 'contact_id', { max: 64 }) ?? member.contact_id) : null
+    if (finalRole === 'client_portal_user' && (!orgId || !contactId)) throw badRequest('Portal klienti uchun kompaniya va clientni tanlang')
+    if (orgId) {
+      const org = await ctx.env.DB.prepare('SELECT id FROM organizations WHERE id = ? AND tenant_id = ?').bind(orgId, t).first()
+      if (!org) throw notFound('Kompaniya topilmadi')
+      const contact = await ctx.env.DB.prepare('SELECT id FROM contacts WHERE id = ? AND org_id = ? AND tenant_id = ?').bind(contactId, orgId, t).first()
+      if (!contact) throw notFound('Client topilmadi yoki kompaniyaga tegishli emas')
+    }
+    await ctx.env.DB.prepare('UPDATE tenant_memberships SET role=COALESCE(?,role), org_id=?, contact_id=?, department=?, title=?, status=COALESCE(?,status) WHERE id=? AND tenant_id=?')
+      .bind(role, orgId, contactId, str(b.department, 'department', { required: false, max: 80 }), str(b.title, 'title', { required: false, max: 80 }), status, ctx.params.id, t).run()
     await audit(ctx, 'role.changed', 'membership', ctx.params.id, { role, status })
     return json({ ok: true })
   },
@@ -110,7 +132,7 @@ export const settingsRoutes = {
   async get(ctx: Ctx) {
     requireAuth(ctx); requirePermission(ctx, 'settings.read')
     const t = ctx.tenantId!
-    const tenant = await ctx.env.DB.prepare('SELECT id,name,slug,legal_name,logo_text,brand_color,locale,timezone,currency,country,industry,status FROM tenants WHERE id = ?').bind(t).first<any>()
+    const tenant = await ctx.env.DB.prepare('SELECT id,name,slug,legal_name,logo_text,logo_url,brand_color,locale,timezone,currency,country,industry,status FROM tenants WHERE id = ?').bind(t).first<any>()
     const settings = await ctx.env.DB.prepare('SELECT settings FROM tenant_settings WHERE tenant_id = ?').bind(t).first<any>()
     const flags = await ctx.env.DB.prepare('SELECT key, enabled FROM feature_flags WHERE tenant_id = ?').bind(t).all<any>()
     const stages = await ctx.env.DB.prepare('SELECT id,key,name,position,probability,kind,color FROM pipeline_stages WHERE tenant_id = ? ORDER BY position').bind(t).all<any>()
@@ -128,8 +150,8 @@ export const settingsRoutes = {
     requireAuth(ctx); requirePermission(ctx, 'settings.write')
     const t = ctx.tenantId!
     const b = await body<any>(ctx)
-    await ctx.env.DB.prepare('UPDATE tenants SET name=COALESCE(?,name), legal_name=?, logo_text=?, brand_color=COALESCE(?,brand_color), locale=COALESCE(?,locale), timezone=COALESCE(?,timezone), currency=COALESCE(?,currency), industry=?, updated_at=? WHERE id=?')
-      .bind(str(b.name, 'name', { required: false, max: 160 }), str(b.legal_name, 'legal_name', { required: false, max: 200 }), str(b.logo_text, 'logo_text', { required: false, max: 20 }), str(b.brand_color, 'brand_color', { required: false, max: 9 }), b.locale ? oneOf(b.locale, 'locale', ['ru', 'uz', 'en'] as const) : null, str(b.timezone, 'timezone', { required: false, max: 60 }), str(b.currency, 'currency', { required: false, max: 8 }), str(b.industry, 'industry', { required: false, max: 120 }), now(), t).run()
+    await ctx.env.DB.prepare('UPDATE tenants SET name=COALESCE(?,name), legal_name=?, logo_text=?, logo_url=?, brand_color=COALESCE(?,brand_color), locale=COALESCE(?,locale), timezone=COALESCE(?,timezone), currency=COALESCE(?,currency), industry=?, updated_at=? WHERE id=?')
+      .bind(str(b.name, 'name', { required: false, max: 160 }), str(b.legal_name, 'legal_name', { required: false, max: 200 }), str(b.logo_text, 'logo_text', { required: false, max: 20 }), str(b.logo_url, 'logo_url', { required: false, max: 2_000_000 }), str(b.brand_color, 'brand_color', { required: false, max: 9 }), b.locale ? oneOf(b.locale, 'locale', ['ru', 'uz', 'en'] as const) : null, str(b.timezone, 'timezone', { required: false, max: 60 }), str(b.currency, 'currency', { required: false, max: 8 }), str(b.industry, 'industry', { required: false, max: 120 }), now(), t).run()
 
     if (b.settings && typeof b.settings === 'object') {
       const cur = await ctx.env.DB.prepare('SELECT settings FROM tenant_settings WHERE tenant_id = ?').bind(t).first<any>()

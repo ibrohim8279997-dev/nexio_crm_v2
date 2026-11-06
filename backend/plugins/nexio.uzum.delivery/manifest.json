@@ -1,63 +1,34 @@
 {
   "id": "nexio.uzum.delivery",
   "name": "Nexio Uzum Delivery",
-  "display_name": "Nexio Uzum Delivery",
+  "display_name": "Uzum Delivery",
   "version": "1.0.0",
   "type": "official",
   "author": "Nexio Lab",
   "category": "delivery",
-  "tagline": "Адаптер доставки Uzum (требует официального доступа и учётных данных)",
-  "description": "Адаптер интеграции Nexio Delivery с курьерской службой Uzum Tezkor. Работает только через универсальный слой nexio.delivery и не дублирует его логику. ВАЖНО: публичная документация API Uzum Tezkor не найдена и не подтверждена, поэтому адаптер НЕ выполняет сетевых запросов и не содержит предположений о его методах. Все операции возвращают понятную ошибку до тех пор, пока провайдер не предоставит официальную документацию и учётные данные.",
+  "tagline": "Uzum courier connection",
+  "description": "Uzum delivery adapter. The company enters its own HTTPS API endpoint and token in the plugin connection; secrets stay encrypted on the backend.",
   "api_version": "1.0",
   "min_nexio_version": "1.0.0",
-  "dependencies": [
-    {
-      "plugin_id": "nexio.delivery",
-      "constraint": ">=1.0.0",
-      "optional": false
-    }
-  ],
-  "permissions": [
-    "delivery.read",
-    "delivery.create",
-    "delivery.update",
-    "delivery.cancel",
-    "delivery.track",
-    "settings.write"
-  ],
+  "navigation": [{"path": "/app/plugins/nexio.uzum.delivery", "label": "Uzum Delivery", "icon": "truck", "order": 20}],
+  "dependencies": [{"plugin_id": "nexio.delivery", "constraint": ">=1.0.0", "optional": false}],
+  "permissions": ["delivery.read", "delivery.create", "delivery.update", "delivery.cancel", "delivery.track", "settings.write"],
   "hooks": [],
-  "usage_metrics": [
-    "connected_accounts"
-  ],
+  "usage_metrics": ["connected_accounts"],
   "settings_schema": {
-    "merchant_id": {
-      "type": "string",
-      "default": "",
-      "label": "Идентификатор мерчанта",
-      "description": "Выдаётся курьерской службой после заключения договора."
-    },
-    "warehouse_code": {
-      "type": "string",
-      "default": "",
-      "label": "Код склада"
-    },
-    "api_base_host": {
-      "type": "string",
-      "default": "",
-      "label": "Хост API",
-      "description": "Заполняется только после получения официальной документации. Пока пусто, интеграция отключена."
-    },
-    "integration_enabled": {
-      "type": "boolean",
-      "default": false,
-      "label": "Интеграция включена",
-      "description": "Включайте только после подтверждения официального доступа и документации."
-    }
+    "merchant_id": {"type": "string", "default": "", "label": "Merchant ID"},
+    "warehouse_code": {"type": "string", "default": "", "label": "Warehouse code"},
+    "integration_enabled": {"type": "boolean", "default": true, "label": "Integration enabled"},
+    "create_path": {"type": "string", "default": "/deliveries", "label": "Create endpoint path"},
+    "request_template": {"type": "json", "default": {}, "label": "Request body template", "description": "Optional JSON; placeholders include {{address_from}}, {{address_to}}, {{recipient_name}}, {{recipient_phone}}, {{distance_km}}, {{weight_kg}}, {{declared_value}}."},
+    "response_shipment_id_path": {"type": "string", "default": "id", "label": "Response ID path"},
+    "response_status_path": {"type": "string", "default": "status", "label": "Response status path"},
+    "response_cost_path": {"type": "string", "default": "cost", "label": "Response cost path"},
+    "response_tracking_path": {"type": "string", "default": "tracking_url", "label": "Response tracking path"},
+    "currency": {"type": "string", "default": "UZS", "label": "Currency"},
+    "auth_header": {"type": "string", "default": "Authorization", "label": "Auth header"},
+    "auth_prefix": {"type": "string", "default": "Bearer", "label": "Auth prefix"}
   },
-  "feature_flags": [
-    "delivery_create"
-  ],
-  "runtime": {
-    "entry": "Nexio\\UzumDelivery\\Plugin@Plugin.php"
-  }
+  "feature_flags": ["delivery_create"],
+  "runtime": {"entry": "Nexio\\UzumDelivery\\Plugin@Plugin.php"}
 }

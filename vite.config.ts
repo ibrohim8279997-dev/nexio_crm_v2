@@ -8,7 +8,7 @@ import tailwindcss from '@tailwindcss/vite'
 // Prod: `vite build` emits dist/, which the Worker serves through the ASSETS binding.
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', '')
-  const apiTarget = env.VITE_API_TARGET || 'http://127.0.0.1:8787'
+  const apiTarget = env.VITE_API_TARGET || 'http://127.0.0.1:8000'
 
   return {
     plugins: [react(), tailwindcss()],
@@ -20,6 +20,7 @@ export default defineConfig(({ mode }) => {
       host: true,
       port: 3000,
       strictPort: true,
+      allowedHosts: ['doorway-ensnare-bobcat.ngrok-free.dev'],
       proxy: {
         '/api': {
           target: apiTarget,

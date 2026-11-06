@@ -32,6 +32,7 @@ class PluginSeeder extends Seeder
 {
     /** Marketplace taxonomy. Managed afterwards through Super Admin. */
     private const CATEGORIES = [
+        ['inventory', 'Inventory', 'Warehouse inventory and stock control', 'Warehouse'],
         ['telephony', 'Telephony', 'Телефония и звонки', 'PhoneCall'],
         ['delivery', 'Delivery', 'Доставка и логистика', 'Truck'],
         ['ai', 'AI', 'Искусственный интеллект', 'Sparkles'],
@@ -50,6 +51,7 @@ class PluginSeeder extends Seeder
         'nexio.delivery' => 'Truck',
         'nexio.uzum.delivery' => 'Package',
         'nexio.yandex.delivery' => 'Package',
+        'nexio.inventory' => 'Warehouse',
     ];
 
     public function run(): void
@@ -58,6 +60,7 @@ class PluginSeeder extends Seeder
         $developerId = $this->officialDeveloper();
         $this->plugins($developerId);
         $this->defaultEntitlement();
+        $this->inventoryEntitlements();
         $this->exampleLimits();
     }
 
@@ -112,6 +115,8 @@ class PluginSeeder extends Seeder
                    name = excluded.name, tagline = excluded.tagline, description = excluded.description,
                    type = excluded.type, author = excluded.author, developer_id = excluded.developer_id,
                    category_id = excluded.category_id, icon = excluded.icon, source_path = excluded.source_path,
+                   pricing_model = excluded.pricing_model, price_monthly = excluded.price_monthly,
+                   currency = excluded.currency, visibility = excluded.visibility,
                    is_published = 1, updated_at = excluded.updated_at',
                 [
                     $pluginId,
@@ -234,6 +239,9 @@ class PluginSeeder extends Seeder
     {
         $now = H::now();
         $rows = [
+            ['nexio.inventory', 'starter', 'inventory_movements', 'monthly', 'company', 1000, 'BLOCK', 'movements', 'Starter warehouse movement limit.'],
+            ['nexio.inventory', 'business', 'inventory_movements', 'monthly', 'company', 10000, 'WARN', 'movements', 'Business warehouse movement warning.'],
+            ['nexio.inventory', 'enterprise', 'inventory_movements', 'monthly', 'company', null, 'ALLOW_OVERAGE', 'movements', 'Enterprise has no hard movement limit.'],
             // [plugin, plan, metric, period, scope, limit|null, policy, unit, note]
             ['nexio.telephony', 'starter', 'telephony_minutes', 'monthly', 'company', 0, 'BLOCK', 'минут', 'Пример: на Starter телефонные минуты не входят в тариф (лимит 0 = операция запрещена).'],
             ['nexio.telephony', 'business', 'telephony_minutes', 'monthly', 'company', 300, 'BLOCK', 'минут', 'Пример коммерческого лимита.'],
@@ -245,7 +253,20 @@ class PluginSeeder extends Seeder
             ['nexio.delivery', 'starter', 'delivery_quotes', 'daily', 'company', 20, 'BLOCK', 'расчётов', 'Пример дневного лимита.'],
         ];
 
+        $rows = array_merge($rows, [
+            ['nexio.ai.assistant', 'starter', 'ai_tokens', 'monthly', 'company', 10000, 'BLOCK', 'token', 'AI yordamchi uchun oylik token limiti.'],
+            ['nexio.ai.assistant', 'business', 'ai_tokens', 'monthly', 'company', 100000, 'BLOCK', 'token', 'AI yordamchi uchun oylik token limiti.'],
+            ['nexio.ai.assistant', 'enterprise', 'ai_tokens', 'monthly', 'company', null, 'WARN', 'token', 'Enterprise uchun token limiti yo‘q.'],
+        ]);
+
         foreach ($rows as $i => [$pluginId, $planCode, $metric, $period, $scope, $limit, $policy, $unit, $note]) {
+            // A limit references plugins.id. If a manifest is invalid or deliberately omitted in
+            // an environment, skip its example policy instead of violating the foreign key and
+            // making every fresh test/install fail. A later seed after the plugin is available is
+            // safe because this method is idempotent.
+            if (!DB::table('plugins')->where('id', $pluginId)->exists()) {
+                continue;
+            }
             $plan = DB::selectOne('SELECT id FROM plans WHERE code = ?', [$planCode]);
             if (!$plan) {
                 // Plan codes differ in another environment; skip rather than invent a plan.
@@ -273,7 +294,10 @@ class PluginSeeder extends Seeder
                    (id, plugin_id, plan_id, metric, period, scope, period_days, limit_value, enforcement_policy, is_enabled, unit, notes, created_at, updated_at)
                  VALUES (?,?,?,?,?,?,NULL,?,?,1,?,?,?,?)',
                 [
-                    'pll_' . ($i + 1),
+                    // The composite lookup above makes reseeding idempotent. New rows still need
+                    // globally unique primary keys because pll_1, pll_2, ... may already belong
+                    // to another plugin from an older seed run.
+                    H::newId('pll'),
                     $pluginId,
                     $plan->id,
                     $metric,
@@ -286,6 +310,40 @@ class PluginSeeder extends Seeder
                     $now,
                     $now,
                 ]
+            );
+        }
+    }
+
+    /** Explicit commercial access for the official Inventory add-on. */
+    private function inventoryEntitlements(): void
+    {
+        $now = H::now();
+        $rules = [
+            ['starter', 1, 1, 1, 3, 'Inventory add-on: Starter access, one installation and up to three warehouses.'],
+            ['business', 1, 1, 5, 20, 'Inventory add-on: Business access, up to five installations and twenty warehouses.'],
+            ['enterprise', 1, 1, null, null, 'Inventory add-on: Enterprise access without installation or warehouse caps.'],
+        ];
+
+        foreach ($rules as [$planCode, $canInstall, $canUse, $maxInstallations, $maxConnections, $notes]) {
+            $plan = DB::selectOne('SELECT id FROM plans WHERE code = ?', [$planCode]);
+            if (!$plan || !DB::table('plugins')->where('id', 'nexio.inventory')->exists()) continue;
+
+            $existing = DB::selectOne(
+                'SELECT id FROM plugin_entitlements WHERE plugin_id = ? AND plan_id = ? LIMIT 1',
+                ['nexio.inventory', $plan->id]
+            );
+            if ($existing) {
+                DB::update(
+                    'UPDATE plugin_entitlements SET can_install = ?, can_use = ?, max_installations = ?, max_connections = ?, is_enabled = 1, notes = ?, updated_at = ? WHERE id = ?',
+                    [$canInstall, $canUse, $maxInstallations, $maxConnections, $notes, $now, $existing->id]
+                );
+                continue;
+            }
+
+            DB::insert(
+                'INSERT INTO plugin_entitlements (id, plugin_id, plan_id, can_install, can_use, max_installations, max_connections, trial_allowed, is_enabled, notes, created_at, updated_at)
+                 VALUES (?,?,?,?,?,?,?,0,1,?,?,?)',
+                [H::newId('ple'), 'nexio.inventory', $plan->id, $canInstall, $canUse, $maxInstallations, $maxConnections, $notes, $now, $now]
             );
         }
     }
