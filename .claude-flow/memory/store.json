@@ -1133,6 +1133,456 @@
       "lastAccessed": "2026-11-06T17:59:58.217Z",
       "accessCount": 0,
       "expiresAt": "2026-12-06T17:59:58.217Z"
+    },
+    "cmd-1794053300469": {
+      "key": "cmd-1794053300469",
+      "value": "{\"command\":\"ls -la && git log --oneline | head -5 && find . -iname \\\"*.pdf\\\" -not -path \\\"*/node_modules/*\\\" | head; cat package.json 2>/dev/null | head -40\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-07T12:08:20.469Z",
+      "lastAccessed": "2026-11-07T12:08:20.469Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-07T12:08:20.469Z"
+    },
+    "cmd-1794053334127": {
+      "key": "cmd-1794053334127",
+      "value": "{\"command\":\"ls backend backend/app backend/app/Http/Controllers* 2>/dev/null | head -80; echo ---; find src -name \\\"*.tsx\\\" -o -name \\\"*.ts\\\" | grep -v node_modules | head -100; echo ---; ls src/i18n* src/locales* 2>/dev/null; grep -ril \\\"plugin.php\\\" backend --include=*.php -l 2>/dev/null | grep -v vendor | head; cat deploy.sh | head -80\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-07T12:08:54.127Z",
+      "lastAccessed": "2026-11-07T12:08:54.127Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-07T12:08:54.127Z"
+    },
+    "cmd-1794053342282": {
+      "key": "cmd-1794053342282",
+      "value": "{\"command\":\"cd /c/Users/Ibrohim/nexio_crm_v2/backend && cat app/Plugins/PluginLoader.php | head -150; ls plugins plugins/* | head -60; cat .gitignore 2>/dev/null; git -C .. check-ignore -v backend/plugins 2>&1\",\"exitCode\":1,\"success\":false}",
+      "namespace": "commands",
+      "storedAt": "2026-11-07T12:09:02.282Z",
+      "lastAccessed": "2026-11-07T12:09:02.282Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-07T12:09:02.282Z"
+    },
+    "cmd-1794053348907": {
+      "key": "cmd-1794053348907",
+      "value": "{\"command\":\"cd /c/Users/Ibrohim/nexio_crm_v2/backend && grep -n '\\\"entry\\\"\\\\|\\\"plugin_id\\\"\\\\|\\\"runtime\\\"' -A0 plugins/*/manifest.json; git -C .. ls-files backend/plugins | head -30; sed -n 150,260p app/Plugins/PluginLoader.php; grep -n \\\"plugins\\\" config/nexio.php\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-07T12:09:08.907Z",
+      "lastAccessed": "2026-11-07T12:09:08.907Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-07T12:09:08.907Z"
+    },
+    "cmd-1794053365776": {
+      "key": "cmd-1794053365776",
+      "value": "{\"command\":\"cd /c/Users/Ibrohim/nexio_crm_v2 && wc -l src/lib/i18n.tsx && head -60 src/lib/i18n.tsx && grep -c \\\"\\\" src/pages/app/Documents.tsx src/pages/platform/Tenants.tsx src/pages/platform/Plans.tsx src/pages/platform/Subscriptions.tsx; ls backend/routes backend/app/Http/Controllers/Api backend/lang backend/resources/lang 2>/dev/null; ls backend/tests/Feature | head -50\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-07T12:09:25.776Z",
+      "lastAccessed": "2026-11-07T12:09:25.776Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-07T12:09:25.776Z"
+    },
+    "cmd-1794053382118": {
+      "key": "cmd-1794053382118",
+      "value": "{\"command\":\"cd /c/Users/Ibrohim/nexio_crm_v2 && cat .mcp.json; timeout 90 npx --no-install @claude-flow/cli --version 2>&1 | tail -3; timeout 90 npx --no-install ruflo --version 2>&1 | tail -3; which php composer node; php -v 2>&1 | head -1\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-07T12:09:42.118Z",
+      "lastAccessed": "2026-11-07T12:09:42.118Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-07T12:09:42.118Z"
+    },
+    "cmd-1794053402923": {
+      "key": "cmd-1794053402923",
+      "value": "{\"command\":\"npx -y ruflo@latest --version 2>&1 | tail -5 && npx -y ruflo@latest swarm init --topology hierarchical --max-agents 60 --strategy specialized 2>&1 | tail -20\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-07T12:10:02.923Z",
+      "lastAccessed": "2026-11-07T12:10:02.923Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-07T12:10:02.923Z"
+    },
+    "cmd-1794053420797": {
+      "key": "cmd-1794053420797",
+      "value": "{\"command\":\"for f in $(find src -name \\\"*.tsx\\\" | sort); do c=$(grep -cP '[\\\\x{0400}-\\\\x{04FF}]' \\\"$f\\\"); t=$(grep -c \\\"useI18n\\\\|t('\\\" \\\"$f\\\"); l=$(wc -l <\\\"$f\\\"); echo \\\"$l cyr=$c i18n=$t $f\\\"; done; echo; grep -rlP '[\\\\x{0400}-\\\\x{04FF}]' backend/app backend/plugins backend/routes --include=*.php | wc -l; grep -rcP '[\\\\x{0400}-\\\\x{04FF}]' backend/app backend/plugins --include=*.php | awk -F: '{s+=$2} END {print s}'\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-07T12:10:20.797Z",
+      "lastAccessed": "2026-11-07T12:10:20.797Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-07T12:10:20.797Z"
+    },
+    "cmd-1794053430540": {
+      "key": "cmd-1794053430540",
+      "value": "{\"command\":\"cat \\\"C:\\\\Users\\\\Ibrohim\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\a5e33a921a1bd9fd\\\\3de3eb3f-8869-457b-a400-717c021bff0e\\\\tasks\\\\b431ntbuz.output\\\" | tail -25; node -e '\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-07T12:10:30.540Z",
+      "lastAccessed": "2026-11-07T12:10:30.540Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-07T12:10:30.540Z"
+    },
+    "cmd-1794053453978": {
+      "key": "cmd-1794053453978",
+      "value": "{\"command\":\"sed -n 1,80p src/lib/api.ts; ls backend/app/Http/Controllers/Api/V1 backend/app/Http/Middleware 2>/dev/null; ls backend/app/Services backend/app/Support; cat backend/bootstrap/app.php; python -c \\\"print(1)\\\" 2>&1; ls backend/lang 2>&1\",\"exitCode\":2,\"success\":false}",
+      "namespace": "commands",
+      "storedAt": "2026-11-07T12:10:53.978Z",
+      "lastAccessed": "2026-11-07T12:10:53.978Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-07T12:10:53.978Z"
+    },
+    "cmd-1794053466362": {
+      "key": "cmd-1794053466362",
+      "value": "{\"command\":\"cd /c/Users/Ibrohim/nexio_crm_v2/backend && wc -l app/Http/Controllers/Api/V1/*.php app/Http/Controllers/*.php app/Services/*.php app/Support/*.php app/Http/Middleware/*.php app/Providers/*.php routes/*.php | sort -n | tail -40; cat app/Providers/AppServiceProvider.php | head -50; grep -n \\\"locale\\\" config/app.php\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-07T12:11:06.362Z",
+      "lastAccessed": "2026-11-07T12:11:06.362Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-07T12:11:06.362Z"
+    },
+    "cmd-1794053484054": {
+      "key": "cmd-1794053484054",
+      "value": "{\"command\":\"cd /c/Users/Ibrohim/nexio_crm_v2 && git checkout -b feat/swarm-i18n-plan-fixes && (cd backend && php artisan test 2>&1 | tail -15); npx vitest run 2>&1 | tail -8; npx tsc -p tsconfig.app.json --noEmit 2>&1 | tail -5\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-07T12:11:24.054Z",
+      "lastAccessed": "2026-11-07T12:11:24.054Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-07T12:11:24.054Z"
+    },
+    "cmd-1794053487129": {
+      "key": "cmd-1794053487129",
+      "value": "{\"command\":\"cd /c/Users/Ibrohim/nexio_crm_v2 && cat backend/app/Http/Middleware/ApiContext.php | sed -n 1,60p; cat backend/config/cors.php 2>/dev/null | grep -n header; cat src/lib/format.ts | head -40\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-07T12:11:27.129Z",
+      "lastAccessed": "2026-11-07T12:11:27.129Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-07T12:11:27.129Z"
+    },
+    "cmd-1794053505585": {
+      "key": "cmd-1794053505585",
+      "value": "{\"command\":\"python - <<'EOF'\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-07T12:11:45.585Z",
+      "lastAccessed": "2026-11-07T12:11:45.585Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-07T12:11:45.585Z"
+    },
+    "cmd-1794053511130": {
+      "key": "cmd-1794053511130",
+      "value": "{\"command\":\"grep -n \\\"replace(/\\\" src/lib/i18n.tsx; grep -n \\\"accept-language\\\\|translate(\\\" src/lib/api.ts\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-07T12:11:51.130Z",
+      "lastAccessed": "2026-11-07T12:11:51.130Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-07T12:11:51.130Z"
+    },
+    "cmd-1794053535578": {
+      "key": "cmd-1794053535578",
+      "value": "{\"command\":\"cd /c/Users/Ibrohim/nexio_crm_v2/backend && cat > app/Http/Middleware/SetLocale.php <<'EOF'\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-07T12:12:15.578Z",
+      "lastAccessed": "2026-11-07T12:12:15.578Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-07T12:12:15.578Z"
+    },
+    "cmd-1794053545069": {
+      "key": "cmd-1794053545069",
+      "value": "{\"command\":\"cd /c/Users/Ibrohim/nexio_crm_v2 && cat .gitattributes; for f in backend/app/Http/Middleware/ApiContext.php backend/app/Providers/AppServiceProvider.php backend/bootstrap/app.php src/lib/api.ts src/lib/i18n.tsx; do git show HEAD:$f | grep -c $'\\\\r' ; sed -i 's/\\\\r$//' $f; done; git diff --stat -- backend src; grep -n \\\"SetLocale\\\\|__(\\\" backend/bootstrap/app.php\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-07T12:12:25.069Z",
+      "lastAccessed": "2026-11-07T12:12:25.069Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-07T12:12:25.069Z"
+    },
+    "cmd-1794053561859": {
+      "key": "cmd-1794053561859",
+      "value": "{\"command\":\"cd /c/Users/Ibrohim/nexio_crm_v2/backend && grep -rn \\\"assertIntegrity\\\\|integrity(\\\" app routes database --include=*.php | grep -v \\\"function \\\" | head; grep -rn \\\"syntax\\\\|phpLint\\\\|синтакс\\\" tests | head\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-07T12:12:41.859Z",
+      "lastAccessed": "2026-11-07T12:12:41.859Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-07T12:12:41.859Z"
+    },
+    "cmd-1794053577695": {
+      "key": "cmd-1794053577695",
+      "value": "{\"command\":\"cd /c/Users/Ibrohim/nexio_crm_v2 && python -c \\\"import pypdf;r=pypdf.PdfReader('Nexio_CRM_Full_Plan_with_8_Screens.pdf');print(len(r.pages));t=''.join((p.extract_text() or '') for p in r.pages);print(len(t));open(r'C:\\\\Users\\\\Ibrohim\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\a5e33a921a1bd9fd\\\\3de3eb3f-8869-457b-a400-717c021bff0e\\\\scratchpad\\\\plan.txt','w',encoding='utf8').write(t)\\\" 2>&1 | tail -3\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-07T12:12:57.695Z",
+      "lastAccessed": "2026-11-07T12:12:57.695Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-07T12:12:57.695Z"
+    },
+    "cmd-1794053627083": {
+      "key": "cmd-1794053627083",
+      "value": "{\"command\":\"grep -n \\\"document\\\" backend/routes/api_v1.php | head; grep -n \\\"plan\\\\|tenants\\\" backend/routes/api_v1.php | grep -i platform | head -20; git ls-files src | grep \\\"\\\\.js$\\\" | head -3; git ls-files src | grep -c \\\"\\\\.js$\\\"; find src -name \\\"*.ts\\\" ! -name \\\"*.d.ts\\\" ! -name \\\"*.test.ts\\\" | xargs grep -lP \\\"[А-я]\\\" 2>/dev/null; cat \\\"C:\\\\Users\\\\Ibrohim\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\a5e33a921a1bd9fd\\\\3de3eb3f-8869-457b-a400-717c021bff0e\\\\tasks\\\\bqclizgja.output\\\" | tail -25\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-07T12:13:47.083Z",
+      "lastAccessed": "2026-11-07T12:13:47.083Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-07T12:13:47.083Z"
+    },
+    "cmd-1794053632870": {
+      "key": "cmd-1794053632870",
+      "value": "{\"command\":\"tail -c 3000 \\\"C:\\\\Users\\\\Ibrohim\\\\.claude\\\\projects\\\\c--Users-Ibrohim-nexio-crm-v2\\\\3de3eb3f-8869-457b-a400-717c021bff0e\\\\tool-results\\\\b9n59l0gp.txt\\\"\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-07T12:13:52.870Z",
+      "lastAccessed": "2026-11-07T12:13:52.870Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-07T12:13:52.870Z"
+    },
+    "cmd-1794053658787": {
+      "key": "cmd-1794053658787",
+      "value": "{\"command\":\"cd /c/Users/Ibrohim/nexio_crm_v2/backend && php artisan test 2>&1 | grep -E \\\"^\\\\s+(✓|⨯|FAIL|PASS)|Tests:|FAILED|⨯\\\" | tail -40\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-07T12:14:18.787Z",
+      "lastAccessed": "2026-11-07T12:14:18.787Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-07T12:14:18.787Z"
+    },
+    "cmd-1794053684481": {
+      "key": "cmd-1794053684481",
+      "value": "{\"command\":\"php vendor/bin/phpunit --log-junit /tmp/j.xml > /dev/null 2>&1; python -c \\\"\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-07T12:14:44.481Z",
+      "lastAccessed": "2026-11-07T12:14:44.481Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-07T12:14:44.481Z"
+    },
+    "cmd-1794053710544": {
+      "key": "cmd-1794053710544",
+      "value": "{\"command\":\"J=\\\"C:/Users/Ibrohim/AppData/Local/Temp/claude/a5e33a921a1bd9fd/3de3eb3f-8869-457b-a400-717c021bff0e/scratchpad/j.xml\\\"; php vendor/bin/phpunit --log-junit \\\"$J\\\" > /dev/null 2>&1; python -c \\\"\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-07T12:15:10.544Z",
+      "lastAccessed": "2026-11-07T12:15:10.544Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-07T12:15:10.544Z"
+    },
+    "cmd-1794053733574": {
+      "key": "cmd-1794053733574",
+      "value": "{\"command\":\"cd /c/Users/Ibrohim/nexio_crm_v2 && npx tsc -p tsconfig.app.json --noEmit 2>&1 | tail -5; git add src/lib/i18n.tsx src/lib/api.ts backend/app/Http/Middleware/SetLocale.php backend/app/Http/Middleware/ApiContext.php backend/app/Providers/AppServiceProvider.php backend/bootstrap/app.php backend/lang backend/app/Plugins/PluginLoader.php && git commit -q -m \\\"feat(i18n): shared locale infrastructure; fix plugin lint under PHP-FPM\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-07T12:15:33.574Z",
+      "lastAccessed": "2026-11-07T12:15:33.574Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-07T12:15:33.574Z"
+    },
+    "cmd-1794053759678": {
+      "key": "cmd-1794053759678",
+      "value": "{\"command\":\"git commit --amend -q -m \\\"$(git log -1 --format=%B | grep -v '^Co-Authored-By')\\\" && git log -1 --format='%h %s%n%b' | tail -3; grep -n \\\"DB_\\\\|APP_KEY\\\\|APP_ENV\\\" backend/phpunit.xml; ls backend/.env 2>&1\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-07T12:15:59.678Z",
+      "lastAccessed": "2026-11-07T12:15:59.678Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-07T12:15:59.678Z"
+    },
+    "cmd-1794053799738": {
+      "key": "cmd-1794053799738",
+      "value": "{\"command\":\"cd /c/Users/Ibrohim/nexio_crm_v2/backend && node -e '\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-07T12:16:39.738Z",
+      "lastAccessed": "2026-11-07T12:16:39.738Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-07T12:16:39.738Z"
+    },
+    "cmd-1794053973327": {
+      "key": "cmd-1794053973327",
+      "value": "{\"command\":\"cmd //c mklink /J node_modules C:\\\\\\\\Users\\\\\\\\Ibrohim\\\\\\\\nexio_crm_v2\\\\\\\\node_modules; cmd //c mklink /J backend\\\\\\\\vendor C:\\\\\\\\Users\\\\\\\\Ibrohim\\\\\\\\nexio_crm_v2\\\\\\\\backend\\\\\\\\vendor; cp /c/Users/Ibrohim/nexio_crm_v2/backend/.env backend/.env; git branch --show-current; wc -l backend/app/Http/Controllers/Api/V1/AdminMarketplaceController.php; ls backend/lang backend/lang/modules; grep -n \\\"AdminMarketplace\\\" backend/routes/api_v1.php\",\"exitCode\":1,\"success\":false}",
+      "namespace": "commands",
+      "storedAt": "2026-11-07T12:19:33.327Z",
+      "lastAccessed": "2026-11-07T12:19:33.327Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-07T12:19:33.327Z"
+    },
+    "cmd-1794053980448": {
+      "key": "cmd-1794053980448",
+      "value": "{\"command\":\"git branch --show-current && cmd //c mklink /J node_modules C:\\\\\\\\Users\\\\\\\\Ibrohim\\\\\\\\nexio_crm_v2\\\\\\\\node_modules; cmd //c mklink /J backend\\\\\\\\vendor C:\\\\\\\\Users\\\\\\\\Ibrohim\\\\\\\\nexio_crm_v2\\\\\\\\backend\\\\\\\\vendor; cp /c/Users/Ibrohim/nexio_crm_v2/backend/.env backend/.env; ls backend; wc -l backend/app/Http/Controllers/Api/V1/{SalesController,CrmController,DashboardController}.php; ls backend/lang backend/lang/modules backend/tests/Feature\",\"exitCode\":1,\"success\":false}",
+      "namespace": "commands",
+      "storedAt": "2026-11-07T12:19:40.448Z",
+      "lastAccessed": "2026-11-07T12:19:40.448Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-07T12:19:40.448Z"
+    },
+    "cmd-1794053987526": {
+      "key": "cmd-1794053987526",
+      "value": "{\"command\":\"git branch --show-current && cmd //c mklink /J node_modules C:\\\\\\\\Users\\\\\\\\Ibrohim\\\\\\\\nexio_crm_v2\\\\\\\\node_modules; cmd //c mklink /J backend\\\\\\\\vendor C:\\\\\\\\Users\\\\\\\\Ibrohim\\\\\\\\nexio_crm_v2\\\\\\\\backend\\\\\\\\vendor; cp /c/Users/Ibrohim/nexio_crm_v2/backend/.env backend/.env; ls backend/lang backend/lang/modules 2>&1; wc -l backend/app/Http/Controllers/Api/V1/AuthController.php backend/app/Http/Controllers/Api/V1/TeamController.php; git log --oneline | head -3\",\"exitCode\":1,\"success\":false}",
+      "namespace": "commands",
+      "storedAt": "2026-11-07T12:19:47.526Z",
+      "lastAccessed": "2026-11-07T12:19:47.526Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-07T12:19:47.526Z"
+    },
+    "cmd-1794054028205": {
+      "key": "cmd-1794054028205",
+      "value": "{\"command\":\"git log --oneline -3; git branch -a | head -20; ls /c/Users/Ibrohim/nexio_crm_v2/backend/lang /c/Users/Ibrohim/nexio_crm_v2/backend/lang/modules 2>&1 | head\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-07T12:20:28.205Z",
+      "lastAccessed": "2026-11-07T12:20:28.205Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-07T12:20:28.205Z"
+    },
+    "cmd-1794054133116": {
+      "key": "cmd-1794054133116",
+      "value": "{\"command\":\"cd C:/Users/Ibrohim/nexio_crm_v2/.claude/worktrees/agent-ac33e8c90f2475d9d/backend && wc -l app/Http/Controllers/Api/V1/{MarketplaceController,PluginManagerController,PluginOperationsController}.php && grep -nE \\\"Developer|Marketplace|PluginManager|PluginOperations\\\" routes/api_v1.php\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-07T12:22:13.116Z",
+      "lastAccessed": "2026-11-07T12:22:13.116Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-07T12:22:13.116Z"
+    },
+    "cmd-1794054134346": {
+      "key": "cmd-1794054134346",
+      "value": "{\"command\":\"cd backend; grep -rhoE \\\"^\\\\s*'[a-z_.*]+'\\\\s*=>\\\\s*'[^']*(required|string|nullable|integer|numeric|email|in:|max:|min:|exists|unique|array|boolean|date)[^']*'\\\" app | grep -oE \\\"^\\\\s*'[a-z_.*]+'\\\" | tr -d \\\" '\\\" | sort -u | tr '\\\\n' ' '; echo; grep -rhoE \\\"validate\\\\(\\\\[[^]]*\\\" app | head -0; grep -rhoE \\\"\\\\['\\\\s*[a-z_]+'\\\\s*=>\\\\s*'(required|sometimes|nullable)\\\" app | wc -l\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-07T12:22:14.346Z",
+      "lastAccessed": "2026-11-07T12:22:14.346Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-07T12:22:14.346Z"
+    },
+    "cmd-1794054159593": {
+      "key": "cmd-1794054159593",
+      "value": "{\"command\":\"grep -rn \\\"pipeline_stages\\\\|Новые\\\\|Квалификация\\\\|Переговоры\\\" backend/app backend/database backend/routes --include=*.php -l; grep -rn \\\"period\\\\.label\\\\|\\\\.label\\\\|lostReasons\\\\|reason\\\\|notes\\\\|\\\\.ym\\\\|byStage\\\\|stage\\\\.name\\\\|\\\\.name\\\" src/pages/app/Dashboard.tsx | head -40\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-07T12:22:39.593Z",
+      "lastAccessed": "2026-11-07T12:22:39.593Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-07T12:22:39.593Z"
+    },
+    "cmd-1794054166126": {
+      "key": "cmd-1794054166126",
+      "value": "{\"command\":\"grep -n \\\"period\\\\|label\\\\|lostReasons\\\\|reason\\\\|notes\\\\|\\\\.ym\\\\|funnel\\\\|\\\\.name\\\\|source\\\" src/pages/app/Analytics.tsx | head -60; ls src/pages/app | head -50\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-07T12:22:46.126Z",
+      "lastAccessed": "2026-11-07T12:22:46.126Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-07T12:22:46.126Z"
+    },
+    "cmd-1794054248627": {
+      "key": "cmd-1794054248627",
+      "value": "{\"command\":\"cd /c/Users/Ibrohim/nexio_crm_v2/.claude/worktrees/agent-a3a724bbe90bf9e84/backend && grep -n -A28 \\\"CREATE TABLE \\\\(IF NOT EXISTS \\\\)\\\\?\\\\(ai_agents\\\\|ai_calls\\\\|ai_campaigns\\\\|ai_approvals\\\\|suppression_list\\\\|ai_evaluations\\\\|ai_tool_calls\\\\)\\\" database/schema/0001_init.sql | head -230; grep -n \\\"ai_agents\\\\|ai_calls\\\\|feature_flags\\\" database/migrations/2024_01_01_000000_nexio_schema.php | head; grep -n \\\"ai_calls\\\\|ai_agents\\\" tests/Feature/VideoMissingFeaturesTest.php | head\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-07T12:24:08.627Z",
+      "lastAccessed": "2026-11-07T12:24:08.627Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-07T12:24:08.627Z"
+    },
+    "cmd-1794054275992": {
+      "key": "cmd-1794054275992",
+      "value": "{\"command\":\"cmd //c \\\"mklink /J node_modules C:\\\\Users\\\\Ibrohim\\\\nexio_crm_v2\\\\node_modules\\\"; cmd //c \\\"mklink /J backend\\\\vendor C:\\\\Users\\\\Ibrohim\\\\nexio_crm_v2\\\\backend\\\\vendor\\\"; ls node_modules | head -2; git status --short | head\",\"exitCode\":1,\"success\":false}",
+      "namespace": "commands",
+      "storedAt": "2026-11-07T12:24:35.992Z",
+      "lastAccessed": "2026-11-07T12:24:35.992Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-07T12:24:35.992Z"
+    },
+    "cmd-1794054348792": {
+      "key": "cmd-1794054348792",
+      "value": "{\"command\":\"grep -n \\\"Sales Pipeline\\\\|Новый лид\\\\|Согласовано\\\" src/components/layout/AppShell.tsx src/pages/app/Deals.tsx src/pages/app/Leads.tsx | head; grep -rn \\\"stage.name\\\\|stage_name\\\" src --include=*.tsx | head -5; grep -rn \\\"pipelines\\\" backend/app --include=*.php | grep -i \\\"name\\\" | head\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-07T12:25:48.792Z",
+      "lastAccessed": "2026-11-07T12:25:48.792Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-07T12:25:48.792Z"
+    },
+    "cmd-1794054432816": {
+      "key": "cmd-1794054432816",
+      "value": "{\"command\":\"git merge --ff-only feat/swarm-i18n-plan-fixes | tail -3; grep -n \\\"export\\\" src/lib/i18n.tsx\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-07T12:27:12.816Z",
+      "lastAccessed": "2026-11-07T12:27:12.816Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-07T12:27:12.816Z"
+    },
+    "cmd-1794054475182": {
+      "key": "cmd-1794054475182",
+      "value": "{\"command\":\"grep -n \\\"useSearchParams\\\\|searchParams\\\" src/pages/app/Leads.tsx src/pages/app/Deals.tsx src/pages/app/Tasks.tsx src/pages/app/Orders.tsx src/pages/app/Companies.tsx | head; grep -n \\\"activities\\\\|kind\\\" backend/database/migrations/*activities* 2>/dev/null | head -5; grep -rn \\\"'kind' *=>\\\\|INSERT INTO activities\\\" backend/app | grep -o \\\"kind[^,]*,[^,]*\\\" | head; grep -rhn \\\"source\\\" backend/app/Http/Controllers/Api/V1/SalesController.php | grep -i \\\"oneOf\\\\|in:\\\" | head -3\",\"exitCode\":1,\"success\":false}",
+      "namespace": "commands",
+      "storedAt": "2026-11-07T12:27:55.182Z",
+      "lastAccessed": "2026-11-07T12:27:55.182Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-07T12:27:55.182Z"
+    },
+    "cmd-1794054476447": {
+      "key": "cmd-1794054476447",
+      "value": "{\"command\":\"grep -n \\\"monthLabel\\\" -B2 -A8 src/lib/format.ts | head -30; grep -n \\\"'Не указано'\\\\|Не указано\\\" -r src --include=*.tsx | head\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-07T12:27:56.447Z",
+      "lastAccessed": "2026-11-07T12:27:56.447Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-07T12:27:56.447Z"
+    },
+    "cmd-1794054477044": {
+      "key": "cmd-1794054477044",
+      "value": "{\"command\":\"cd C:/Users/Ibrohim/nexio_crm_v2/.claude/worktrees/agent-a8886dd9b2e03128e && grep -n \\\"statusLabel\\\" src/components/ui/core.tsx | head -5; grep -n \\\"tasks\\\\|tickets\\\\|my-day\\\" backend/routes/api.php; ls backend/app/Http/Controllers/Api 2>/dev/null | head -50\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-07T12:27:57.044Z",
+      "lastAccessed": "2026-11-07T12:27:57.044Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-07T12:27:57.044Z"
+    },
+    "cmd-1794054535234": {
+      "key": "cmd-1794054535234",
+      "value": "{\"command\":\"cat \\\"C:/Users/Ibrohim/AppData/Local/Temp/claude/a5e33a921a1bd9fd/3de3eb3f-8869-457b-a400-717c021bff0e/tasks/blmho35u0.output\\\" | cut -c1-1500 | tail -50\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-07T12:28:55.234Z",
+      "lastAccessed": "2026-11-07T12:28:55.234Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-07T12:28:55.234Z"
+    },
+    "cmd-1794054597147": {
+      "key": "cmd-1794054597147",
+      "value": "{\"command\":\"cd /c/Users/Ibrohim/nexio_crm_v2/.claude/worktrees/agent-ab017f933359f6361/backend && grep -rhE \\\"CREATE TABLE (IF NOT EXISTS )?(orders|projects|project_milestones|documents|tickets|nexio_service_requests|organizations)\\\\b\\\" -A25 database/ 2>/dev/null | grep -iE \\\"CREATE TABLE|status|kind|priority|tier\\\" | head -50; grep -rn \\\"status_labels\\\\|'submitted'\\\\|'in_review'\\\" app --include=*.php | head\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-07T12:29:57.147Z",
+      "lastAccessed": "2026-11-07T12:29:57.147Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-07T12:29:57.147Z"
+    },
+    "cmd-1794054614362": {
+      "key": "cmd-1794054614362",
+      "value": "{\"command\":\"cd /c/Users/Ibrohim/nexio_crm_v2/.claude/worktrees/agent-ab51c3a153d9bb3b1/backend && sed -n 55,135p app/Plugins/PermissionEngine.php; grep -rn \\\"syncDeclared\\\" app | grep -v \\\"function syncDeclared\\\"\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-07T12:30:14.362Z",
+      "lastAccessed": "2026-11-07T12:30:14.362Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-07T12:30:14.362Z"
+    },
+    "cmd-1794054639054": {
+      "key": "cmd-1794054639054",
+      "value": "{\"command\":\"grep -rn \\\"provisionTenant\\\" backend --include=*.php | grep -v vendor\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-07T12:30:39.054Z",
+      "lastAccessed": "2026-11-07T12:30:39.054Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-07T12:30:39.054Z"
+    },
+    "cmd-1794054685963": {
+      "key": "cmd-1794054685963",
+      "value": "{\"command\":\"sed -i '69s/.*/                $this->sender->telegram($chatId, __('\\\"'\\\"'Приглашение в Nexio CRM:'\\\"'\\\"') . \\\"\\\\\\\\n{$inviteUrl}\\\");/' backend/app/Services/TelegramBot.php; sed -n 69p backend/app/Services/TelegramBot.php; php -l backend/app/Services/TelegramBot.php\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-07T12:31:25.963Z",
+      "lastAccessed": "2026-11-07T12:31:25.963Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-07T12:31:25.963Z"
+    },
+    "cmd-1794054717294": {
+      "key": "cmd-1794054717294",
+      "value": "{\"command\":\"git diff --stat\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-07T12:31:57.294Z",
+      "lastAccessed": "2026-11-07T12:31:57.294Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-07T12:31:57.294Z"
+    },
+    "cmd-1794054921039": {
+      "key": "cmd-1794054921039",
+      "value": "{\"command\":\"cd backend && python -c \\\"\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-07T12:35:21.039Z",
+      "lastAccessed": "2026-11-07T12:35:21.039Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-07T12:35:21.039Z"
+    },
+    "cmd-1794054974646": {
+      "key": "cmd-1794054974646",
+      "value": "{\"command\":\"npx tsc -p tsconfig.app.json --noEmit 2>&1 | head -30\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-07T12:36:14.646Z",
+      "lastAccessed": "2026-11-07T12:36:14.646Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-07T12:36:14.646Z"
     }
   },
   "version": "3.0.0"
