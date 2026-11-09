@@ -20,6 +20,12 @@ class AiController
             ->where('s.tenant_id', $ctx->tenantId)->whereIn('s.status', ['active', 'trialing'])
             ->orderByDesc('s.created_at')->first(['p.ai_minutes']);
         if (!$plan) throw new ApiException(403, 'AI uchun faol tarif topilmadi', 'ai_not_entitled');
+        // Optional grounding: the company's own knowledge base (agent-specific + company-wide documents).
+        if (!empty($body['agent_id'])) {
+            $agentId = H::tenantRef($ctx, $body['agent_id'], 'ai_agents', 'AI agent');
+            $kb = AiExtrasController::knowledgeContext((string) $ctx->tenantId, $agentId);
+            if ($kb !== '') $prompt = "Отвечай, опираясь только на базу знаний компании ниже. Если ответа в ней нет — скажи об этом.\n\n=== БАЗА ЗНАНИЙ ===\n{$kb}\n=== КОНЕЦ ===\n\n{$prompt}";
+        }
         $result = (new GroqAi())->complete($prompt, $body['model'] ?? null);
         $tokens = (int) ($result['usage']['total_tokens'] ?? 0);
         if ($tokens > 0 && $ctx->tenantId) {
@@ -147,7 +153,7 @@ class AiController
             'script' => H::str($b['script'] ?? null, 'script', false, 4000),
             'status' => 'draft',
             'autonomy' => H::oneOf($b['autonomy'] ?? null, 'autonomy', ['supervised', 'assisted', 'autonomous'], 'supervised'),
-            'policy' => json_encode($b['policy'] ?? ['disclosure_required' => true, 'recording_policy' => 'announce_and_log', 'max_discount_percent' => 10], JSON_UNESCAPED_UNICODE),
+            'policy' => json_encode(AiExtrasController::normalizePolicy($b['policy'] ?? ['disclosure_required' => true, 'recording_policy' => 'announce_and_log', 'max_discount_percent' => 10]), JSON_UNESCAPED_UNICODE),
             'knowledge' => json_encode($b['knowledge'] ?? [], JSON_UNESCAPED_UNICODE),
             'tools' => json_encode($b['tools'] ?? [], JSON_UNESCAPED_UNICODE),
             'budget_limit' => H::num($b['budget_limit'] ?? null, 'budget_limit', false, 0) ?? 1000,
@@ -176,7 +182,7 @@ class AiController
                 H::str($b['persona'] ?? null, 'persona', false, 4000),
                 H::str($b['script'] ?? null, 'script', false, 4000),
                 !empty($b['autonomy']) ? H::oneOf($b['autonomy'], 'autonomy', ['supervised', 'assisted', 'autonomous']) : null,
-                !empty($b['policy']) ? json_encode($b['policy'], JSON_UNESCAPED_UNICODE) : null,
+                !empty($b['policy']) ? json_encode(AiExtrasController::normalizePolicy($b['policy']), JSON_UNESCAPED_UNICODE) : null,
                 !empty($b['knowledge']) ? json_encode($b['knowledge'], JSON_UNESCAPED_UNICODE) : null,
                 !empty($b['tools']) ? json_encode($b['tools'], JSON_UNESCAPED_UNICODE) : null,
                 H::num($b['budget_limit'] ?? null, 'budget_limit', false, 0),

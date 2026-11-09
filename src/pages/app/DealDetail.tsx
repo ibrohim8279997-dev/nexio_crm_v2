@@ -3,6 +3,8 @@ import { ArrowLeft } from 'lucide-react'
 import { Button, Card, EmptyState, PageHeader, QueryState, SectionCard, Skeleton, StatusPill } from '../../components/ui/core'
 import { useApi } from '../../lib/hooks'
 import { label, money, relative, shortDate } from '../../lib/format'
+import { useCan } from '../../lib/auth'
+import { CustomFieldsPanel, FilesPanel, NotesPanel } from '../../components/records/RecordPanels'
 
 interface DealFull {
   id: string; title: string; amount: number; currency: string; status: string; probability: number | null
@@ -16,6 +18,7 @@ interface DealFull {
 export default function DealDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const can = useCan()
   const q = useApi<DealFull>(['deal', id], `/api/v1/deals/${id}`)
   const d = q.data
 
@@ -54,6 +57,9 @@ export default function DealDetail() {
                   <div className="flex justify-between gap-2"><dt className="text-muted">Создана</dt><dd className="font-semibold text-ink">{shortDate(d.created_at)}</dd></div>
                 </dl>
               </Card>
+              <CustomFieldsPanel entity="deal" entityId={d.id} canWrite={can('deals.write')} />
+              <NotesPanel entityType="deal" entityId={d.id} canWrite={can('deals.write')} />
+              <FilesPanel entityType="deal" entityId={d.id} canWrite={can('deals.write')} />
               <SectionCard title="Заказы">
                 {d.orders.length === 0 ? <p className="text-[12px] text-muted">Заказов нет.</p> : (
                   <ul className="divide-y divide-line">{d.orders.map((o) => (

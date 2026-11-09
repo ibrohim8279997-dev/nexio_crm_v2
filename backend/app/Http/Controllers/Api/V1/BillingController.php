@@ -86,8 +86,15 @@ class BillingController
             foreach ($usage as $u) { if ($u->metric === $metric) return $u; }
             return null;
         };
+        $addons = DB::select(
+            'SELECT pp.id, pp.plugin_id, pp.amount, pp.currency, pp.status, pp.created_at, p.name AS plugin_name
+               FROM plugin_purchases pp LEFT JOIN plugins p ON p.id = pp.plugin_id WHERE pp.tenant_id = ? ORDER BY pp.created_at DESC',
+            [$t]
+        );
         return H::json([
             'paymentProvider' => config('payments.provider', 'sandbox'),
+            'paymentMethods' => $this->paymentMethods(),
+            'addons' => $addons,
             'subscription' => $sub ? [...(array) $sub, 'modules' => H::parseJson($sub->modules, []), 'cancel_at_period_end' => (bool) $sub->cancel_at_period_end] : null,
             'company' => $tenant->name ?? null,
             'invoices' => array_map(fn ($i) => $this->invoiceView($i), $invoices),
@@ -145,14 +152,16 @@ class BillingController
             $lineItems[] = ['label' => 'Пропорциональный пересчёт', 'qty' => 1, 'amount' => $proration];
         }
         $total = round(($price + ($proration > 0 ? $proration : 0)) * 100) / 100;
+        $provider = $this->resolveProvider($b);
         $clickQuote = null;
-        if (config('payments.provider', 'sandbox') === 'click') {
-            $clickQuote = (new CbuExchangeRateService())->quote($total, (string) $plan->currency);
+        if ($provider !== 'sandbox') {
+            $this->assertProviderConfigured($provider);
+            $clickQuote = (new CbuExchangeRateService())->quote($total, (string) $plan->currency); // UZS quote shared by Click and Payme
         }
 
-        // Click confirms the invoice asynchronously. Do not activate an unpaid
-        // plan before the merchant webhook arrives.
-        if (config('payments.provider', 'sandbox') === 'click') {
+        // Click and Payme confirm the invoice asynchronously. Do not activate an unpaid
+        // plan before the merchant callback arrives.
+        if ($provider !== 'sandbox') {
             DB::table('invoices')->insert([
                 'id' => $invoiceId, 'tenant_id' => $t, 'number' => $invoiceNumber,
                 'amount' => $price, 'tax' => 0, 'total' => $total, 'currency' => $plan->currency,
@@ -161,12 +170,11 @@ class BillingController
                 ]]), JSON_UNESCAPED_UNICODE), 'issued_at' => H::now(),
                 'due_at' => gmdate('Y-m-d H:i:s', time() + 86400), 'created_at' => H::now(),
             ]);
-            $this->assertClickConfigured();
             return H::json([
                 'ok' => true, 'invoiceId' => $invoiceId, 'invoiceNumber' => $invoiceNumber,
-                'provider' => 'click', 'payment_url' => $this->clickPaymentUrl($invoiceId, (float) $clickQuote['target_amount']),
+                'provider' => $provider, 'payment_url' => $this->paymentUrl($provider, $invoiceId, (float) $clickQuote['target_amount']),
                 'click_amount_uzs' => $clickQuote['target_amount'], 'exchange_rate' => $clickQuote['rate'], 'exchange_rate_date' => $clickQuote['rate_date'],
-                'note' => 'Click to‘lovi tasdiqlangach tarif avtomatik faollashadi.',
+                'note' => ucfirst($provider) . ' to‘lovi tasdiqlangach tarif avtomatik faollashadi.',
             ], 201);
         }
 
@@ -238,12 +246,13 @@ class BillingController
         $invoice = DB::selectOne('SELECT * FROM invoices WHERE id = ? AND tenant_id = ?', [$ctx->params['id'], $t]);
         if (!$invoice) throw new ApiException(404, 'Счёт не найден', 'not_found');
         if ($invoice->status === 'paid') return H::json(['ok' => true, 'alreadyPaid' => true]);
-        if (config('payments.provider') === 'click') {
-            $this->assertClickConfigured();
-            $quote = $this->clickQuoteForInvoice($invoice);
-            return H::json(['ok' => true, 'provider' => 'click', 'payment_url' => $this->clickPaymentUrl($invoice->id, (float) $quote['target_amount']), 'click_amount_uzs' => $quote['target_amount'], 'exchange_rate' => $quote['rate'], 'exchange_rate_date' => $quote['rate_date']]);
-        }
         $b = H::body($ctx);
+        $provider = $this->resolveProvider($b);
+        if ($provider !== 'sandbox') {
+            $this->assertProviderConfigured($provider);
+            $quote = $this->clickQuoteForInvoice($invoice);
+            return H::json(['ok' => true, 'provider' => $provider, 'payment_url' => $this->paymentUrl($provider, $invoice->id, (float) $quote['target_amount']), 'click_amount_uzs' => $quote['target_amount'], 'exchange_rate' => $quote['rate'], 'exchange_rate_date' => $quote['rate_date']]);
+        }
         $key = H::str($b['idempotency_key'] ?? null, 'idempotency_key', false, 120);
         if ($key && DB::selectOne('SELECT id FROM payments WHERE idempotency_key = ?', [$key])) {
             return H::json(['ok' => true, 'duplicate' => true, 'message' => 'Платёж уже был обработан (идемпотентность)']);
@@ -323,6 +332,75 @@ class BillingController
                 throw new ApiException(503, 'Click konfiguratsiyasi to‘liq emas', 'payment_not_configured');
             }
         }
+    }
+
+    private function providerConfigured(string $provider): bool
+    {
+        return match ($provider) {
+            'click' => !array_filter(['merchant_id', 'service_id', 'secret_key', 'return_url'], fn ($k) => empty(config("payments.click.{$k}"))),
+            'payme' => !array_filter(['merchant_id', 'key', 'return_url'], fn ($k) => empty(config("payments.payme.{$k}"))),
+            'sandbox' => config('payments.provider', 'sandbox') === 'sandbox',
+            default => false,
+        };
+    }
+
+    private function assertProviderConfigured(string $provider): void
+    {
+        if (!$this->providerConfigured($provider)) throw new ApiException(503, ucfirst($provider) . ' konfiguratsiyasi to‘liq emas', 'payment_not_configured');
+    }
+
+    /** Providers a company may pay with. A sandbox payment is never offered once a real provider is the default. */
+    private function paymentMethods(): array
+    {
+        $default = config('payments.provider', 'sandbox');
+        $rows = [['code' => 'click', 'name' => 'Click'], ['code' => 'payme', 'name' => 'Payme']];
+        if ($default === 'sandbox') $rows[] = ['code' => 'sandbox', 'name' => 'Sandbox (тест, без списания)'];
+        return array_map(fn ($r) => [...$r, 'configured' => $this->providerConfigured($r['code']), 'default' => $r['code'] === $default], $rows);
+    }
+
+    private function resolveProvider(array $body): string
+    {
+        $default = (string) config('payments.provider', 'sandbox');
+        $requested = isset($body['provider']) ? (string) $body['provider'] : $default;
+        if (!in_array($requested, ['sandbox', 'click', 'payme'], true)) throw new ApiException(422, 'Неизвестный способ оплаты', 'bad_request');
+        if ($requested === 'sandbox' && $default !== 'sandbox') throw new ApiException(422, 'Тестовая оплата недоступна', 'bad_request');
+        return $requested;
+    }
+
+    private function paymentUrl(string $provider, string $invoiceId, float $amountUzs): string
+    {
+        if ($provider === 'click') return $this->clickPaymentUrl($invoiceId, $amountUzs);
+        $p = config('payments.payme');
+        $params = 'm=' . $p['merchant_id'] . ';ac.invoice_id=' . $invoiceId . ';a=' . (int) round($amountUzs * 100) . ';l=ru;cr=860;c=' . $p['return_url'];
+        return (!empty($p['test_mode']) ? 'https://checkout.test.paycom.uz/' : 'https://checkout.paycom.uz/') . base64_encode($params);
+    }
+
+    /** Payment history for the company: provider, status, amount, what it paid for. */
+    public function transactions(Ctx $ctx)
+    {
+        $ctx->auth();
+        H::requirePermission($ctx, 'billing.read');
+        H::requireTenant($ctx);
+        $t = $ctx->tenantId;
+        [$limit, $page, $offset] = H::paginate($ctx);
+        $where = ['p.tenant_id = ?']; $binds = [$t];
+        if ($v = $ctx->query('provider')) { $where[] = 'p.provider = ?'; $binds[] = (string) $v; }
+        if ($v = $ctx->query('status')) { $where[] = 'p.status = ?'; $binds[] = (string) $v; }
+        $w = implode(' AND ', $where);
+        $rows = DB::select("SELECT p.id, p.provider, p.provider_ref, p.amount, p.currency, p.status, p.created_at, i.number AS invoice_number, i.line_items
+                              FROM payments p LEFT JOIN invoices i ON i.id = p.invoice_id WHERE {$w} ORDER BY p.created_at DESC LIMIT ? OFFSET ?", [...$binds, $limit, $offset]);
+        $total = DB::selectOne("SELECT COUNT(*) AS c FROM payments p WHERE {$w}", $binds);
+        $sums = DB::select("SELECT currency, COALESCE(SUM(amount),0) AS amount FROM payments WHERE tenant_id = ? AND status = 'succeeded' GROUP BY currency", [$t]);
+        $providers = DB::table('payments')->where('tenant_id', $t)->distinct()->pluck('provider');
+        return H::json([
+            'data' => array_map(function ($r) {
+                $items = H::parseJson($r->line_items, []);
+                $desc = collect(is_array($items) ? $items : [])->first(fn ($i) => !empty($i['label']))['label'] ?? null;
+                return ['id' => $r->id, 'provider' => $r->provider, 'provider_ref' => $r->provider_ref, 'amount' => (float) $r->amount, 'currency' => $r->currency,
+                    'status' => $r->status, 'created_at' => $r->created_at, 'invoice_number' => $r->invoice_number, 'description' => $desc];
+            }, $rows),
+            'total' => (int) ($total->c ?? 0), 'page' => $page, 'limit' => $limit, 'sums' => $sums, 'providers' => $providers,
+        ]);
     }
 
     private function clickPaymentUrl(string $invoiceId, float $amount): string

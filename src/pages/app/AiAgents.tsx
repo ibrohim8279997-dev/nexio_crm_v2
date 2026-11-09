@@ -167,7 +167,7 @@ export default function AiAgents() {
                   <div className="flex flex-wrap items-start gap-3">
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        <p className="text-[13px] font-semibold text-ink">{c.name}</p>
+                        <Link to={`/app/ai-campaigns/${c.id}`} className="text-[13px] font-semibold text-ink hover:text-primary hover:underline">{c.name}</Link>
                         <StatusPill value={c.status} />
                       </div>
                       <p className="mt-0.5 text-[11px] text-muted">{c.goal}</p>

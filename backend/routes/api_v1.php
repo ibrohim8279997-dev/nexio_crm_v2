@@ -1,9 +1,11 @@
 <?php
 use App\Http\Controllers\Api\V1\AdminMarketplaceController;
 use App\Http\Controllers\Api\V1\AiController;
+use App\Http\Controllers\Api\V1\AiExtrasController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\BillingController;
 use App\Http\Controllers\Api\V1\CrmController;
+use App\Http\Controllers\Api\V1\CrmExtrasController;
 use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\DeveloperController;
 use App\Http\Controllers\Api\V1\MarketplaceController;
@@ -101,6 +103,29 @@ Route::prefix('v1')->group(function () use ($h) {
     Route::delete('/tasks/{id}', $h(OpsController::class, 'removeTask'));
     Route::post('/tasks/{id}/status', $h(OpsController::class, 'setTaskStatus'));
 
+    // ── custom fields, notes, files, contact↔company links, time tracking, task dependencies ──
+    Route::get('/custom-fields', $h(CrmExtrasController::class, 'listFieldDefs'));
+    Route::post('/custom-fields', $h(CrmExtrasController::class, 'createFieldDef'));
+    Route::get('/custom-fields/values/{entity}/{id}', $h(CrmExtrasController::class, 'getFieldValues'));
+    Route::put('/custom-fields/values/{entity}/{id}', $h(CrmExtrasController::class, 'setFieldValues'));
+    Route::patch('/custom-fields/{id}', $h(CrmExtrasController::class, 'updateFieldDef'));
+    Route::delete('/custom-fields/{id}', $h(CrmExtrasController::class, 'deleteFieldDef'));
+    Route::get('/notes', $h(CrmExtrasController::class, 'listNotes'));
+    Route::post('/notes', $h(CrmExtrasController::class, 'createNote'));
+    Route::delete('/notes/{id}', $h(CrmExtrasController::class, 'deleteNote'));
+    Route::get('/attachments', $h(CrmExtrasController::class, 'listAttachments'));
+    Route::post('/attachments', $h(CrmExtrasController::class, 'uploadAttachment'))->middleware('throttle:60,1');
+    Route::get('/attachments/{id}/download', $h(CrmExtrasController::class, 'downloadAttachment'));
+    Route::delete('/attachments/{id}', $h(CrmExtrasController::class, 'deleteAttachment'));
+    Route::post('/contacts/{id}/organizations', $h(CrmExtrasController::class, 'linkContactOrg'));
+    Route::delete('/contacts/{id}/organizations/{org}', $h(CrmExtrasController::class, 'unlinkContactOrg'));
+    Route::get('/tasks/{id}/time', $h(CrmExtrasController::class, 'listTime'));
+    Route::post('/tasks/{id}/time', $h(CrmExtrasController::class, 'addTime'));
+    Route::delete('/time-entries/{id}', $h(CrmExtrasController::class, 'deleteTime'));
+    Route::get('/tasks/{id}/dependencies', $h(CrmExtrasController::class, 'listDeps'));
+    Route::post('/tasks/{id}/dependencies', $h(CrmExtrasController::class, 'addDep'));
+    Route::delete('/tasks/{id}/dependencies/{link}', $h(CrmExtrasController::class, 'removeDep'));
+
     // ── catalog, helpdesk, comms, docs, automations, integrations ─────────
     Route::get('/products', $h(ModulesController::class, 'listProducts'));
     Route::post('/products', $h(ModulesController::class, 'createProduct'));
@@ -142,6 +167,7 @@ Route::prefix('v1')->group(function () use ($h) {
     // ── billing & finance ──────────────────────────────────────────────────
     Route::get('/billing/plans', $h(BillingController::class, 'plans'));
     Route::get('/billing', $h(BillingController::class, 'subscription'));
+    Route::get('/billing/transactions', $h(BillingController::class, 'transactions'));
     Route::post('/billing/plan', $h(BillingController::class, 'changePlan'));
     Route::post('/billing/cancel', $h(BillingController::class, 'cancel'));
     Route::post('/billing/resume', $h(BillingController::class, 'resume'));
@@ -154,6 +180,13 @@ Route::prefix('v1')->group(function () use ($h) {
     Route::get('/ai/agents/{id}', $h(AiController::class, 'getAgent'));
     Route::patch('/ai/agents/{id}', $h(AiController::class, 'updateAgent'));
     Route::post('/ai/agents/{id}/status', $h(AiController::class, 'setAgentStatus'));
+    Route::get('/ai/knowledge', $h(AiExtrasController::class, 'listKnowledge'));
+    Route::post('/ai/knowledge', $h(AiExtrasController::class, 'createKnowledge'));
+    Route::get('/ai/knowledge/{id}', $h(AiExtrasController::class, 'getKnowledge'));
+    Route::patch('/ai/knowledge/{id}', $h(AiExtrasController::class, 'updateKnowledge'));
+    Route::delete('/ai/knowledge/{id}', $h(AiExtrasController::class, 'deleteKnowledge'));
+    Route::get('/ai/usage', $h(AiExtrasController::class, 'usage'));
+    Route::get('/ai/campaigns/{id}', $h(AiExtrasController::class, 'getCampaign'));
     Route::post('/ai/campaigns', $h(AiController::class, 'createCampaign'));
     Route::post('/ai/campaigns/{id}/start', $h(AiController::class, 'startCampaign'));
     Route::post('/ai/campaigns/{id}/stop', $h(AiController::class, 'stopCampaign'));

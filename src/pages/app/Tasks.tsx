@@ -8,6 +8,7 @@ import { useApi, useApiMutation } from '../../lib/hooks'
 import { api, withoutBlankIds } from '../../lib/api'
 import { label, num, shortDate } from '../../lib/format'
 import { useCan } from '../../lib/auth'
+import TaskDrawer from './TaskDrawer'
 
 interface Task {
   id: string; title: string; description: string | null; status: string; priority: string
@@ -25,6 +26,7 @@ export default function Tasks() {
   const [q, setQ] = useState('')
   const [page, setPage] = useState(1)
   const [open, setOpen] = useState(false)
+  const [drawerTask, setDrawerTask] = useState<{ id: string; title: string } | null>(null)
   const can = useCan()
 
   const list = useApi<TasksResponse>(['tasks', scope, status, q, page], `/api/v1/tasks?scope=${scope}&status=${status}&q=${encodeURIComponent(q)}&page=${page}&limit=25`)
@@ -100,12 +102,13 @@ export default function Tasks() {
           emptyTitle="Задач не найдено" emptyDescription="Измените фильтры или создайте новую задачу."
           emptyAction={can('tasks.write') ? <Button size="sm" onClick={() => setOpen(true)}><Plus className="size-4" /> Новая задача</Button> : undefined}
           onRetry={() => list.refetch()}>
-          <DataTable columns={columns} rows={list.data?.data ?? []} />
+          <DataTable columns={columns} rows={list.data?.data ?? []} onRowClick={(t) => setDrawerTask({ id: t.id, title: t.title })} />
           {list.data && <Pagination page={list.data.page} limit={list.data.limit} total={list.data.total} onPage={setPage} />}
         </QueryState>
       </SectionCard>
 
       <CreateTaskModal open={open} onClose={() => setOpen(false)} />
+      <TaskDrawer task={drawerTask} onClose={() => setDrawerTask(null)} />
     </div>
   )
 }

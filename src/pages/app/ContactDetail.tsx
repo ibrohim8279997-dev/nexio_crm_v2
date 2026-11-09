@@ -1,21 +1,59 @@
+import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, Mail, Phone } from 'lucide-react'
+import { ArrowLeft, Mail, Phone, Trash2 } from 'lucide-react'
 import { Avatar, Badge, Button, Card, EmptyState, PageHeader, QueryState, SectionCard, Skeleton, StatusPill } from '../../components/ui/core'
-import { useApi } from '../../lib/hooks'
+import { Field, Input, Select } from '../../components/ui/form'
+import { useApi, useApiMutation } from '../../lib/hooks'
+import { api } from '../../lib/api'
 import { label, money, relative } from '../../lib/format'
+import { useCan } from '../../lib/auth'
+import { CustomFieldsPanel, FilesPanel, NotesPanel } from '../../components/records/RecordPanels'
 
 interface ContactFull {
   id: string; first_name: string; last_name: string | null; position: string | null; email: string | null; phone: string | null
   telegram: string | null; status: string; org_id: string | null; org_name: string | null; owner_name: string | null
+  organizations: { id: string; name: string; role: string | null; is_primary: number }[]
   consent_calls: number; consent_marketing: number; tags: string[]
   deals: { id: string; title: string; amount: number; currency: string; status: string; created_at: string }[]
   activity: { id: string; kind: string; subject: string; actor_name: string | null; created_at: string }[]
   communications: { id: string; channel: string; direction: string; subject: string | null; created_at: string }[]
 }
 
+/** A person can work with several companies, each with its own role. */
+function ContactOrgs({ contactId, orgs, canWrite }: { contactId: string; orgs: ContactFull['organizations']; canWrite: boolean }) {
+  const all = useApi<{ data: { id: string; name: string }[] }>(['orgs-mini'], '/api/v1/organizations?limit=200', { enabled: canWrite })
+  const [form, setForm] = useState({ org_id: '', role: '', is_primary: false })
+  const inv = [['contact', contactId], ['orgs-mini']]
+  const link = useApiMutation(() => api.post(`/api/v1/contacts/${contactId}/organizations`, form), { invalidate: inv, success: 'Компания привязана', onDone: () => setForm({ org_id: '', role: '', is_primary: false }) })
+  const unlink = useApiMutation((orgId: string) => api.del(`/api/v1/contacts/${contactId}/organizations/${orgId}`), { invalidate: inv, success: 'Связь удалена' })
+  return (
+    <SectionCard title="Компании и роли" subtitle="Контакт может работать сразу в нескольких компаниях">
+      {orgs.length === 0 ? <p className="text-[12px] text-muted">Дополнительных связей нет.</p> : (
+        <ul className="divide-y divide-line">{orgs.map((o) => (
+          <li key={o.id} className="flex items-center gap-2 py-2 text-[12px]">
+            <Link to={`/app/companies/${o.id}`} className="min-w-0 flex-1 truncate font-medium text-primary hover:underline">{o.name}</Link>
+            <span className="text-muted">{o.role ?? '—'}</span>
+            {!!o.is_primary && <Badge tone="primary">основная</Badge>}
+            {canWrite && <button type="button" onClick={() => unlink.mutate(o.id)} className="rounded p-1 hover:bg-subtle" aria-label={`Убрать связь с ${o.name}`}><Trash2 className="size-3.5" /></button>}
+          </li>
+        ))}</ul>
+      )}
+      {canWrite && (
+        <div className="mt-3 space-y-2 border-t border-line pt-3">
+          <Field label="Компания"><Select value={form.org_id} onChange={(e) => setForm({ ...form, org_id: e.target.value })}><option value="">Выберите…</option>{(all.data?.data ?? []).map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}</Select></Field>
+          <Field label="Роль / должность"><Input value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} placeholder="Директор по закупкам" /></Field>
+          <label className="flex items-center gap-2 text-[12px] text-ink"><input type="checkbox" checked={form.is_primary} onChange={(e) => setForm({ ...form, is_primary: e.target.checked })} /> Основная компания</label>
+          <Button size="sm" loading={link.isPending} disabled={!form.org_id} onClick={() => link.mutate(undefined as never)}>Привязать</Button>
+        </div>
+      )}
+    </SectionCard>
+  )
+}
+
 export default function ContactDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const can = useCan()
   const q = useApi<ContactFull>(['contact', id], `/api/v1/contacts/${id}`)
   const d = q.data
   const name = d ? `${d.first_name} ${d.last_name ?? ''}`.trim() : 'Контакт'
@@ -55,6 +93,10 @@ export default function ContactDetail() {
               </SectionCard>
             </div>
             <div className="space-y-4">
+              <ContactOrgs contactId={d.id} orgs={d.organizations} canWrite={can('crm.write')} />
+              <CustomFieldsPanel entity="contact" entityId={d.id} canWrite={can('crm.write')} />
+              <NotesPanel entityType="contact" entityId={d.id} canWrite={can('crm.write')} />
+              <FilesPanel entityType="contact" entityId={d.id} canWrite={can('crm.write')} />
               <SectionCard title="Сделки">
                 {d.deals.length === 0 ? <p className="text-[12px] text-muted">Сделок нет.</p> : (
                   <ul className="divide-y divide-line">{d.deals.map((x) => (

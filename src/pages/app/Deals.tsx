@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { DndContext, DragOverlay, KeyboardSensor, PointerSensor, useDraggable, useDroppable, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
 import { useQueryClient } from '@tanstack/react-query'
 import { Bot, Columns3, Download, GripVertical, Plus, TrendingUp, Wallet, X } from 'lucide-react'
 import {
@@ -29,8 +30,9 @@ export default function Deals() {
   const [q, setQ] = useState('')
   const [status, setStatus] = useState('open')
   const [createOpen, setCreateOpen] = useState(false)
-  const [dragId, setDragId] = useState<string | null>(null)
-  const [dropStage, setDropStage] = useState<string | null>(null)
+  const [activeId, setActiveId] = useState<string | null>(null)
+  // A small distance threshold keeps plain clicks (open deal) separate from drags; the keyboard sensor makes the board usable without a mouse.
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }), useSensor(KeyboardSensor))
   const can = useCan()
   const navigate = useNavigate()
   const qc = useQueryClient()
@@ -58,13 +60,15 @@ export default function Deals() {
     }
   }, [stages])
 
-  function onDrop(stageId: string) {
-    setDropStage(null)
-    if (!dragId) return
-    const deal = stages.flatMap((s) => s.deals).find((d) => d.id === dragId)
-    if (!deal || deal.stage_id === stageId) { setDragId(null); return }
-    move.mutate({ id: dragId, stage_id: stageId })
-    setDragId(null)
+  const activeDeal = stages.flatMap((s) => s.deals).find((d) => d.id === activeId) ?? null
+
+  function onDragEnd(e: DragEndEvent) {
+    setActiveId(null)
+    if (!e.over) return
+    const deal = stages.flatMap((s) => s.deals).find((d) => d.id === String(e.active.id))
+    const stageId = String(e.over.id)
+    if (!deal || deal.stage_id === stageId) return
+    move.mutate({ id: deal.id, stage_id: stageId })
   }
 
   const columns: Column<StageDeal>[] = [
@@ -115,64 +119,14 @@ export default function Deals() {
         <QueryState loading={board.isLoading} error={board.error} empty={stages.length === 0} emptyTitle="Воронка не настроена"
           emptyDescription="Создайте стадии в разделе «Настройки → Воронка»." onRetry={() => board.refetch()}
           skeleton={<div className="flex gap-4 overflow-hidden">{Array.from({ length: 4 }).map((_, i) => <Card key={i} className="h-72 w-72 shrink-0 animate-pulse" />)}</div>}>
-          <div className="no-scrollbar -mx-3 overflow-x-auto px-3 pb-2 sm:mx-0 sm:px-0">
-            <div className="flex min-w-max gap-3 sm:gap-4">
-              {stages.map((s) => (
-                <section
-                  key={s.id}
-                  onDragOver={(e) => { e.preventDefault(); setDropStage(s.id) }}
-                  onDragLeave={() => setDropStage((v) => (v === s.id ? null : v))}
-                  onDrop={() => onDrop(s.id)}
-                  className={`w-[268px] shrink-0 rounded-card border border-line bg-surface ${dropStage === s.id ? 'drop-target' : ''}`}
-                  aria-label={`Стадия ${s.name}`}
-                >
-                  <header className="flex items-center justify-between gap-2 border-b border-line px-3 py-2.5">
-                    <div className="flex min-w-0 items-center gap-2">
-                      <span className="size-2.5 shrink-0 rounded-full" style={{ background: s.color }} />
-                      <span className="truncate text-[13px] font-semibold text-ink">{s.name}</span>
-                      <Badge tone="neutral">{s.count}</Badge>
-                    </div>
-                    <span className="shrink-0 text-[11px] font-medium text-muted">{compact(s.total)}</span>
-                  </header>
-                  <div className="space-y-2 p-2.5">
-                    {s.deals.length === 0 && <p className="py-6 text-center text-[11px] text-slate-400">Нет сделок</p>}
-                    {s.deals.slice(0, 25).map((d) => (
-                      <article
-                        key={d.id}
-                        draggable={can('deals.write')}
-                        onDragStart={() => setDragId(d.id)}
-                        onDragEnd={() => { setDragId(null); setDropStage(null) }}
-                        className={`group cursor-grab rounded-xl border border-line bg-white p-3 shadow-[0_1px_2px_rgba(15,23,42,.04)] transition-shadow hover:shadow-[var(--shadow-card)] active:cursor-grabbing ${dragId === d.id ? 'opacity-50' : ''}`}
-                      >
-                        <div className="flex items-start gap-1.5">
-                          <GripVertical className="mt-0.5 size-3.5 shrink-0 text-slate-300 group-hover:text-muted" />
-                          <Link to={`/app/deals/${d.id}`} draggable={false} className="min-w-0 flex-1 text-[12px] font-medium leading-snug text-ink hover:text-primary hover:underline">{d.title}</Link>
-                        </div>
-                        <p className="mt-1 truncate pl-5 text-[10px] text-muted">{d.org_name ?? '—'}</p>
-                        <div className="mt-2.5 flex items-center justify-between pl-5">
-                          <span className="text-[12px] font-bold text-ink">{compact(d.amount, d.currency)}</span>
-                          <div className="flex items-center gap-1">
-                            {!!d.is_ai_sourced && <Badge tone="ai"><Bot className="size-2.5" /></Badge>}
-                            <Badge tone="neutral">{d.probability}%</Badge>
-                          </div>
-                        </div>
-                        {d.owner_name && (
-                          <div className="mt-2 flex items-center gap-1.5 border-t border-line pt-2 pl-5">
-                            <span className="size-4 rounded-full text-[8px] font-bold text-white" style={{ background: d.owner_color ?? '#2563EB', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
-                              {d.owner_name.slice(0, 1)}
-                            </span>
-                            <span className="truncate text-[10px] text-muted">{d.owner_name}</span>
-                            {d.expected_close_at && <span className="ml-auto text-[10px] text-slate-400">{shortDate(d.expected_close_at)}</span>}
-                          </div>
-                        )}
-                      </article>
-                    ))}
-                    {s.deals.length > 25 && <p className="pb-1 text-center text-[10px] text-muted">и ещё {s.deals.length - 25}…</p>}
-                  </div>
-                </section>
-              ))}
+          <DndContext sensors={sensors} onDragStart={(e) => setActiveId(String(e.active.id))} onDragCancel={() => setActiveId(null)} onDragEnd={onDragEnd}>
+            <div className="no-scrollbar -mx-3 overflow-x-auto px-3 pb-2 sm:mx-0 sm:px-0">
+              <div className="flex min-w-max gap-3 sm:gap-4">
+                {stages.map((s) => <StageColumn key={s.id} stage={s} canMove={can('deals.write')} activeId={activeId} />)}
+              </div>
             </div>
-          </div>
+            <DragOverlay>{activeDeal ? <DealCard deal={activeDeal} overlay canMove={false} /> : null}</DragOverlay>
+          </DndContext>
           {move.isPending && <p className="mt-2 text-center text-[11px] text-muted">Сохраняем перемещение…</p>}
         </QueryState>
       ) : (
@@ -241,5 +195,58 @@ function CreateDealModal({ open, onClose, stages }: { open: boolean; onClose: ()
         При переводе сделки на стадию типа «won» система предложит создать заказ и проект — автоматически ничего не создаётся.
       </p>
     </Modal>
+  )
+}
+
+
+function DealCard({ deal: d, canMove, overlay, dragging }: { deal: StageDeal; canMove: boolean; overlay?: boolean; dragging?: boolean }) {
+  const drag = useDraggable({ id: d.id, disabled: !canMove || overlay })
+  return (
+    <article ref={overlay ? undefined : drag.setNodeRef}
+      className={`group rounded-xl border border-line bg-white p-3 shadow-[0_1px_2px_rgba(15,23,42,.04)] transition-shadow hover:shadow-[var(--shadow-card)] ${dragging || drag.isDragging ? 'opacity-40' : ''} ${overlay ? 'rotate-1 shadow-xl' : ''}`}>
+      <div className="flex items-start gap-1.5">
+        {canMove && !overlay
+          ? <button type="button" ref={drag.setActivatorNodeRef} {...drag.listeners} {...drag.attributes} aria-label={`Переместить сделку «${d.title}» (пробел — взять, стрелки — двигать)`}
+              className="mt-0.5 cursor-grab touch-none rounded text-slate-300 hover:text-muted active:cursor-grabbing"><GripVertical className="size-3.5" /></button>
+          : <GripVertical className="mt-0.5 size-3.5 shrink-0 text-slate-200" />}
+        <Link to={`/app/deals/${d.id}`} className="min-w-0 flex-1 text-[12px] font-medium leading-snug text-ink hover:text-primary hover:underline">{d.title}</Link>
+      </div>
+      <p className="mt-1 truncate pl-5 text-[10px] text-muted">{d.org_name ?? '—'}</p>
+      <div className="mt-2.5 flex items-center justify-between pl-5">
+        <span className="text-[12px] font-bold text-ink">{compact(d.amount, d.currency)}</span>
+        <div className="flex items-center gap-1">
+          {!!d.is_ai_sourced && <Badge tone="ai"><Bot className="size-2.5" /></Badge>}
+          <Badge tone="neutral">{d.probability}%</Badge>
+        </div>
+      </div>
+      {d.owner_name && (
+        <div className="mt-2 flex items-center gap-1.5 border-t border-line pt-2 pl-5">
+          <span className="size-4 rounded-full text-[8px] font-bold text-white" style={{ background: d.owner_color ?? '#2563EB', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{d.owner_name.slice(0, 1)}</span>
+          <span className="truncate text-[10px] text-muted">{d.owner_name}</span>
+          {d.expected_close_at && <span className="ml-auto text-[10px] text-slate-400">{shortDate(d.expected_close_at)}</span>}
+        </div>
+      )}
+    </article>
+  )
+}
+
+function StageColumn({ stage: s, canMove, activeId }: { stage: BoardStage; canMove: boolean; activeId: string | null }) {
+  const drop = useDroppable({ id: s.id })
+  return (
+    <section ref={drop.setNodeRef} className={`w-[268px] shrink-0 rounded-card border border-line bg-surface ${drop.isOver ? 'drop-target' : ''}`} aria-label={`Стадия ${s.name}`}>
+      <header className="flex items-center justify-between gap-2 border-b border-line px-3 py-2.5">
+        <div className="flex min-w-0 items-center gap-2">
+          <span className="size-2.5 shrink-0 rounded-full" style={{ background: s.color }} />
+          <span className="truncate text-[13px] font-semibold text-ink">{s.name}</span>
+          <Badge tone="neutral">{s.count}</Badge>
+        </div>
+        <span className="shrink-0 text-[11px] font-medium text-muted">{compact(s.total)}</span>
+      </header>
+      <div className="space-y-2 p-2.5">
+        {s.deals.length === 0 && <p className="py-6 text-center text-[11px] text-slate-400">Нет сделок</p>}
+        {s.deals.slice(0, 25).map((d) => <DealCard key={d.id} deal={d} canMove={canMove} dragging={activeId === d.id} />)}
+        {s.deals.length > 25 && <p className="pb-1 text-center text-[10px] text-muted">и ещё {s.deals.length - 25}…</p>}
+      </div>
+    </section>
   )
 }

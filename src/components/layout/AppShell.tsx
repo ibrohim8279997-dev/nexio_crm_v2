@@ -106,6 +106,9 @@ const GROUPS: NavGroup[] = [
       { to: '/app/ai-agents', label: 'AI Control Center', icon: <Sparkles className={ICON} /> },
       { to: '/app/ai-calls', label: 'AI-звонки', icon: <PhoneCall className={ICON} /> },
       { to: '/app/ai-analytics', label: 'AI-аналитика', icon: <LineChart className={ICON} /> },
+      { to: '/app/ai-knowledge', label: 'База знаний AI', icon: <BookText className={ICON} /> },
+      { to: '/app/ai-policies', label: 'Политики AI', icon: <ShieldCheck className={ICON} /> },
+      { to: '/app/ai-usage', label: 'Расходы AI', icon: <CreditCard className={ICON} /> },
     ],
   },
   {

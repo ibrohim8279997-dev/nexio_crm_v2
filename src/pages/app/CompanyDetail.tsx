@@ -8,6 +8,7 @@ import { useApi, useApiMutation } from '../../lib/hooks'
 import { api } from '../../lib/api'
 import { compact, label, money, num, relative, shortDate } from '../../lib/format'
 import { useCan } from '../../lib/auth'
+import { CustomFieldsPanel, FilesPanel, NotesPanel } from '../../components/records/RecordPanels'
 
 interface Detail {
   id: string; name: string; industry: string | null; website: string | null; email: string | null; phone: string | null
@@ -20,7 +21,7 @@ export default function CompanyDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
   const can = useCan()
-  const [tab, setTab] = useState<'overview' | 'contacts' | 'deals' | 'orders' | 'projects' | 'tickets' | 'activity'>('overview')
+  const [tab, setTab] = useState<'overview' | 'contacts' | 'deals' | 'orders' | 'projects' | 'tickets' | 'activity' | 'notes' | 'files'>('overview')
   const [dealOpen, setDealOpen] = useState(false)
   const [orderOpen, setOrderOpen] = useState(false)
 
@@ -108,6 +109,8 @@ export default function CompanyDetail() {
                     { value: 'projects', label: 'Проекты', count: d.projects.length },
                     { value: 'tickets', label: 'Обращения', count: d.tickets.length },
                     { value: 'activity', label: 'Активность', count: d.activity.length },
+                    { value: 'notes', label: 'Заметки' },
+                    { value: 'files', label: 'Файлы' },
                   ]}
                   value={tab} onChange={setTab}
                 />
@@ -134,13 +137,17 @@ export default function CompanyDetail() {
                   </div>
                 )}
 
+                {tab === 'overview' && <div className="mt-5"><CustomFieldsPanel entity="organization" entityId={d.id} canWrite={can('crm.write')} /></div>}
+                {tab === 'notes' && <NotesPanel entityType="organization" entityId={d.id} canWrite={can('crm.write')} />}
+                {tab === 'files' && <FilesPanel entityType="organization" entityId={d.id} canWrite={can('crm.write')} />}
+
                 {tab === 'contacts' && (d.contacts.length === 0
                   ? <EmptyState title="Контактов нет" description="Добавьте контактных лиц, чтобы вести переговоры и звонки." action={<Link to="/app/contacts"><Button size="sm">Добавить контакт</Button></Link>} />
                   : <ul className="divide-y divide-line">{d.contacts.map((c) => (
                     <li key={c.id} className="flex flex-wrap items-center gap-3 py-3">
                       <Avatar name={`${c.first_name} ${c.last_name ?? ''}`} color="#0EA5E9" size={34} />
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-[13px] font-medium text-ink">{c.first_name} {c.last_name} {c.is_primary ? <Badge tone="primary" className="ml-1">основной</Badge> : null}</p>
+                        <p className="truncate text-[13px] font-medium text-ink"><Link to={`/app/contacts/${c.id}`} className="hover:text-primary hover:underline">{c.first_name} {c.last_name}</Link> {c.is_primary ? <Badge tone="primary" className="ml-1">основной</Badge> : null}{c.link_role ? <Badge tone="neutral" className="ml-1">{c.link_role}</Badge> : null}</p>
                         <p className="truncate text-[11px] text-muted">{c.position ?? '—'} · {c.email ?? 'без email'}</p>
                       </div>
                       <div className="flex flex-wrap items-center gap-1.5">

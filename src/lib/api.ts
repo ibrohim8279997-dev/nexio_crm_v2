@@ -5,18 +5,25 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
+/** Same-origin proxy path, or the configured API origin when the frontend is deployed separately. */
+export function resolveUrl(path: string): string {
   const configuredBase = String(import.meta.env.VITE_API_BASE_URL ?? '').trim().replace(/\/$/, '')
-  const url = configuredBase && configuredBase !== '/api'
+  return configuredBase && configuredBase !== '/api'
     ? `${configuredBase}${path.startsWith('/api') && configuredBase.endsWith('/api') ? path.slice(4) : path}`
     : path
+}
+
+async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
+  const url = resolveUrl(path)
+  const isForm = typeof FormData !== 'undefined' && body instanceof FormData
   const res = await fetch(url, {
     method,
     // Works both through the Vite same-origin proxy and when the frontend is
     // deployed against the Laravel API origin directly.
     credentials: 'include',
-    headers: body !== undefined ? { 'content-type': 'application/json' } : undefined,
-    body: body !== undefined ? JSON.stringify(body) : undefined,
+    // FormData sets its own multipart boundary header.
+    headers: body !== undefined && !isForm ? { 'content-type': 'application/json' } : undefined,
+    body: body === undefined ? undefined : isForm ? (body as FormData) : JSON.stringify(body),
   })
   if (res.status === 204) return undefined as T
   const text = await res.text()
@@ -36,6 +43,7 @@ export const api = {
   patch: <T>(path: string, body?: unknown) => request<T>('PATCH', path, body ?? {}),
   put: <T>(path: string, body?: unknown) => request<T>('PUT', path, body ?? {}),
   del: <T>(path: string) => request<T>('DELETE', path),
+  upload: <T>(path: string, form: FormData) => request<T>('POST', path, form),
 }
 
 export const qs = (params: Record<string, string | number | undefined | null>) => {
@@ -48,7 +56,7 @@ export const qs = (params: Record<string, string | number | undefined | null>) =
 /** Triggers a browser download for CSV exports without leaving the SPA. */
 export function download(path: string) {
   const a = document.createElement('a')
-  a.href = path
+  a.href = resolveUrl(path)
   a.rel = 'noopener'
   document.body.appendChild(a)
   a.click()

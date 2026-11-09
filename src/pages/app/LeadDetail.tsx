@@ -5,6 +5,7 @@ import { useApi, useApiMutation } from '../../lib/hooks'
 import { api } from '../../lib/api'
 import { label, money, relative, shortDate } from '../../lib/format'
 import { useCan } from '../../lib/auth'
+import { CustomFieldsPanel, FilesPanel, NotesPanel } from '../../components/records/RecordPanels'
 
 interface LeadFull {
   id: string; title: string; contact_name: string | null; email: string | null; phone: string | null
@@ -66,6 +67,9 @@ export default function LeadDetail() {
                     <dd className="flex items-center gap-2"><Avatar name={d.owner_name} color={d.owner_color} size={22} /><span className="font-semibold text-ink">{d.owner_name ?? '—'}</span></dd></div>
                 </dl>
               </Card>
+              <CustomFieldsPanel entity="lead" entityId={d.id} canWrite={can('crm.write')} />
+              <NotesPanel entityType="lead" entityId={d.id} canWrite={can('crm.write')} />
+              <FilesPanel entityType="lead" entityId={d.id} canWrite={can('crm.write')} />
               <SectionCard title="Задачи">
                 {d.tasks.length === 0 ? <p className="text-[12px] text-muted">Задач нет.</p> : (
                   <ul className="divide-y divide-line">{d.tasks.map((t) => (

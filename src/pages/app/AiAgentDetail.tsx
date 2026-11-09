@@ -186,7 +186,8 @@ export default function AiAgentDetail() {
                       </div>
                     ))}
                     <div className="rounded-xl border border-line bg-bg p-3 sm:col-span-2">
-                      <p className="text-[11px] leading-relaxed text-muted">
+                      <Link to={`/app/ai-policies?agent=${d.id}`} className="text-[12px] font-semibold text-primary hover:underline">Изменить политики →</Link>
+                      <p className="mt-1.5 text-[11px] leading-relaxed text-muted">
                         Последнее изменение политик фиксируется в журнале аудита компании. Отключение агента (kill switch)
                         немедленно останавливает все связанные кампании.
                       </p>

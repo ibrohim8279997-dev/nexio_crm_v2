@@ -8,6 +8,8 @@ import { useApi, useApiMutation } from '../../lib/hooks'
 import { api, withoutBlankIds } from '../../lib/api'
 import { compact, label, money, num, relative, shortDate } from '../../lib/format'
 import { useCan } from '../../lib/auth'
+import { CustomFieldsPanel, FilesPanel, NotesPanel } from '../../components/records/RecordPanels'
+import TaskDrawer from './TaskDrawer'
 
 interface ProjectDetailData {
   id: string; name: string; org_name: string | null; status: string; priority: string; progress: number
@@ -24,6 +26,7 @@ export default function ProjectDetail() {
   const can = useCan()
   const [taskOpen, setTaskOpen] = useState(false)
   const [msOpen, setMsOpen] = useState(false)
+  const [openTask, setOpenTask] = useState<{ id: string; title: string } | null>(null)
   const q = useApi<ProjectDetailData>(['project', id], `/api/v1/projects/${id}`)
   const d = q.data
 
@@ -101,7 +104,7 @@ export default function ProjectDetail() {
                     <li key={t.id} className="flex flex-wrap items-center gap-3 px-4 py-3">
                       <Avatar name={t.assignee_name} color={t.assignee_color ?? '#64748B'} size={28} />
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-[13px] font-medium text-ink">{t.title}</p>
+                        <button type="button" onClick={() => setOpenTask({ id: t.id, title: t.title })} className="block max-w-full truncate text-left text-[13px] font-medium text-ink hover:text-primary hover:underline">{t.title}</button>
                         <p className="text-[11px] text-muted">{t.assignee_name ?? '—'} · {t.due_date ? shortDate(t.due_date) : 'без срока'}</p>
                       </div>
                       <StatusPill value={t.priority} />
@@ -128,7 +131,14 @@ export default function ProjectDetail() {
               </ul>
             </SectionCard>
 
+            <CustomFieldsPanel entity="project" entityId={d.id} canWrite={can('projects.write')} />
+            <div className="grid gap-4 xl:grid-cols-2">
+              <NotesPanel entityType="project" entityId={d.id} canWrite={can('projects.write')} />
+              <FilesPanel entityType="project" entityId={d.id} canWrite={can('projects.write')} />
+            </div>
+
             <AddTaskModal open={taskOpen} onClose={() => setTaskOpen(false)} projectId={d.id} />
+            <TaskDrawer task={openTask} onClose={() => setOpenTask(null)} />
             <AddMilestoneModal open={msOpen} onClose={() => setMsOpen(false)} projectId={d.id} />
           </>
         )}

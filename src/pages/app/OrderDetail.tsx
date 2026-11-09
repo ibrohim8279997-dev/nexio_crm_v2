@@ -3,6 +3,8 @@ import { ArrowLeft } from 'lucide-react'
 import { Button, Card, PageHeader, QueryState, SectionCard, Skeleton, StatusPill } from '../../components/ui/core'
 import { useApi } from '../../lib/hooks'
 import { money, shortDate } from '../../lib/format'
+import { useCan } from '../../lib/auth'
+import { CustomFieldsPanel, FilesPanel, NotesPanel } from '../../components/records/RecordPanels'
 
 interface OrderFull {
   id: string; number: string; amount: number; currency: string; status: string; payment_status: string
@@ -16,6 +18,7 @@ interface OrderFull {
 export default function OrderDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const can = useCan()
   const q = useApi<OrderFull>(['order', id], `/api/v1/orders/${id}`)
   const d = q.data
 
@@ -53,6 +56,9 @@ export default function OrderDetail() {
                   <div className="flex justify-between gap-2"><dt className="text-muted">Проект</dt><dd className="font-semibold text-ink">{d.project ? <Link className="text-primary hover:underline" to={`/app/projects/${d.project.id}`}>{d.project.name}</Link> : '—'}</dd></div>
                 </dl>
               </Card>
+              <CustomFieldsPanel entity="order" entityId={d.id} canWrite={can('orders.write')} />
+              <NotesPanel entityType="order" entityId={d.id} canWrite={can('orders.write')} />
+              <FilesPanel entityType="order" entityId={d.id} canWrite={can('orders.write')} />
             </div>
           </div>
         )}

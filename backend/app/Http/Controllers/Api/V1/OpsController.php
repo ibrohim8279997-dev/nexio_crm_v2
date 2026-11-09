@@ -437,6 +437,15 @@ class OpsController
         if (!$task) throw new ApiException(404, 'Задача не найдена', 'not_found');
         $b = H::body($ctx);
         $status = H::oneOf($b['status'] ?? null, 'status', self::TASK_STATES);
+        // A task cannot start or finish while a task it depends on is still open.
+        if ($status !== 'todo') {
+            $open = DB::selectOne(
+                "SELECT k.title FROM task_dependencies d JOIN tasks k ON k.id = d.depends_on_id
+                  WHERE d.tenant_id = ? AND d.task_id = ? AND k.status != 'done' LIMIT 1",
+                [$ctx->tenantId, $ctx->params['id']]
+            );
+            if ($open) throw new ApiException(409, "Сначала завершите задачу «{$open->title}»", 'blocked');
+        }
         DB::update('UPDATE tasks SET status=?, completed_at=?, updated_at=? WHERE id=? AND tenant_id=?', [
             $status, $status === 'done' ? H::now() : null, H::now(), $ctx->params['id'], $ctx->tenantId,
         ]);

@@ -63,7 +63,12 @@ class CrmController
         $id = $ctx->params['id'];
         $org = DB::selectOne('SELECT * FROM organizations WHERE id = ? AND tenant_id = ?', [$id, $t]);
         if (!$org) throw new ApiException(404, 'Компания не найдена', 'not_found');
-        $contacts = DB::select('SELECT * FROM contacts WHERE org_id = ? ORDER BY is_primary DESC, first_name', [$id]);
+        // Contacts whose primary company is this one, plus contacts linked through the many-to-many table.
+        $contacts = DB::select(
+            'SELECT c.*, co.role AS link_role FROM contacts c LEFT JOIN contact_organizations co ON co.contact_id = c.id AND co.org_id = ?
+              WHERE c.tenant_id = ? AND (c.org_id = ? OR co.org_id = ?) ORDER BY c.is_primary DESC, c.first_name',
+            [$id, $t, $id, $id]
+        );
         $deals = DB::select('SELECT d.*, s.name AS stage_name, s.color AS stage_color FROM deals d LEFT JOIN pipeline_stages s ON s.id = d.stage_id WHERE d.org_id = ? ORDER BY d.created_at DESC LIMIT 20', [$id]);
         $orders = DB::select('SELECT * FROM orders WHERE org_id = ? ORDER BY created_at DESC LIMIT 10', [$id]);
         $activity = DB::select("SELECT id, kind, subject, actor_name, created_at FROM activities WHERE tenant_id=? AND ((entity_type='organization' AND entity_id=?) OR entity_id IN (SELECT id FROM deals WHERE org_id=?)) ORDER BY created_at DESC LIMIT 20", [$t, $id, $id]);
@@ -181,7 +186,8 @@ class CrmController
         $deals = DB::select('SELECT id, title, amount, currency, status, created_at FROM deals WHERE tenant_id = ? AND contact_id = ? ORDER BY created_at DESC LIMIT 50', [$t, $id]);
         $activity = DB::select("SELECT id,kind,subject,body,actor_name,created_at FROM activities WHERE tenant_id=? AND entity_type='contact' AND entity_id=? ORDER BY created_at DESC LIMIT 50", [$t, $id]);
         $comms = DB::select('SELECT id, channel, direction, subject, created_at FROM communications WHERE tenant_id = ? AND contact_id = ? ORDER BY created_at DESC LIMIT 50', [$t, $id]);
-        return H::json([...(array) $c, 'tags' => H::parseJson($c->tags, []), 'deals' => $deals, 'activity' => $activity, 'communications' => $comms]);
+        $orgs = DB::select('SELECT o.id, o.name, co.role, co.is_primary FROM contact_organizations co JOIN organizations o ON o.id = co.org_id WHERE co.tenant_id = ? AND co.contact_id = ? ORDER BY co.is_primary DESC, o.name', [$t, $id]);
+        return H::json([...(array) $c, 'tags' => H::parseJson($c->tags, []), 'organizations' => $orgs, 'deals' => $deals, 'activity' => $activity, 'communications' => $comms]);
     }
 
     public function createContact(Ctx $ctx)

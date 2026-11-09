@@ -46,12 +46,17 @@ const Integrations = lazy(() => import('./pages/app/Integrations'))
 const AiAgents = lazy(() => import('./pages/app/AiAgents'))
 const AiAgentDetail = lazy(() => import('./pages/app/AiAgentDetail'))
 const AiCalls = lazy(() => import('./pages/app/AiCalls'))
+const AiKnowledge = lazy(() => import('./pages/app/AiKnowledge'))
+const AiPolicies = lazy(() => import('./pages/app/AiPolicies'))
+const AiUsage = lazy(() => import('./pages/app/AiUsage'))
+const AiCampaignDetail = lazy(() => import('./pages/app/AiCampaignDetail'))
 const AiAnalytics = lazy(() => import('./pages/app/AiAnalytics'))
 const Marketplace = lazy(() => import('./pages/app/Marketplace'))
 const PluginManager = lazy(() => import('./pages/app/PluginManager'))
 const PluginWorkspace = lazy(() => import('./pages/app/PluginWorkspace'))
 const NexioServices = lazy(() => import('./pages/app/NexioServices'))
 const Billing = lazy(() => import('./pages/app/Billing'))
+const BillingTransactions = lazy(() => import('./pages/app/BillingTransactions'))
 const SettingsPage = lazy(() => import('./pages/app/Settings'))
 const Team = lazy(() => import('./pages/app/Team'))
 
@@ -158,9 +163,14 @@ export function App() {
           <Route path="ai-agents" element={<AiAgents />} />
           <Route path="ai-agents/:id" element={<AiAgentDetail />} />
           <Route path="ai-calls" element={<AiCalls />} />
+          <Route path="ai-knowledge" element={<AiKnowledge />} />
+          <Route path="ai-policies" element={<AiPolicies />} />
+          <Route path="ai-usage" element={<AiUsage />} />
+          <Route path="ai-campaigns/:id" element={<AiCampaignDetail />} />
           <Route path="ai-analytics" element={<AiAnalytics />} />
           <Route path="nexio-services" element={<NexioServices />} />
           <Route path="billing" element={<Billing />} />
+          <Route path="billing/transactions" element={<BillingTransactions />} />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes></AppShell></RequireAuth>} />
