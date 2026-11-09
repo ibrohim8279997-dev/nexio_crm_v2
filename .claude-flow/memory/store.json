@@ -1700,6 +1700,483 @@
       "lastAccessed": "2026-11-08T10:00:12.668Z",
       "accessCount": 0,
       "expiresAt": "2026-12-08T10:00:12.668Z"
+    },
+    "cmd-1794250380731": {
+      "key": "cmd-1794250380731",
+      "value": "{\"command\":\"cd /c/Users/Ibrohim/AppData/Local/Temp/claude/a5e33a921a1bd9fd/ 2>/dev/null && find . -name \\\"make_report.py\\\" 2>/dev/null; python -c \\\"import fitz\\\" 2>&1; python -c \\\"import pypdf\\\" 2>&1; python -c \\\"import reportlab; print('rl ok')\\\" 2>&1; which pdftotext\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T18:53:00.731Z",
+      "lastAccessed": "2026-11-09T18:53:00.731Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T18:53:00.731Z"
+    },
+    "cmd-1794250385625": {
+      "key": "cmd-1794250385625",
+      "value": "{\"command\":\"cd /c/Users/Ibrohim/AppData/Local/Temp/claude/a5e33a921a1bd9fd/aa8b57d1-d3bc-4872-985c-160251c7f4bd/scratchpad/ && wc -l make_report.py && grep -n \\\"Qisman\\\" make_report.py | head -60\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T18:53:05.625Z",
+      "lastAccessed": "2026-11-09T18:53:05.625Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T18:53:05.625Z"
+    },
+    "cmd-1794250393431": {
+      "key": "cmd-1794250393431",
+      "value": "{\"command\":\"ls; cat package.json | head -60; ls backend backend/app/* backend/routes backend/tests/Feature backend/database/migrations | head -150; ls src src/pages/app | head -120\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T18:53:13.431Z",
+      "lastAccessed": "2026-11-09T18:53:13.431Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T18:53:13.431Z"
+    },
+    "cmd-1794250411428": {
+      "key": "cmd-1794250411428",
+      "value": "{\"command\":\"cd /c/Users/Ibrohim/nexio_crm_v2/backend && ls app/Http/Controllers/Api/V1 app/Http/Middleware app/Console/Commands; wc -l routes/api_v1.php app/Http/Controllers/Api/V1/*.php app/Support/*.php; cat tests/Feature/CrmExtrasTest.php | head -80; cat database/migrations/2026_11_09_000200_crm_extras.php | head -60; git status --short | head -3; ls vendor | head -3\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T18:53:31.428Z",
+      "lastAccessed": "2026-11-09T18:53:31.428Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T18:53:31.428Z"
+    },
+    "cmd-1794250419785": {
+      "key": "cmd-1794250419785",
+      "value": "{\"command\":\"cat app/Support/H.php app/Support/Ctx.php app/Http/Middleware/ApiContext.php; sed -n 1,80p app/Http/Controllers/Api/V1/CrmExtrasController.php; sed -n 1,60p routes/api_v1.php; cat tests/Feature/PluginTestCase.php | head -80\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T18:53:39.785Z",
+      "lastAccessed": "2026-11-09T18:53:39.785Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T18:53:39.785Z"
+    },
+    "cmd-1794250483406": {
+      "key": "cmd-1794250483406",
+      "value": "{\"command\":\"(php artisan test 2>&1 | tail -15) ; grep -n \\\"ai_approvals\\\\|ai_calls\\\\|budget_limit\\\\|ai_agents\\\\|ai_campaigns\\\\|ai_tool_calls\\\\|ai_events\\\" database/migrations/2024_01_01_000000_nexio_schema.php | head -30\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T18:54:43.406Z",
+      "lastAccessed": "2026-11-09T18:54:43.406Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T18:54:43.406Z"
+    },
+    "cmd-1794250536257": {
+      "key": "cmd-1794250536257",
+      "value": "{\"command\":\"php artisan test 2>&1 | grep -o '\\\"test\\\":\\\"[^\\\"]*\\\"' | sort -u; grep -n \\\"function \\\\|budget\\\\|approval\\\" app/Http/Controllers/Api/V1/AiController.php | head -120\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T18:55:36.257Z",
+      "lastAccessed": "2026-11-09T18:55:36.257Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T18:55:36.257Z"
+    },
+    "cmd-1794250544114": {
+      "key": "cmd-1794250544114",
+      "value": "{\"command\":\"sed -n 55,82p app/Http/Controllers/Api/V1/AiController.php; sed -n 360,540p app/Http/Controllers/Api/V1/AiController.php; grep -n \\\"ai_\\\" database/migrations/2024_01_01_000000_nexio_schema.php | head -30; sed -n 1,60p app/Http/Controllers/Api/V1/AiExtrasController.php\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T18:55:44.114Z",
+      "lastAccessed": "2026-11-09T18:55:44.114Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T18:55:44.114Z"
+    },
+    "cmd-1794250573386": {
+      "key": "cmd-1794250573386",
+      "value": "{\"command\":\"sed -n 130,166p app/Http/Controllers/Api/V1/AiController.php; sed -n 213,282p app/Http/Controllers/Api/V1/AiController.php; grep -n \\\"ai_campaigns\\\\|ai_agents\\\\|ai_approvals\\\\|ai_calls\\\\|quotes\\\\|price_list\\\\|tags\\\\|project_members\\\\|CREATE TABLE\\\" ../migrations/*.sql 2>/dev/null | head -5; ls ../migrations | head; grep -n \\\"CREATE TABLE.*\\\\(ai_agents\\\\|ai_campaigns\\\\|ai_approvals\\\\|ai_calls\\\\|ai_tool_calls\\\\)\\\" -A22 ../migrations/*.sql | head -150\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T18:56:13.386Z",
+      "lastAccessed": "2026-11-09T18:56:13.386Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T18:56:13.386Z"
+    },
+    "cmd-1794250588604": {
+      "key": "cmd-1794250588604",
+      "value": "{\"command\":\"grep -n \\\"function \\\" app/Services/WebhookService.php; cat routes/console.php app/Providers/AppServiceProvider.php; grep -n \\\"CREATE TABLE \\\\(products\\\\|projects\\\\|orders\\\\|deals\\\\|activities\\\\)\\\" -A24 ../migrations/0001_init.sql | grep -v \\\"^--$\\\" | head -130; sed -n 130,200p app/Http/Controllers/Api/V1/AuthController.php; grep -n \\\"public function login\\\" -A60 app/Http/Controllers/Api/V1/AuthController.php | head -90\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T18:56:28.604Z",
+      "lastAccessed": "2026-11-09T18:56:28.604Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T18:56:28.604Z"
+    },
+    "cmd-1794250619961": {
+      "key": "cmd-1794250619961",
+      "value": "{\"command\":\"sed -n 28,60p app/Services/WebhookService.php; sed -n 80,130p app/Support/H.php; sed -n 140,262p app/Support/H.php; grep -n \\\"projects\\\\|milestones\\\\|'/tags\\\\|/notes\\\" routes/api_v1.php | head; grep -n \\\"AiController\\\\|ai/\\\" routes/api_v1.php | head -40\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T18:56:59.961Z",
+      "lastAccessed": "2026-11-09T18:56:59.961Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T18:56:59.961Z"
+    },
+    "cmd-1794250629166": {
+      "key": "cmd-1794250629166",
+      "value": "{\"command\":\"sed -n 267,278p ../migrations/0001_init.sql; grep -n \\\"order_items\\\" app/Http/Controllers/Api/V1/*.php | head -5; ls bootstrap; cat bootstrap/app.php; sed -n 1,30p app/Support/ApiException.php; grep -n \\\"ApiException\\\" bootstrap/app.php app/Exceptions 2>/dev/null | head\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T18:57:09.166Z",
+      "lastAccessed": "2026-11-09T18:57:09.166Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T18:57:09.166Z"
+    },
+    "cmd-1794250650851": {
+      "key": "cmd-1794250650851",
+      "value": "{\"command\":\"cd /c/Users/Ibrohim/nexio_crm_v2/backend/app && ls Http/Requests Policies Events Listeners Jobs\",\"exitCode\":2,\"success\":false}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T18:57:30.851Z",
+      "lastAccessed": "2026-11-09T18:57:30.851Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T18:57:30.851Z"
+    },
+    "cmd-1794250750799": {
+      "key": "cmd-1794250750799",
+      "value": "{\"command\":\"sed -n 96,130p routes/api_v1.php\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T18:59:10.799Z",
+      "lastAccessed": "2026-11-09T18:59:10.799Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T18:59:10.799Z"
+    },
+    "cmd-1794250766751": {
+      "key": "cmd-1794250766751",
+      "value": "{\"command\":\"grep -n \\\"CommercialController;\\\\|ProjectCollabController;\\\" routes/api_v1.php; php artisan route:list --path=quotes 2>&1 | tail -12\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T18:59:26.751Z",
+      "lastAccessed": "2026-11-09T18:59:26.751Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T18:59:26.751Z"
+    },
+    "cmd-1794250868307": {
+      "key": "cmd-1794250868307",
+      "value": "{\"command\":\"grep -n \\\"watch\\\\|allowedHosts\\\\|strictPort\\\" vite.config.js\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T19:01:08.307Z",
+      "lastAccessed": "2026-11-09T19:01:08.307Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T19:01:08.307Z"
+    },
+    "cmd-1794250916118": {
+      "key": "cmd-1794250916118",
+      "value": "{\"command\":\"python -I \\\"C:/Users/Ibrohim/AppData/Local/Temp/claude/a5e33a921a1bd9fd/3b49979d-f85b-4536-8ed0-d25921ab8b34/scratchpad/patch_ai2.py\\\" && for f in app/Http/Controllers/Api/V1/AiExtrasController.php app/Http/Controllers/Api/V1/AiController.php routes/api_v1.php; do php -l $f; done; grep -n \\\"Validates the known\\\" -B2 app/Http/Controllers/Api/V1/AiExtrasController.php | head\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T19:01:56.118Z",
+      "lastAccessed": "2026-11-09T19:01:56.118Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T19:01:56.118Z"
+    },
+    "cmd-1794250937892": {
+      "key": "cmd-1794250937892",
+      "value": "{\"command\":\"python -I \\\"C:/Users/Ibrohim/AppData/Local/Temp/claude/a5e33a921a1bd9fd/3b49979d-f85b-4536-8ed0-d25921ab8b34/scratchpad/patch_sec.py\\\" && for f in app/Support/H.php app/Http/Middleware/ApiContext.php app/Http/Controllers/Api/V1/AuthController.php; do php -l $f; done; sed -n 80,140p tests/Feature/PluginTestCase.php; grep -n \\\"function actingAs\\\" -A14 tests/Feature/PluginTestCase.php | head -50\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T19:02:17.892Z",
+      "lastAccessed": "2026-11-09T19:02:17.892Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T19:02:17.892Z"
+    },
+    "cmd-1794250943504": {
+      "key": "cmd-1794250943504",
+      "value": "{\"command\":\"sed -n 1,70p tests/Feature/AiExtrasTest.php; grep -n \\\"Route::.*\\\\(leads\\\\|contacts\\\\|organizations\\\\|deals\\\\|products\\\\|pipeline\\\\)\\\" routes/api_v1.php\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T19:02:23.504Z",
+      "lastAccessed": "2026-11-09T19:02:23.504Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T19:02:23.504Z"
+    },
+    "cmd-1794250998166": {
+      "key": "cmd-1794250998166",
+      "value": "{\"command\":\"php artisan test --filter=CommercialCollabTest 2>&1 | head -c 6000\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T19:03:18.166Z",
+      "lastAccessed": "2026-11-09T19:03:18.166Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T19:03:18.166Z"
+    },
+    "cmd-1794251060696": {
+      "key": "cmd-1794251060696",
+      "value": "{\"command\":\"php artisan test --filter=AiLimitsSecurityTest 2>&1 | head -c 7000\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T19:04:20.696Z",
+      "lastAccessed": "2026-11-09T19:04:20.696Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T19:04:20.696Z"
+    },
+    "cmd-1794251075712": {
+      "key": "cmd-1794251075712",
+      "value": "{\"command\":\"sed -n 88,91p tests/Feature/AiLimitsSecurityTest.php\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T19:04:35.712Z",
+      "lastAccessed": "2026-11-09T19:04:35.712Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T19:04:35.712Z"
+    },
+    "cmd-1794251103774": {
+      "key": "cmd-1794251103774",
+      "value": "{\"command\":\"php artisan test --filter=\\\"AiLimitsSecurityTest|CrmTenantIsolationTest\\\" 2>&1 | head -c 8000\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T19:05:03.774Z",
+      "lastAccessed": "2026-11-09T19:05:03.774Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T19:05:03.774Z"
+    },
+    "cmd-1794251113691": {
+      "key": "cmd-1794251113691",
+      "value": "{\"command\":\"sed -n 100,150p app/Http/Controllers/Api/V1/OpsController.php\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T19:05:13.691Z",
+      "lastAccessed": "2026-11-09T19:05:13.691Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T19:05:13.691Z"
+    },
+    "cmd-1794251126982": {
+      "key": "cmd-1794251126982",
+      "value": "{\"command\":\"sed -n 78,100p app/Http/Controllers/Api/V1/OpsController.php\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T19:05:26.982Z",
+      "lastAccessed": "2026-11-09T19:05:26.982Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T19:05:26.982Z"
+    },
+    "cmd-1794251156891": {
+      "key": "cmd-1794251156891",
+      "value": "{\"command\":\"python - <<'PYEOF'\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T19:05:56.891Z",
+      "lastAccessed": "2026-11-09T19:05:56.891Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T19:05:56.891Z"
+    },
+    "cmd-1794251168241": {
+      "key": "cmd-1794251168241",
+      "value": "{\"command\":\"cat > /tmp/probe.php <<'EOF'\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T19:06:08.241Z",
+      "lastAccessed": "2026-11-09T19:06:08.241Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T19:06:08.241Z"
+    },
+    "cmd-1794251180065": {
+      "key": "cmd-1794251180065",
+      "value": "{\"command\":\"grep -n \\\"function listProducts\\\" -A22 app/Http/Controllers/Api/V1/ModulesController.php; git log --oneline -3 -- app/Http/Controllers/Api/V1/ModulesController.php; grep -rn \\\"api/v1/products\\\\|/products\\\" ../src --include=*.tsx --include=*.ts -l | head\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T19:06:20.065Z",
+      "lastAccessed": "2026-11-09T19:06:20.065Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T19:06:20.065Z"
+    },
+    "cmd-1794251217891": {
+      "key": "cmd-1794251217891",
+      "value": "{\"command\":\"python - <<'PYEOF'\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T19:06:57.891Z",
+      "lastAccessed": "2026-11-09T19:06:57.891Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T19:06:57.891Z"
+    },
+    "cmd-1794251230027": {
+      "key": "cmd-1794251230027",
+      "value": "{\"command\":\"cd /c/Users/Ibrohim/nexio_crm_v2 && ls src/styles src/components src/components/* src/lib | head -60; ls src/**/*.test.* src/lib/*.test.* 2>/dev/null; grep -n \\\"color-\\\\|font-family\\\\|@theme\\\\|@font-face\\\" src/styles/*.css | head -50; cat vite.config.ts; ls public | head; cat tsconfig.app.json | head -30\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T19:07:10.027Z",
+      "lastAccessed": "2026-11-09T19:07:10.027Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T19:07:10.027Z"
+    },
+    "cmd-1794251286453": {
+      "key": "cmd-1794251286453",
+      "value": "{\"command\":\"sed -n 1,50p src/styles/index.css 2>/dev/null || ls src/styles; sed -n 1,60p src/components/ui/overlay.tsx; grep -n \\\"export\\\" src/components/ui/table.tsx src/components/ui/form.tsx | head -30; (timeout 120 npm install zustand react-hook-form @tanstack/react-table @radix-ui/react-dialog @radix-ui/react-dropdown-menu @fontsource-variable/inter @testing-library/react @testing-library/jest-dom @testing-library/user-event jsdom @playwright/test 2>&1 | tail -8)\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T19:08:06.453Z",
+      "lastAccessed": "2026-11-09T19:08:06.453Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T19:08:06.453Z"
+    },
+    "cmd-1794251298771": {
+      "key": "cmd-1794251298771",
+      "value": "{\"command\":\"cat src/pages/app/ExpensesPage.tsx | head -120; grep -n \\\"Expenses\\\\|expenses\\\" src/App.tsx src/components/layout/AppShell.tsx; sed -n 1,40p src/lib/api.ts; sed -n 1,30p src/lib/hooks.ts; cat src/lib/api.test.ts | head -30; cat src/main.tsx\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T19:08:18.771Z",
+      "lastAccessed": "2026-11-09T19:08:18.771Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T19:08:18.771Z"
+    },
+    "cmd-1794251312766": {
+      "key": "cmd-1794251312766",
+      "value": "{\"command\":\"sed -n 88,104p src/components/layout/AppShell.tsx; sed -n 185,192p src/App.tsx; grep -n \\\"^export\\\" src/components/ui/core.tsx | head -30; sed -n 1,30p src/components/ui/table.tsx; grep -n \\\"export function money\\\" -A8 src/lib/format.ts\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T19:08:32.766Z",
+      "lastAccessed": "2026-11-09T19:08:32.766Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T19:08:32.766Z"
+    },
+    "cmd-1794251400101": {
+      "key": "cmd-1794251400101",
+      "value": "{\"command\":\"python -I - <<'PYEOF'\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T19:10:00.101Z",
+      "lastAccessed": "2026-11-09T19:10:00.101Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T19:10:00.101Z"
+    },
+    "cmd-1794251451436": {
+      "key": "cmd-1794251451436",
+      "value": "{\"command\":\"grep -n '\\\"@tanstack/react-table\\\"\\\\|\\\"zustand\\\"\\\\|\\\"react-hook-form\\\"\\\\|\\\"@radix-ui\\\\|\\\"@fontsource\\\\|\\\"@testing\\\\|\\\"jsdom\\\"\\\\|\\\"@playwright' package.json; (npm install @tanstack/react-table@8 2>&1 | tail -2); npx tsc -p tsconfig.app.json --noEmit 2>&1 | head -20\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T19:10:51.436Z",
+      "lastAccessed": "2026-11-09T19:10:51.436Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T19:10:51.436Z"
+    },
+    "cmd-1794251466992": {
+      "key": "cmd-1794251466992",
+      "value": "{\"command\":\"python -I - <<'PYEOF'\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T19:11:06.992Z",
+      "lastAccessed": "2026-11-09T19:11:06.992Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T19:11:06.992Z"
+    },
+    "cmd-1794251543822": {
+      "key": "cmd-1794251543822",
+      "value": "{\"command\":\"python -I - <<'PYEOF'\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T19:12:23.822Z",
+      "lastAccessed": "2026-11-09T19:12:23.822Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T19:12:23.822Z"
+    },
+    "cmd-1794251588452": {
+      "key": "cmd-1794251588452",
+      "value": "{\"command\":\"python -I - <<'PYEOF'\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T19:13:08.452Z",
+      "lastAccessed": "2026-11-09T19:13:08.452Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T19:13:08.452Z"
+    },
+    "cmd-1794251671154": {
+      "key": "cmd-1794251671154",
+      "value": "{\"command\":\"(timeout 300 npx playwright install chromium 2>&1 | tail -3); (timeout 150 npx playwright test 2>&1 | tail -30)\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T19:14:31.154Z",
+      "lastAccessed": "2026-11-09T19:14:31.154Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T19:14:31.154Z"
+    },
+    "cmd-1794251679055": {
+      "key": "cmd-1794251679055",
+      "value": "{\"command\":\"cat test-results/*/error-context.md 2>/dev/null | head -60; grep -n \\\"auth/me\\\" -B3 -A12 src/lib/auth.tsx | head -50\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T19:14:39.055Z",
+      "lastAccessed": "2026-11-09T19:14:39.055Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T19:14:39.055Z"
+    },
+    "cmd-1794251724180": {
+      "key": "cmd-1794251724180",
+      "value": "{\"command\":\"python -I - <<'PYEOF'\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T19:15:24.180Z",
+      "lastAccessed": "2026-11-09T19:15:24.180Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T19:15:24.180Z"
+    },
+    "cmd-1794251798106": {
+      "key": "cmd-1794251798106",
+      "value": "{\"command\":\"rm -rf test-results && printf '\\\\n# Playwright\\\\ntest-results/\\\\nplaywright-report/\\\\n' >> .gitignore && (npm run build 2>&1 | tail -6); git status --short | grep -v \\\"^ M .claude-flow\\\\|^ M .swarm\\\" | head -60\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T19:16:38.106Z",
+      "lastAccessed": "2026-11-09T19:16:38.106Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T19:16:38.106Z"
+    },
+    "cmd-1794251811306": {
+      "key": "cmd-1794251811306",
+      "value": "{\"command\":\"ls docs; ls backend/*.md; sed -n 1,30p deploy.sh; sed -n 84,125p backend/app/Services/WebhookService.php\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T19:16:51.306Z",
+      "lastAccessed": "2026-11-09T19:16:51.306Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T19:16:51.306Z"
+    },
+    "cmd-1794251911332": {
+      "key": "cmd-1794251911332",
+      "value": "{\"command\":\"cd /c/Users/Ibrohim/nexio_crm_v2/docs && python -I - <<'PYEOF'\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T19:18:31.332Z",
+      "lastAccessed": "2026-11-09T19:18:31.332Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T19:18:31.332Z"
+    },
+    "cmd-1794251920071": {
+      "key": "cmd-1794251920071",
+      "value": "{\"command\":\"cd /c/Users/Ibrohim/AppData/Local/Temp/claude/a5e33a921a1bd9fd && cp aa8b57d1-d3bc-4872-985c-160251c7f4bd/scratchpad/make_report.py 3b49979d-f85b-4536-8ed0-d25921ab8b34/scratchpad/make_report.py && cd 3b49979d-f85b-4536-8ed0-d25921ab8b34/scratchpad && sed -n 1,40p make_report.py | cut -c1-220; sed -n 130,178p make_report.py | cut -c1-260\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T19:18:40.071Z",
+      "lastAccessed": "2026-11-09T19:18:40.071Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T19:18:40.071Z"
+    },
+    "cmd-1794251963572": {
+      "key": "cmd-1794251963572",
+      "value": "{\"command\":\"cd /c/Users/Ibrohim/AppData/Local/Temp/claude/a5e33a921a1bd9fd/3b49979d-f85b-4536-8ed0-d25921ab8b34/scratchpad && python -I update_rows.py && grep -c '\\\"Qisman\\\"' make_report.py; grep -n \\\"Tekshiruv sanasi\\\\|Yangilangan\\\" make_report.py | cut -c1-120; grep -n \\\"TZ'da yo'q\\\" make_report.py | head -2 | cut -c1-80\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T19:19:23.572Z",
+      "lastAccessed": "2026-11-09T19:19:23.572Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T19:19:23.572Z"
+    },
+    "cmd-1794251976680": {
+      "key": "cmd-1794251976680",
+      "value": "{\"command\":\"cd /c/Users/Ibrohim/AppData/Local/Temp/claude/a5e33a921a1bd9fd/3b49979d-f85b-4536-8ed0-d25921ab8b34/scratchpad && python -I - <<'PYEOF'\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T19:19:36.680Z",
+      "lastAccessed": "2026-11-09T19:19:36.680Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T19:19:36.680Z"
+    },
+    "cmd-1794251985494": {
+      "key": "cmd-1794251985494",
+      "value": "{\"command\":\"cd /c/Users/Ibrohim/AppData/Local/Temp/claude/a5e33a921a1bd9fd/3b49979d-f85b-4536-8ed0-d25921ab8b34/scratchpad && python -I - <<'PYEOF'\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T19:19:45.494Z",
+      "lastAccessed": "2026-11-09T19:19:45.494Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T19:19:45.494Z"
+    },
+    "cmd-1794251991465": {
+      "key": "cmd-1794251991465",
+      "value": "{\"command\":\"cd /c/Users/Ibrohim/AppData/Local/Temp/claude/a5e33a921a1bd9fd/3b49979d-f85b-4536-8ed0-d25921ab8b34/scratchpad && python -I - <<'PYEOF'\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T19:19:51.465Z",
+      "lastAccessed": "2026-11-09T19:19:51.465Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T19:19:51.465Z"
+    },
+    "cmd-1794252000574": {
+      "key": "cmd-1794252000574",
+      "value": "{\"command\":\"cd /c/Users/Ibrohim/AppData/Local/Temp/claude/a5e33a921a1bd9fd/3b49979d-f85b-4536-8ed0-d25921ab8b34/scratchpad && python -I - <<'PYEOF'\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T19:20:00.574Z",
+      "lastAccessed": "2026-11-09T19:20:00.574Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T19:20:00.574Z"
+    },
+    "cmd-1794252063689": {
+      "key": "cmd-1794252063689",
+      "value": "{\"command\":\"git status --short docs | head; (cd backend && php artisan test 2>&1 | head -c 300); npx vitest run 2>&1 | tail -5\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T19:21:03.689Z",
+      "lastAccessed": "2026-11-09T19:21:03.689Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T19:21:03.689Z"
+    },
+    "cmd-1794252077702": {
+      "key": "cmd-1794252077702",
+      "value": "{\"command\":\"npx vitest run 2>&1 | grep -v \\\"^$\\\" | head -20; git diff vite.config.js | head -40\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T19:21:17.702Z",
+      "lastAccessed": "2026-11-09T19:21:17.702Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T19:21:17.702Z"
+    },
+    "cmd-1794252089193": {
+      "key": "cmd-1794252089193",
+      "value": "{\"command\":\"git checkout -- vite.config.js && git status --short | grep \\\"\\\\.js$\\\" | head\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-09T19:21:29.193Z",
+      "lastAccessed": "2026-11-09T19:21:29.193Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-09T19:21:29.193Z"
     }
   },
   "version": "3.0.0"

@@ -10,6 +10,8 @@ class Ctx
     public ?string $tenantId = null;
     public ?string $role = null;
     public ?string $sessionId = null;
+    /** Set only for API-key requests: the exact permissions the key carries (replaces the role matrix). */
+    public ?array $apiScopes = null;
     /** @var array<string,string> */
     public array $params = [];
 

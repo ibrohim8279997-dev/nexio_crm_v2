@@ -10,7 +10,7 @@ import { dateTime, label, num } from '../../lib/format'
 import { useAuth, useCan } from '../../lib/auth'
 import { useToast } from '../../components/ui/toast'
 import { useI18n, type Locale } from '../../lib/i18n'
-import MfaCard from './MfaCard'
+import SecurityPanel from './SecurityPanel'
 import CustomFieldsAdmin from './CustomFieldsAdmin'
 import { TIMEZONES, formatUtcOffset } from '../../lib/timezones'
 
@@ -188,7 +188,7 @@ export default function SettingsPage() {
             )}
 
             {tab === 'fields' && <CustomFieldsAdmin />}
-            {tab === 'security' && <div className="max-w-2xl"><MfaCard /></div>}
+            {tab === 'security' && <div className="max-w-3xl"><SecurityPanel /></div>}
 
             {tab === 'audit' && (
               <div className="space-y-3">

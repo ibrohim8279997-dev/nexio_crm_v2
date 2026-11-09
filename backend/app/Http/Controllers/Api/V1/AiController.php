@@ -70,6 +70,8 @@ class AiController
         if (!$agent) throw new ApiException(404, 'AI-агент не найден', 'not_found');
         if ($agent->status !== 'active') $blockers[] = "Агент в статусе «{$agent->status}» — запуск запрещён";
         if ($agent->budget_used >= $agent->budget_limit) $blockers[] = 'Исчерпан бюджет агента';
+        $policy = H::parseJson($agent->policy, []);
+        foreach ($this->periodBudgetBreaches($tenantId, $agentId, $policy, 0.0) as $b) $blockers[] = $b;
 
         $hour = (int) gmdate('G');
         return [
@@ -81,6 +83,42 @@ class AiController
     }
 
     // ── Agents ───────────────────────────────────────────────────────────────
+    /** Spend of one agent since $since (UTC "Y-m-d H:i:s"). */
+    private function spentSince(string $tenantId, string $agentId, string $since): float
+    {
+        return (float) DB::table('ai_calls')->where('tenant_id', $tenantId)->where('agent_id', $agentId)->where('created_at', '>=', $since)->sum('cost');
+    }
+
+    /**
+     * Daily / monthly hard stops from the agent policy (`daily_budget`, `monthly_budget`).
+     * $next is the cost of the call about to be placed: a call that would cross the cap is refused up front.
+     * @return string[] human-readable breaches
+     */
+    private function periodBudgetBreaches(string $tenantId, string $agentId, array $policy, float $next): array
+    {
+        $out = [];
+        if (isset($policy['daily_budget']) && $this->spentSince($tenantId, $agentId, gmdate('Y-m-d') . ' 00:00:00') + $next > (float) $policy['daily_budget'] + 1e-9) {
+            $out[] = 'Исчерпан дневной лимит расходов агента';
+        }
+        if (isset($policy['monthly_budget']) && $this->spentSince($tenantId, $agentId, gmdate('Y-m-01') . ' 00:00:00') + $next > (float) $policy['monthly_budget'] + 1e-9) {
+            $out[] = 'Исчерпан месячный лимит расходов агента';
+        }
+        return $out;
+    }
+
+    /**
+     * Order limits from the agent policy: `max_discount_percent` (default 10) and optional `max_order_amount`.
+     * @return string[] violations; empty when the proposal is within policy
+     */
+    public static function orderLimitViolations(array $policy, float $amount, float $discountPercent): array
+    {
+        $out = [];
+        $maxDiscount = (float) ($policy['max_discount_percent'] ?? 10);
+        if ($discountPercent > $maxDiscount + 1e-9) $out[] = "Скидка {$discountPercent}% превышает лимит агента ({$maxDiscount}%)";
+        if (isset($policy['max_order_amount']) && $amount > (float) $policy['max_order_amount'] + 1e-9) $out[] = 'Сумма заказа превышает лимит агента';
+        return $out;
+    }
+
     public function listAgents(Ctx $ctx)
     {
         $ctx->auth();
@@ -138,7 +176,7 @@ class AiController
         if (!$flag || !$flag->enabled) {
             throw new ApiException(402, 'Модуль AI-агентов не входит в текущий тариф. Повысьте тариф, чтобы включить его.', 'plan_upgrade_required');
         }
-        $b = H::body($ctx);
+        $b = AiExtrasController::applyTemplate(H::str(H::body($ctx)['template'] ?? null, 'template', false, 40), H::body($ctx));
         $id = H::newId('aag');
         DB::table('ai_agents')->insert([
             'id' => $id, 'tenant_id' => $t,
@@ -227,6 +265,7 @@ class AiController
             'status' => 'draft',
             'total_contacts' => H::num($b['total_contacts'] ?? null, 'total_contacts', false, 0) ?? 0,
             'completed' => 0, 'connected' => 0, 'interested' => 0, 'orders_created' => 0,
+            'budget_limit' => H::num($b['budget_limit'] ?? null, 'budget_limit', false, 0), 'budget_used' => 0,
             'schedule' => json_encode($b['schedule'] ?? [], JSON_UNESCAPED_UNICODE),
             'created_at' => H::now(),
         ]);
@@ -263,6 +302,8 @@ class AiController
         $blockers = [];
         if ($agent->status !== 'active') $blockers[] = "Агент «{$agent->name}» не активен";
         if ($agent->budget_used >= $agent->budget_limit) $blockers[] = 'Исчерпан бюджет агента';
+        if ($campaign->budget_limit !== null && $campaign->budget_used >= $campaign->budget_limit) $blockers[] = 'Исчерпан бюджет кампании';
+        foreach ($this->periodBudgetBreaches($t, $agent->id, H::parseJson($agent->policy, []), 0.0) as $b) $blockers[] = $b;
         if (count($eligible) === 0) $blockers[] = 'Нет контактов с законным основанием для звонка';
 
         if ($blockers) {
@@ -370,6 +411,15 @@ class AiController
         $call = DB::selectOne('SELECT * FROM ai_calls WHERE id=? AND tenant_id=?', [$callId, $ctx->tenantId]);
         if (!$call) throw new ApiException(404, 'Call topilmadi', 'not_found');
         $body = H::body($ctx);
+        // Providers redeliver webhooks. The same provider event id must never apply twice.
+        $eventId = H::str($body['event_id'] ?? null, 'event_id', false, 120);
+        if ($eventId !== null) {
+            $seen = DB::table('ai_call_events')->where('tenant_id', $ctx->tenantId)->where('provider_event_id', $eventId)->first();
+            if ($seen) {
+                if ($seen->call_id !== $callId) throw new ApiException(409, 'event_id уже использован для другого звонка', 'conflict');
+                return H::json(['ok' => true, 'call_id' => $callId, 'duplicate' => true, 'deal_created' => false]);
+            }
+        }
         $outcome = H::oneOf($body['outcome'] ?? null, 'outcome', ['interested', 'objection', 'qualified', 'not_interested', 'no_answer', 'voicemail', 'opted_out', 'human_handoff', 'failed', 'followup'], $call->outcome ?: 'followup');
         $transcript = array_key_exists('transcript', $body) ? H::str($body['transcript'], 'transcript', false, 60000) : $call->transcript;
         $summary = array_key_exists('summary', $body) ? H::str($body['summary'], 'summary', false, 10000) : $call->summary;
@@ -381,8 +431,15 @@ class AiController
 
         $leadId = null;
         $taskId = null;
-        DB::transaction(function () use ($ctx, $user, $call, $callId, $outcome, $transcript, $summary, $matchedContact, $body, &$leadId, &$taskId) {
+        DB::transaction(function () use ($ctx, $user, $call, $callId, $outcome, $transcript, $summary, $matchedContact, $body, $eventId, &$leadId, &$taskId) {
             $now = H::now();
+            if ($eventId !== null) {
+                // The unique (tenant, provider_event_id) key makes a concurrent duplicate fail here and roll everything back.
+                DB::table('ai_call_events')->insert([
+                    'id' => H::newId('ace'), 'tenant_id' => $ctx->tenantId, 'call_id' => $callId, 'provider_event_id' => $eventId,
+                    'type' => 'finalize', 'payload' => json_encode(['outcome' => $outcome]), 'created_at' => $now,
+                ]);
+            }
             DB::update(
                 'UPDATE ai_calls SET contact_id=COALESCE(?,contact_id), org_id=COALESCE(?,org_id), status=?, outcome=?, transcript=?, summary=?, ended_at=COALESCE(ended_at,?), sandbox=0 WHERE id=? AND tenant_id=?',
                 [$matchedContact->id ?? null, $matchedContact->org_id ?? null, 'completed', $outcome, $transcript, $summary, $now, $callId, $ctx->tenantId]
@@ -449,6 +506,36 @@ class AiController
         $outcome = $scenario === 'confirmed' ? 'interested' : $scenario;
         $duration = $scenario === 'no_answer' ? 0 : 60 + random_int(0, 180);
         $cost = round(($duration / 60) * 0.09 * 100) / 100;
+        $campaignId = H::tenantRef($ctx, $b['campaign_id'] ?? null, 'ai_campaigns', 'AI campaign');
+
+        // Hard stops: refuse the call before it is placed when it would cross any spend cap.
+        $breaches = [];
+        if ($check['agent']->budget_used + $cost > $check['agent']->budget_limit + 1e-9) $breaches[] = 'Звонок превысит общий бюджет агента';
+        $breaches = array_merge($breaches, $this->periodBudgetBreaches($t, $agentId, $check['policy'], $cost));
+        if ($campaignId) {
+            $camp = DB::selectOne('SELECT budget_limit, budget_used FROM ai_campaigns WHERE id = ? AND tenant_id = ?', [$campaignId, $t]);
+            if ($camp->budget_limit !== null && $camp->budget_used + $cost > $camp->budget_limit + 1e-9) $breaches[] = 'Звонок превысит бюджет кампании';
+        }
+        if ($breaches) {
+            H::audit($ctx, 'ai.call_blocked_budget', 'ai_call', null, ['breaches' => $breaches, 'agentId' => $agentId]);
+            throw new ApiException(403, 'Звонок не запущен: ' . implode('; ', $breaches), 'budget_exceeded');
+        }
+
+        // An order proposed by the agent on a confirmed call must respect the agent's own limits.
+        $orderAmount = (float) (H::num($b['amount'] ?? null, 'amount', false, 0) ?? 12000000);
+        $discount = (float) (H::num($b['discount_percent'] ?? null, 'discount_percent', false, 0, 100) ?? 0);
+        if ($scenario === 'confirmed') {
+            $violations = self::orderLimitViolations($check['policy'], $orderAmount, $discount);
+            if ($violations) {
+                DB::table('ai_tool_calls')->insert([
+                    'id' => H::newId('atc'), 'tenant_id' => $t, 'call_id' => null, 'tool' => 'create_order',
+                    'args' => json_encode(['amount' => $orderAmount, 'discount_percent' => $discount, 'agent_id' => $agentId]),
+                    'result' => json_encode(['blocked' => $violations], JSON_UNESCAPED_UNICODE), 'approved' => 0, 'created_at' => H::now(),
+                ]);
+                H::audit($ctx, 'ai.order_blocked', 'ai_agent', $agentId, ['violations' => $violations]);
+                throw new ApiException(422, 'Заказ не создан: ' . implode('; ', $violations), 'policy_violation');
+            }
+        }
         $id = H::newId('acl');
         $recordingAllowed = ($check['policy']['recording_policy'] ?? null) === 'announce_and_log';
         $recorded = $recordingAllowed && $scenario !== 'no_answer';
@@ -462,9 +549,9 @@ class AiController
         ]);
 
         $orderId = null;
-        DB::transaction(function () use ($ctx, $t, $id, $agentId, $contactId, $check, $outcome, $duration, $cost, $recorded, $recordingAllowed, $transcript, $scenario, $user, &$orderId) {
+        DB::transaction(function () use ($ctx, $t, $id, $agentId, $contactId, $check, $outcome, $duration, $cost, $recorded, $recordingAllowed, $transcript, $scenario, $user, $campaignId, $orderAmount, $discount, &$orderId) {
             DB::table('ai_calls')->insert([
-                'id' => $id, 'tenant_id' => $t, 'agent_id' => $agentId, 'contact_id' => $contactId,
+                'id' => $id, 'tenant_id' => $t, 'agent_id' => $agentId, 'campaign_id' => $campaignId, 'contact_id' => $contactId,
                 'org_id' => $check['contact']->org_id, 'direction' => 'outbound', 'phone' => $check['contact']->phone,
                 'status' => 'completed', 'outcome' => $outcome, 'duration_sec' => $duration, 'cost' => $cost,
                 'consent_basis' => 'Демонстрационная сессия (sandbox)', 'ai_disclosed' => $duration > 10 ? 1 : 0,
@@ -473,6 +560,7 @@ class AiController
                 'sandbox' => 1, 'started_at' => H::now(), 'ended_at' => H::now(), 'created_at' => H::now(),
             ]);
             DB::update('UPDATE ai_agents SET budget_used = budget_used + ? WHERE id = ? AND tenant_id = ?', [$cost, $agentId, $t]);
+            if ($campaignId) DB::update('UPDATE ai_campaigns SET budget_used = budget_used + ? WHERE id = ? AND tenant_id = ?', [$cost, $campaignId, $t]);
 
             if ($scenario === 'opt_out' && $check['contact']->phone) {
                 DB::table('suppression_list')->insert([
@@ -488,7 +576,7 @@ class AiController
                     'id' => $orderId, 'tenant_id' => $t,
                     'number' => 'ORD-SBX-' . substr((string) (1000 + (int) ($countRow->c ?? 0) + 1), -4),
                     'org_id' => $check['contact']->org_id, 'contact_id' => $contactId, 'status' => 'draft',
-                    'amount' => 12000000, 'currency' => 'UZS', 'source' => 'ai_agent', 'payment_status' => 'unpaid',
+                    'amount' => round($orderAmount * (1 - $discount / 100), 2), 'currency' => 'UZS', 'source' => 'ai_agent', 'payment_status' => 'unpaid',
                     'notes' => 'Черновик создан AI-агентом в sandbox-режиме и требует подтверждения человеком.',
                     'created_by' => $user['id'], 'created_at' => H::now(), 'updated_at' => H::now(),
                 ]);
@@ -496,6 +584,7 @@ class AiController
                     'id' => H::newId('aap'), 'tenant_id' => $t, 'call_id' => $id, 'agent_id' => $agentId,
                     'kind' => 'large_order', 'detail' => 'Подтверждённый AI-заказ требует одобрения человека перед исполнением.',
                     'status' => 'pending', 'created_at' => H::now(),
+                    'meta' => json_encode(['amount' => $orderAmount, 'discount_percent' => $discount, 'order_id' => $orderId]),
                 ]);
             }
             DB::table('audit_logs')->insert([
@@ -534,6 +623,13 @@ class AiController
         if (!$approval) throw new ApiException(404, 'Запрос на одобрение не найден', 'not_found');
         $b = H::body($ctx);
         $status = H::oneOf($b['status'] ?? null, 'status', ['approved', 'rejected']);
+        if ($approval->status !== 'pending') throw new ApiException(409, 'Запрос уже обработан', 'conflict');
+        if ($status === 'approved' && $approval->agent_id && ($meta = H::parseJson($approval->meta ?? null, null))) {
+            // The policy may have been tightened since the agent proposed the order: approving must not bypass it.
+            $agent = DB::selectOne('SELECT policy FROM ai_agents WHERE id = ? AND tenant_id = ?', [$approval->agent_id, $ctx->tenantId]);
+            $violations = self::orderLimitViolations(H::parseJson($agent->policy ?? null, []), (float) ($meta['amount'] ?? 0), (float) ($meta['discount_percent'] ?? 0));
+            if ($violations) throw new ApiException(422, 'Одобрение невозможно: ' . implode('; ', $violations), 'policy_violation');
+        }
         DB::update('UPDATE ai_approvals SET status=?, decided_by=? WHERE id=? AND tenant_id=?', [$status, $user['id'], $ctx->params['id'], $ctx->tenantId]);
         H::audit($ctx, "ai.approval_{$status}", 'ai_approval', $ctx->params['id']);
         return H::json(['ok' => true]);

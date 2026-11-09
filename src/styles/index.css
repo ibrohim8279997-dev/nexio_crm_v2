@@ -20,13 +20,38 @@
   --color-danger: #ef4444;
   --color-ai: #8b5cf6;
 
-  --font-sans: Inter, "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --font-sans: "Inter Variable", Inter, "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
 
   --radius-card: 16px;
   --radius-chip: 10px;
 
   --shadow-card: 0 1px 2px rgba(15, 23, 42, .04), 0 8px 24px -12px rgba(15, 23, 42, .10);
   --shadow-pop: 0 12px 40px -12px rgba(15, 23, 42, .22);
+}
+
+/*
+  --nx-* design-token namespace (ТЗ naming). The --color-* tokens above stay the single source of truth for
+  Tailwind utilities; these aliases follow them automatically, including the dark theme overrides.
+*/
+:root {
+  --nx-bg: var(--color-bg);
+  --nx-surface: var(--color-surface);
+  --nx-subtle: var(--color-subtle);
+  --nx-primary: var(--color-primary);
+  --nx-primary-dark: var(--color-primary-dark);
+  --nx-primary-soft: var(--color-primary-soft);
+  --nx-ink: var(--color-ink);
+  --nx-muted: var(--color-muted);
+  --nx-line: var(--color-line);
+  --nx-success: var(--color-success);
+  --nx-warning: var(--color-warning);
+  --nx-danger: var(--color-danger);
+  --nx-ai: var(--color-ai);
+  --nx-radius-card: var(--radius-card);
+  --nx-radius-chip: var(--radius-chip);
+  --nx-shadow-card: var(--shadow-card);
+  --nx-shadow-pop: var(--shadow-pop);
+  --nx-font-sans: var(--font-sans);
 }
 
 html {

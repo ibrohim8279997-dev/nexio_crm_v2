@@ -14,6 +14,9 @@ class H
         'X-Frame-Options' => 'DENY',
         'Referrer-Policy' => 'strict-origin-when-cross-origin',
         'Permissions-Policy' => 'camera=(), microphone=(), geolocation=()',
+        // The API serves JSON and file downloads only: nothing may load or frame from it.
+        'Content-Security-Policy' => "default-src 'none'; frame-ancestors 'none'; base-uri 'none'",
+        'Strict-Transport-Security' => 'max-age=31536000; includeSubDomains',
     ];
 
     public static function json(mixed $data, int $status = 200, array $headers = []): JsonResponse
@@ -197,6 +200,10 @@ class H
     // ── permissions ─────────────────────────────────────────────────────────
     public static function requirePermission(Ctx $ctx, string $permission): void
     {
+        if ($ctx->apiScopes !== null) {   // API keys are limited to their scopes, whoever created them
+            if (!in_array($permission, $ctx->apiScopes, true)) throw new ApiException(403, "Ключу API не выдано право «{$permission}»", 'forbidden');
+            return;
+        }
         if (!empty($ctx->user['is_platform_admin'])) return;
         if (!Rbac::can($ctx->role, $permission)) {
             throw new ApiException(403, "Требуется разрешение «{$permission}»", 'forbidden');
@@ -208,6 +215,9 @@ class H
     {
         if (!$ctx->user) {
             return false;
+        }
+        if ($ctx->apiScopes !== null) {
+            return in_array($permission, $ctx->apiScopes, true);
         }
         if (!empty($ctx->user['is_platform_admin'])) {
             return true;

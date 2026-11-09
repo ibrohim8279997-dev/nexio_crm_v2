@@ -10,7 +10,7 @@ interface OrderFull {
   id: string; number: string; amount: number; currency: string; status: string; payment_status: string
   org_id: string | null; org_name: string | null; org_email: string | null; created_by_name: string | null
   notes: string | null; created_at: string; confirmed_at?: string | null
-  items: { id: string; name: string; qty: number; unit_price: number; total?: number }[]
+  items: { id: string; name: string; qty: number; price: number; total?: number }[]
   deal: { id: string; title: string; status: string } | null
   project: { id: string; name: string; status: string; progress: number } | null
 }
@@ -42,7 +42,7 @@ export default function OrderDetail() {
                   <tbody>{d.items.map((i) => (
                     <tr key={i.id} className="border-b border-line/70 last:border-0 text-[13px]">
                       <td className="px-4 py-3 text-ink">{i.name}</td><td className="px-4 py-3">{i.qty}</td>
-                      <td className="px-4 py-3 text-right">{money(i.unit_price, d.currency)}</td><td className="px-4 py-3 text-right font-semibold">{money(i.total ?? i.qty * i.unit_price, d.currency)}</td>
+                      <td className="px-4 py-3 text-right">{money(i.price, d.currency)}</td><td className="px-4 py-3 text-right font-semibold">{money(i.total ?? i.qty * i.price, d.currency)}</td>
                     </tr>))}</tbody></table></div>
               </SectionCard>
             </div>

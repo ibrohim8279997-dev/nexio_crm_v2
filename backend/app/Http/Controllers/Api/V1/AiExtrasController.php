@@ -14,6 +14,62 @@ class AiExtrasController
     private const MAX_DOCS = 200;
 
     /**
+     * Ready-made agent presets. `role` maps onto ai_agents.role (support / automation = Ops).
+     * Presets only fill fields the caller left empty, and always pass through normalizePolicy().
+     */
+    public const TEMPLATES = [
+        'sales' => [
+            'label' => 'Sales', 'role' => 'sales',
+            'persona' => 'Вежливый менеджер по продажам: выясняет потребность, не давит, всегда сообщает, что он ИИ.',
+            'script' => 'Представиться и сообщить, что вы ИИ → уточнить задачу клиента → предложить подходящий продукт → зафиксировать следующий шаг.',
+            'tools' => ['search_products', 'create_order_draft', 'schedule_followup'],
+            'policy' => ['max_discount_percent' => 10, 'max_attempts' => 3, 'quiet_hours' => '20:00–09:00'],
+        ],
+        'support' => [
+            'label' => 'Support', 'role' => 'support',
+            'persona' => 'Спокойный агент поддержки: решает вопросы по базе знаний, при сомнении передаёт человеку.',
+            'script' => 'Представиться (ИИ) → выяснить проблему → найти ответ в базе знаний → если нет ответа, создать тикет и передать оператору.',
+            'tools' => ['search_knowledge', 'create_ticket', 'handoff_to_human'],
+            'policy' => ['max_discount_percent' => 0, 'max_attempts' => 2, 'handoff_on_low_confidence' => true],
+        ],
+        'ops' => [
+            'label' => 'Ops', 'role' => 'automation',
+            'persona' => 'Операционный агент: напоминает об оплатах и сроках, уточняет статусы заказов и задач.',
+            'script' => 'Представиться (ИИ) → напомнить о событии (оплата, срок, доставка) → получить подтверждение → обновить статус и создать задачу при проблеме.',
+            'tools' => ['lookup_order', 'create_task', 'send_reminder'],
+            'policy' => ['max_discount_percent' => 0, 'max_attempts' => 2, 'daily_budget' => 50],
+        ],
+        'analytics' => [
+            'label' => 'Analytics', 'role' => 'analytics',
+            'persona' => 'Аналитик: отвечает на вопросы по данным CRM, не меняет записи.',
+            'script' => 'Принять вопрос → собрать данные отчётов → ответить кратко с цифрами.',
+            'tools' => ['run_report'],
+            'policy' => ['max_discount_percent' => 0, 'max_attempts' => 1],
+        ],
+    ];
+
+    /** Merges a preset under the caller's explicit values (caller wins), or null when the template is unknown. */
+    public static function applyTemplate(?string $name, array $body): array
+    {
+        if ($name === null || $name === '') return $body;
+        $t = self::TEMPLATES[$name] ?? null;
+        if (!$t) throw new ApiException(422, 'Неизвестный шаблон агента', 'bad_request');
+        foreach (['role', 'persona', 'script', 'tools'] as $k) {
+            if (empty($body[$k])) $body[$k] = $t[$k];
+        }
+        $body['policy'] = array_merge(['disclosure_required' => true, 'recording_policy' => 'announce_and_log'], $t['policy'], is_array($body['policy'] ?? null) ? $body['policy'] : []);
+        return $body;
+    }
+
+    public function templates(Ctx $ctx)
+    {
+        $ctx->auth(); H::requireTenant($ctx); H::requirePermission($ctx, 'ai.read');
+        $out = [];
+        foreach (self::TEMPLATES as $key => $t) $out[] = ['key' => $key, ...$t];
+        return H::json(['data' => $out]);
+    }
+
+    /**
      * Validates the known policy keys; unknown keys are kept as-is so existing agents keep working.
      * disclosure_required can never be switched off: an AI agent must always identify itself.
      */
@@ -32,6 +88,12 @@ class AiExtrasController
                 throw new ApiException(422, 'Максимальная скидка агента: от 0 до 50%', 'bad_request');
             }
             $policy['max_discount_percent'] = $policy['max_discount_percent'] + 0;
+        }
+        foreach (['daily_budget', 'monthly_budget', 'max_order_amount'] as $k) {
+            if (isset($policy[$k])) {
+                if (!is_numeric($policy[$k]) || $policy[$k] < 0) throw new ApiException(422, "{$k}: неотрицательное число", 'bad_request');
+                $policy[$k] = $policy[$k] + 0;
+            }
         }
         if (isset($policy['max_attempts'])) {
             if (!is_numeric($policy['max_attempts']) || $policy['max_attempts'] < 1 || $policy['max_attempts'] > 10) {

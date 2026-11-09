@@ -20,21 +20,21 @@ interface TeamResponse {
   roles: string[]; seats: { used: number; limit_value: number }
 }
 
-const ROLE_LABELS: Record<string, string> = {
+export const ROLE_LABELS: Record<string, string> = {
   tenant_owner: 'Владелец', tenant_admin: 'Администратор', sales_manager: 'Руководитель продаж', sales_agent: 'Менеджер продаж',
   team_lead: 'Тимлид', project_manager: 'Руководитель проектов', developer: 'Разработчик', support_agent: 'Специалист поддержки',
   finance_manager: 'Финансовый менеджер', analyst: 'Аналитик', employee: 'Сотрудник', read_only: 'Только чтение', client_portal_user: 'Клиент портала',
 }
 interface OrganizationsResponse { data: { id: string; name: string; status: string }[] }
 interface ContactsResponse { data: { id: string; first_name: string; last_name?: string | null; org_id: string | null }[] }
-const PERMISSION_LABELS: Record<string, string> = {
+export const PERMISSION_LABELS: Record<string, string> = {
   'crm.read': 'Mijozlar va CRMni ko‘rish', 'crm.write': 'CRM ma’lumotlarini tahrirlash', 'crm.delete': 'CRM ma’lumotlarini o‘chirish',
   'deals.write': 'Bitimlarni boshqarish', 'orders.write': 'Buyurtmalarni boshqarish', 'tasks.write': 'Vazifalarni boshqarish',
   'team.read': 'Jamoani ko‘rish', 'team.write': 'Jamoani boshqarish', 'settings.read': 'Sozlamalarni ko‘rish', 'settings.write': 'Sozlamalarni o‘zgartirish',
   'finance.read': 'Moliyani ko‘rish', 'finance.write': 'Moliyani boshqarish', 'billing.read': 'Obunani ko‘rish', 'billing.write': 'Obunani boshqarish',
   'integrations.write': 'Integratsiyalarni ulash', 'export.data': 'Ma’lumotlarni eksport qilish', 'audit.read': 'Amallar tarixini ko‘rish',
 }
-const EXTRA_PERMISSION_LABELS: Record<string, string> = {
+export const EXTRA_PERMISSION_LABELS: Record<string, string> = {
   'projects.write': 'Loyihalarni boshqarish', 'ai.read': 'AI funksiyalaridan foydalanish',
   'ai.write': 'AI sozlamalarini boshqarish', 'ai.start_campaign': 'AI kampaniyasini ishga tushirish',
   'ai.recordings': 'AI yozuvlarini ko‘rish', 'portal.read': 'Mijoz portalini ko‘rish',

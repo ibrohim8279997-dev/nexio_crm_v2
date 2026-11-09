@@ -162,11 +162,17 @@ class AuthController
         $password = H::str($b['password'] ?? null, 'password', true, 200);
         // Older accounts may have been created before email normalization was added.
         // Match them case-insensitively while keeping the canonical lowercase value for new accounts.
+        $failKey = 'login:' . sha1($email . '|' . $ctx->request->ip());
+        if (RateLimiter::tooManyAttempts($failKey, 8)) {
+            throw new ApiException(429, 'Слишком много неудачных попыток входа. Повторите через 15 минут.', 'too_many_attempts');
+        }
         $u = DB::selectOne('SELECT id, email, name, password_hash, avatar_color, is_platform_admin, mfa_enabled, mfa_secret, mfa_last_step, mfa_recovery FROM users WHERE LOWER(TRIM(email)) = ?', [$email]);
         // Uniform failure message so the endpoint does not reveal which emails exist.
         if (!$u || !H::verifyPassword($password, $u->password_hash)) {
+            RateLimiter::hit($failKey, 15 * 60);
             throw new ApiException(401, 'Неверный email или пароль', 'unauthorized');
         }
+        RateLimiter::clear($failKey);
         // Second factor: the password alone never creates a session for an MFA-enabled account.
         if (!empty($u->mfa_enabled)) $this->requireSecondFactor($u, isset($b['code']) ? (string) $b['code'] : '');
         $m = DB::selectOne("SELECT tenant_id, role FROM tenant_memberships WHERE user_id = ? AND status = 'active' ORDER BY created_at LIMIT 1", [$u->id]);
@@ -219,6 +225,61 @@ class AuthController
         }
         RateLimiter::hit($key, 300);
         throw new ApiException(401, 'Неверный код подтверждения', 'mfa_invalid');
+    }
+
+    // ── sessions & password ──────────────────────────────────────────────────
+    /** The cookie value is the session secret, so clients only ever see a derived, non-reversible handle. */
+    private function sessionHandle(string $sessionId): string
+    {
+        return substr(hash('sha256', $sessionId), 0, 16);
+    }
+
+    public function listSessions(Ctx $ctx)
+    {
+        $user = $ctx->auth();
+        $rows = DB::table('sessions')->where('user_id', $user['id'])->where('expires_at', '>', H::now())->orderByDesc('created_at')->get(['id', 'ip', 'user_agent', 'created_at', 'expires_at']);
+        return H::json(['data' => $rows->map(fn ($s) => [
+            'handle' => $this->sessionHandle($s->id), 'ip' => $s->ip, 'user_agent' => $s->user_agent,
+            'created_at' => $s->created_at, 'expires_at' => $s->expires_at, 'current' => $s->id === $ctx->sessionId,
+        ])->all()]);
+    }
+
+    public function revokeSession(Ctx $ctx)
+    {
+        $user = $ctx->auth();
+        foreach (DB::table('sessions')->where('user_id', $user['id'])->get(['id']) as $s) {
+            if (hash_equals($this->sessionHandle($s->id), (string) $ctx->params['handle'])) {
+                DB::table('sessions')->where('id', $s->id)->delete();
+                H::audit($ctx, 'session.revoked', 'session', $this->sessionHandle($s->id));
+                $headers = $s->id === $ctx->sessionId ? ['Set-Cookie' => $this->clearCookie()] : [];
+                return H::json(['ok' => true], 200, $headers);
+            }
+        }
+        throw new ApiException(404, 'Сессия не найдена', 'not_found');
+    }
+
+    public function revokeOtherSessions(Ctx $ctx)
+    {
+        $user = $ctx->auth();
+        $n = DB::table('sessions')->where('user_id', $user['id'])->where('id', '!=', (string) $ctx->sessionId)->delete();
+        H::audit($ctx, 'session.revoked_others', 'user', $user['id'], ['count' => $n]);
+        return H::json(['ok' => true, 'revoked' => $n]);
+    }
+
+    public function changePassword(Ctx $ctx)
+    {
+        $user = $ctx->auth();
+        $b = H::body($ctx);
+        $new = H::str($b['new_password'] ?? null, 'new_password', true, 200);
+        $u = DB::table('users')->where('id', $user['id'])->first(['password_hash']);
+        if (!H::verifyPassword((string) ($b['current_password'] ?? ''), (string) $u->password_hash)) throw new ApiException(401, 'Текущий пароль неверен', 'unauthorized');
+        if (mb_strlen($new) < 8) throw new ApiException(400, 'Пароль должен содержать минимум 8 символов', 'bad_request');
+        if ($new === (string) $b['current_password']) throw new ApiException(400, 'Новый пароль должен отличаться от текущего', 'bad_request');
+        DB::table('users')->where('id', $user['id'])->update(['password_hash' => H::hashPassword($new), 'updated_at' => H::now()]);
+        // A password change signs out every other device.
+        $n = DB::table('sessions')->where('user_id', $user['id'])->where('id', '!=', (string) $ctx->sessionId)->delete();
+        H::audit($ctx, 'password.changed', 'user', $user['id'], ['sessions_revoked' => $n]);
+        return H::json(['ok' => true, 'sessions_revoked' => $n]);
     }
 
     public function mfaStatus(Ctx $ctx)

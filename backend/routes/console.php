@@ -10,3 +10,5 @@ Artisan::command('inspire', function () {
 
 // Run every minute in production (cron: * * * * * php artisan schedule:run).
 Schedule::command('nexio:billing:renew')->hourly()->withoutOverlapping();
+Schedule::command('nexio:webhooks:retry')->everyMinute()->withoutOverlapping();
+Schedule::job(new \App\Jobs\ExpireStaleQuotes())->dailyAt('01:00');

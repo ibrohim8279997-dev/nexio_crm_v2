@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Services\NotificationDispatcher;
+use App\Services\WebhookService;
 use App\Support\ApiException;
 use App\Support\Ctx;
 use App\Support\H;
@@ -153,6 +154,7 @@ class OpsController
         if ($order->created_by !== $user['id']) {
             (new NotificationDispatcher())->notifyMember($t, $order->created_by, 'success', 'Buyurtma tasdiqlandi', (string) $order->number, '/app/orders');
         }
+        WebhookService::dispatch((string) $t, 'order.confirmed', ['order_id' => $order->id, 'number' => $order->number, 'amount' => (float) $order->amount, 'currency' => $order->currency]);
         return H::json(['ok' => true, 'snapshot' => $snapshot]);
     }
 

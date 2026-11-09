@@ -4,10 +4,13 @@ use App\Http\Controllers\Api\V1\AiController;
 use App\Http\Controllers\Api\V1\AiExtrasController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\BillingController;
+use App\Http\Controllers\Api\V1\CommercialController;
 use App\Http\Controllers\Api\V1\CrmController;
 use App\Http\Controllers\Api\V1\CrmExtrasController;
 use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\DeveloperController;
+use App\Http\Controllers\Api\V1\FinanceController;
+use App\Http\Controllers\Api\V1\IntegrationsController;
 use App\Http\Controllers\Api\V1\MarketplaceController;
 use App\Http\Controllers\Api\V1\ModulesController;
 use App\Http\Controllers\Api\V1\NotificationController;
@@ -16,8 +19,11 @@ use App\Http\Controllers\Api\V1\PlatformController;
 use App\Http\Controllers\Api\V1\PluginManagerController;
 use App\Http\Controllers\Api\V1\PluginOperationsController;
 use App\Http\Controllers\Api\V1\PortalController;
+use App\Http\Controllers\Api\V1\ProjectCollabController;
+use App\Http\Controllers\Api\V1\ReportsController;
 use App\Http\Controllers\Api\V1\SalesController;
 use App\Http\Controllers\Api\V1\TeamController;
+use App\Http\Controllers\Api\V1\WorkspaceController;
 use Illuminate\Support\Facades\Route;
 
 /**
@@ -34,6 +40,13 @@ Route::prefix('v1')->group(function () use ($h) {
     Route::post('/auth/logout', $h(AuthController::class, 'logout'));
     Route::get('/auth/me', $h(AuthController::class, 'me'));
     Route::post('/auth/switch-tenant', $h(AuthController::class, 'switchTenant'));
+    Route::get('/auth/sessions', $h(AuthController::class, 'listSessions'));
+    Route::post('/auth/sessions/revoke-others', $h(AuthController::class, 'revokeOtherSessions'));
+    Route::delete('/auth/sessions/{handle}', $h(AuthController::class, 'revokeSession'));
+    Route::post('/auth/change-password', $h(AuthController::class, 'changePassword'));
+    Route::get('/files', $h(WorkspaceController::class, 'files'));
+    Route::get('/usage', $h(WorkspaceController::class, 'usage'));
+    Route::get('/roles', $h(WorkspaceController::class, 'roles'));
     Route::get('/auth/mfa', $h(AuthController::class, 'mfaStatus'));
     Route::post('/auth/mfa/setup', $h(AuthController::class, 'mfaSetup'));
     Route::post('/auth/mfa/enable', $h(AuthController::class, 'mfaEnable'));
@@ -97,6 +110,31 @@ Route::prefix('v1')->group(function () use ($h) {
     Route::patch('/projects/{id}', $h(OpsController::class, 'updateProject'));
     Route::post('/projects/{id}/milestones', $h(OpsController::class, 'addMilestone'));
     Route::post('/milestones/{id}/status', $h(OpsController::class, 'setMilestoneStatus'));
+    Route::get('/projects/{id}/members', $h(ProjectCollabController::class, 'members'));
+    Route::post('/projects/{id}/members', $h(ProjectCollabController::class, 'addMember'));
+    Route::delete('/projects/{id}/members/{userId}', $h(ProjectCollabController::class, 'removeMember'));
+    Route::get('/projects/{id}/comments', $h(ProjectCollabController::class, 'comments'));
+    Route::post('/projects/{id}/comments', $h(ProjectCollabController::class, 'addComment'));
+    Route::delete('/projects/{id}/comments/{commentId}', $h(ProjectCollabController::class, 'deleteComment'));
+
+    // ── price lists, quotes, tags ──────────────────────────────────────────
+    Route::get('/price-lists', $h(CommercialController::class, 'listPriceLists'));
+    Route::post('/price-lists', $h(CommercialController::class, 'createPriceList'));
+    Route::get('/price-lists/{id}', $h(CommercialController::class, 'getPriceList'));
+    Route::put('/price-lists/{id}/items', $h(CommercialController::class, 'setPriceListItems'));
+    Route::delete('/price-lists/{id}', $h(CommercialController::class, 'deletePriceList'));
+    Route::get('/quotes', $h(CommercialController::class, 'listQuotes'));
+    Route::post('/quotes', $h(CommercialController::class, 'createQuote'));
+    Route::get('/quotes/{id}', $h(CommercialController::class, 'getQuote'));
+    Route::post('/quotes/{id}/status', $h(CommercialController::class, 'setQuoteStatus'));
+    Route::post('/quotes/{id}/convert', $h(CommercialController::class, 'convertQuote'));
+    Route::delete('/quotes/{id}', $h(CommercialController::class, 'deleteQuote'));
+    Route::get('/tags', $h(CommercialController::class, 'listTags'));
+    Route::post('/tags', $h(CommercialController::class, 'createTag'));
+    Route::delete('/tags/{id}', $h(CommercialController::class, 'deleteTag'));
+    Route::post('/tags/{id}/assign', $h(CommercialController::class, 'assignTag'));
+    Route::delete('/tags/{id}/assign', $h(CommercialController::class, 'unassignTag'));
+    Route::get('/tag-assignments', $h(CommercialController::class, 'entityTags'));
     Route::get('/tasks', $h(OpsController::class, 'listTasks'));
     Route::post('/tasks', $h(OpsController::class, 'createTask'));
     Route::patch('/tasks/{id}', $h(OpsController::class, 'updateTask'));
@@ -125,6 +163,37 @@ Route::prefix('v1')->group(function () use ($h) {
     Route::get('/tasks/{id}/dependencies', $h(CrmExtrasController::class, 'listDeps'));
     Route::post('/tasks/{id}/dependencies', $h(CrmExtrasController::class, 'addDep'));
     Route::delete('/tasks/{id}/dependencies/{link}', $h(CrmExtrasController::class, 'removeDep'));
+
+    // ── customer invoices, incoming payments, expenses ────────────────────────
+    Route::get('/invoices', $h(FinanceController::class, 'listInvoices'));
+    Route::post('/invoices', $h(FinanceController::class, 'createInvoice'));
+    Route::get('/invoices/{id}', $h(FinanceController::class, 'getInvoice'));
+    Route::delete('/invoices/{id}', $h(FinanceController::class, 'deleteInvoice'));
+    Route::post('/invoices/{id}/send', $h(FinanceController::class, 'sendInvoice'));
+    Route::post('/invoices/{id}/void', $h(FinanceController::class, 'voidInvoice'));
+    Route::post('/invoices/{id}/payments', $h(FinanceController::class, 'addPayment'));
+    Route::get('/payments', $h(FinanceController::class, 'listPayments'));
+    Route::get('/expenses', $h(FinanceController::class, 'listExpenses'));
+    Route::post('/expenses', $h(FinanceController::class, 'createExpense'));
+    Route::patch('/expenses/{id}', $h(FinanceController::class, 'updateExpense'));
+    Route::delete('/expenses/{id}', $h(FinanceController::class, 'deleteExpense'));
+
+    Route::get('/reports', $h(ReportsController::class, 'catalog'));
+    Route::get('/reports/{key}', $h(ReportsController::class, 'run'));
+    Route::get('/reports/{key}/export', $h(ReportsController::class, 'export'));
+
+    // ── API keys and outbound webhooks ────────────────────────────────────────
+    Route::get('/api-keys', $h(IntegrationsController::class, 'listKeys'));
+    Route::post('/api-keys', $h(IntegrationsController::class, 'createKey'));
+    Route::delete('/api-keys/{id}', $h(IntegrationsController::class, 'revokeKey'));
+    Route::get('/webhooks', $h(IntegrationsController::class, 'listWebhooks'));
+    Route::post('/webhooks', $h(IntegrationsController::class, 'createWebhook'));
+    Route::post('/webhooks/deliveries/{id}/replay', $h(IntegrationsController::class, 'replay'));
+    Route::patch('/webhooks/{id}', $h(IntegrationsController::class, 'updateWebhook'));
+    Route::delete('/webhooks/{id}', $h(IntegrationsController::class, 'deleteWebhook'));
+    Route::post('/webhooks/{id}/rotate-secret', $h(IntegrationsController::class, 'rotateSecret'));
+    Route::post('/webhooks/{id}/test', $h(IntegrationsController::class, 'testWebhook'));
+    Route::get('/webhooks/{id}/deliveries', $h(IntegrationsController::class, 'deliveries'));
 
     // ── catalog, helpdesk, comms, docs, automations, integrations ─────────
     Route::get('/products', $h(ModulesController::class, 'listProducts'));
@@ -180,6 +249,7 @@ Route::prefix('v1')->group(function () use ($h) {
     Route::get('/ai/agents/{id}', $h(AiController::class, 'getAgent'));
     Route::patch('/ai/agents/{id}', $h(AiController::class, 'updateAgent'));
     Route::post('/ai/agents/{id}/status', $h(AiController::class, 'setAgentStatus'));
+    Route::get('/ai/agent-templates', $h(AiExtrasController::class, 'templates'));
     Route::get('/ai/knowledge', $h(AiExtrasController::class, 'listKnowledge'));
     Route::post('/ai/knowledge', $h(AiExtrasController::class, 'createKnowledge'));
     Route::get('/ai/knowledge/{id}', $h(AiExtrasController::class, 'getKnowledge'));

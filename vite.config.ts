@@ -16,6 +16,13 @@ export default defineConfig(({ mode }) => {
     resolve: {
       extensions: ['.tsx', '.ts', '.jsx', '.js', '.mjs', '.json'],
     },
+    // Unit tests live next to the code (.ts/.tsx only: the tracked .js twins are stale output). Component tests opt
+    // into jsdom with a `// @vitest-environment jsdom` docblock; e2e/ belongs to Playwright.
+    test: {
+      include: ['src/**/*.test.{ts,tsx}'],
+      exclude: ['e2e/**', 'node_modules/**'],
+      setupFiles: ['./src/test/setup.ts'],
+    },
     build: {
       outDir: 'dist',
       sourcemap: false,
@@ -24,6 +31,10 @@ export default defineConfig(({ mode }) => {
       host: true,
       port: 3000,
       strictPort: true,
+      watch: {
+        // Tooling state files change constantly and would trigger endless page reloads.
+        ignored: ['**/.claude-flow/**', '**/.swarm/**', '**/.claude/**', '**/backend/**', '**/.wrangler/**', '**/docs/**', '**/*.log'],
+      },
       allowedHosts: ['doorway-ensnare-bobcat.ngrok-free.dev'],
       proxy: {
         '/api': {

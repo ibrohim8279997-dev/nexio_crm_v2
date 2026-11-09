@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Services\NotificationDispatcher;
+use App\Services\WebhookService;
 use App\Support\ApiException;
 use App\Support\Ctx;
 use App\Support\H;
@@ -107,6 +108,7 @@ class SalesController
         ]);
         H::audit($ctx, 'lead.created', 'lead', $id);
         (new NotificationDispatcher())->notifyMember($ctx->tenantId, $ownerId, 'info', 'Yangi lid', (string) $b['title'], '/app/leads');
+        WebhookService::dispatch((string) $ctx->tenantId, 'lead.created', ['id' => $id, 'title' => $b['title'], 'email' => $b['email'] ?? null, 'phone' => $b['phone'] ?? null, 'source' => $b['source'] ?? 'manual']);
         return H::json(['id' => $id], 201);
     }
 
@@ -184,6 +186,7 @@ class SalesController
         });
         H::audit($ctx, 'lead.converted', 'lead', $lead->id, ['dealId' => $dealId]);
         (new NotificationDispatcher())->notifyMember($t, $user['id'], 'success', 'Lid bitimga aylantirildi', (string) $lead->title, '/app/deals');
+        WebhookService::dispatch((string) $t, 'lead.converted', ['lead_id' => $lead->id, 'deal_id' => $dealId, 'title' => $lead->title]);
         return H::json(['dealId' => $dealId], 201);
     }
 

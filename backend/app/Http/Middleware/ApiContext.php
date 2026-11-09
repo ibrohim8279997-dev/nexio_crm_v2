@@ -46,7 +46,7 @@ class ApiContext
         $ctx = new Ctx($request);
         $ctx->params = $request->route()?->parameters() ?? [];
         app()->instance(Ctx::class, $ctx);
-        $this->loadSession($ctx, $request);
+        if (!$this->loadApiKey($ctx, $request)) $this->loadSession($ctx, $request);
 
         // A client-portal session is confined to the portal surface. Enforced before routing
         // so no internal endpoint can leak supplier data to a customer account.
@@ -57,7 +57,61 @@ class ApiContext
             }
         }
 
-        return $next($request);
+        $response = $next($request);
+        foreach (H::SECURITY_HEADERS as $name => $value) {
+            if (!$response->headers->has($name)) $response->headers->set($name, $value);
+        }
+        return $response;
+    }
+
+    /**
+     * Resource → [read scope, write scope]. API keys reach only these CRM/finance resources:
+     * auth, team, settings, billing, plugins, platform and key management are never exposed to a key.
+     */
+    private const KEY_RESOURCES = [
+        'leads' => ['crm.read', 'crm.write'], 'contacts' => ['crm.read', 'crm.write'], 'organizations' => ['crm.read', 'crm.write'],
+        'deals' => ['crm.read', 'deals.write'], 'pipeline' => ['crm.read', 'deals.write'], 'orders' => ['crm.read', 'orders.write'],
+        'projects' => ['crm.read', 'projects.write'], 'tasks' => ['crm.read', 'tasks.write'], 'products' => ['crm.read', 'crm.write'],
+        'notes' => ['crm.read', 'crm.write'], 'activities' => ['crm.read', 'crm.write'],
+        'invoices' => ['finance.read', 'finance.write'], 'payments' => ['finance.read', 'finance.write'], 'expenses' => ['finance.read', 'finance.write'],
+        'reports' => ['finance.read', 'finance.write'],
+    ];
+
+    /** Bearer "nxk_…" authentication. Returns false when the request carries no key (cookie session is used instead). */
+    private function loadApiKey(Ctx $ctx, Request $request): bool
+    {
+        $auth = (string) $request->header('Authorization');
+        if (!str_starts_with($auth, 'Bearer nxk_')) return false;
+        $key = DB::selectOne('SELECT * FROM api_keys WHERE key_hash = ?', [hash('sha256', substr($auth, 7))]);
+        if (!$key || $key->revoked_at || ($key->expires_at && $key->expires_at < H::now())) {
+            throw new ApiException(401, 'Недействительный или отозванный API-ключ', 'unauthorized');
+        }
+        $creator = DB::selectOne(
+            "SELECT u.id, u.email, u.name FROM users u JOIN tenant_memberships m ON m.user_id = u.id AND m.tenant_id = ? AND m.status = 'active' WHERE u.id = ?",
+            [$key->tenant_id, $key->created_by]
+        );
+        if (!$creator) throw new ApiException(401, 'Владелец ключа больше не состоит в компании', 'unauthorized');
+
+        $bucket = 'rl:key:' . $key->id . ':' . gmdate('YmdHi');
+        $count = (int) Cache::get($bucket, 0);
+        if ($count >= 120) throw new ApiException(429, 'Превышен лимит: 120 запросов в минуту на ключ', 'rate_limited');
+        Cache::put($bucket, $count + 1, 90);
+
+        $resource = explode('/', $request->path())[2] ?? '';
+        if (!isset(self::KEY_RESOURCES[$resource])) throw new ApiException(403, 'Этот раздел недоступен для API-ключей', 'forbidden');
+        $scopes = H::parseJson($key->scopes, []);
+        $needed = self::KEY_RESOURCES[$resource][in_array($request->method(), ['GET', 'HEAD'], true) ? 0 : 1];
+        if (!in_array($needed, $scopes, true)) throw new ApiException(403, "Ключу API не выдано право «{$needed}»", 'forbidden');
+
+        // Records created through a key are attributed to the key's creator, labelled with the key name.
+        $ctx->user = ['id' => $creator->id, 'email' => $creator->email, 'name' => 'API: ' . $key->name, 'avatar_color' => '#64748B', 'is_platform_admin' => 0, 'platform_role' => null];
+        $ctx->tenantId = $key->tenant_id;
+        $ctx->role = 'api_key';
+        $ctx->apiScopes = $scopes;
+        if (!$key->last_used_at || $key->last_used_at < gmdate('Y-m-d H:i:s', time() - 60)) {
+            DB::table('api_keys')->where('id', $key->id)->update(['last_used_at' => H::now()]);
+        }
+        return true;
     }
 
     private function loadSession(Ctx $ctx, Request $request): void

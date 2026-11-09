@@ -21,3 +21,7 @@ dist.bak
 .claude-flow/data/
 .claude-flow/logs/
 .claude-flow/sessions/
+
+# Playwright
+test-results/
+playwright-report/

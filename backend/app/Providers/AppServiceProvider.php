@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Policies\QuotePolicy;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\ServiceProvider;
 
@@ -23,6 +25,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        foreach (['view', 'update', 'transition', 'convert'] as $ability) {
+            Gate::define("quote.{$ability}", [QuotePolicy::class, $ability]);
+        }
         // Windows PHP has no default CA store, so every outbound HTTPS call (Telegram, CBU, Groq) fails
         // with cURL error 60 unless php.ini sets curl.cainfo. Linux servers use the system store.
         $bundle = env('HTTP_CA_BUNDLE') ?: (PHP_OS_FAMILY === 'Windows' && !ini_get('curl.cainfo') ? self::GIT_FOR_WINDOWS_CA_BUNDLE : null);

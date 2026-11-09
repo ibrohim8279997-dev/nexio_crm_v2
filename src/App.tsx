@@ -55,6 +55,17 @@ const Marketplace = lazy(() => import('./pages/app/Marketplace'))
 const PluginManager = lazy(() => import('./pages/app/PluginManager'))
 const PluginWorkspace = lazy(() => import('./pages/app/PluginWorkspace'))
 const NexioServices = lazy(() => import('./pages/app/NexioServices'))
+const InvoicesPage = lazy(() => import('./pages/app/InvoicesPage'))
+const PaymentsPage = lazy(() => import('./pages/app/PaymentsPage'))
+const ExpensesPage = lazy(() => import('./pages/app/ExpensesPage'))
+const QuotesPage = lazy(() => import('./pages/app/QuotesPage'))
+const ReportsPage = lazy(() => import('./pages/app/ReportsPage'))
+const ApiKeysPage = lazy(() => import('./pages/app/ApiKeysPage'))
+const WebhooksPage = lazy(() => import('./pages/app/WebhooksPage'))
+const FilesPage = lazy(() => import('./pages/app/FilesPage'))
+const UsagePage = lazy(() => import('./pages/app/UsagePage'))
+const RolesPage = lazy(() => import('./pages/app/RolesPage'))
+const SecuritySettingsPage = lazy(() => import('./pages/app/SecuritySettingsPage'))
 const Billing = lazy(() => import('./pages/app/Billing'))
 const BillingTransactions = lazy(() => import('./pages/app/BillingTransactions'))
 const SettingsPage = lazy(() => import('./pages/app/Settings'))
@@ -172,6 +183,17 @@ export function App() {
           <Route path="billing" element={<Billing />} />
           <Route path="billing/transactions" element={<BillingTransactions />} />
           <Route path="settings" element={<SettingsPage />} />
+          <Route path="settings/security" element={<SecuritySettingsPage />} />
+          <Route path="files" element={<FilesPage />} />
+          <Route path="invoices" element={<InvoicesPage />} />
+          <Route path="payments" element={<PaymentsPage />} />
+          <Route path="expenses" element={<ExpensesPage />} />
+          <Route path="quotes" element={<QuotesPage />} />
+          <Route path="reports" element={<ReportsPage />} />
+          <Route path="api-keys" element={<ApiKeysPage />} />
+          <Route path="webhooks" element={<WebhooksPage />} />
+          <Route path="usage" element={<UsagePage />} />
+          <Route path="roles" element={<RolesPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes></AppShell></RequireAuth>} />
 

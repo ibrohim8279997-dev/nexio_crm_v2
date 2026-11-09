@@ -46,7 +46,7 @@ function groupKey(path: string) {
   if (path === '/app') return 'sales'
   if (path === '/app/projects' || path === '/app/tasks' || path === '/app/calendar') return 'work'
   if (path === '/app/communications' || path === '/app/documents') return 'clients'
-  if (path === '/app/finance' || path === '/app/analytics' || path === '/app/automations' || path === '/app/integrations') return 'finance'
+  if (['/app/finance', '/app/invoices', '/app/payments', '/app/expenses', '/app/quotes', '/app/reports', '/app/analytics', '/app/automations', '/app/integrations', '/app/api-keys', '/app/webhooks'].includes(path)) return 'finance'
   return 'company'
 }
 
@@ -93,9 +93,16 @@ const GROUPS: NavGroup[] = [
     label: 'Финансы и данные',
     items: [
       { to: '/app/finance', label: 'Финансы', icon: <CreditCard className={ICON} />, permission: 'finance.read' },
+      { to: '/app/invoices', label: 'Счета клиентам', icon: <FileText className={ICON} />, permission: 'finance.read' },
+      { to: '/app/payments', label: 'Платежи', icon: <CreditCard className={ICON} />, permission: 'finance.read' },
+      { to: '/app/quotes', label: 'Предложения', icon: <FileText className={ICON} />, permission: 'crm.read' },
+      { to: '/app/expenses', label: 'Расходы', icon: <Package className={ICON} />, permission: 'finance.read' },
+      { to: '/app/reports', label: 'Отчёты', icon: <BarChart3 className={ICON} /> },
       { to: '/app/analytics', label: 'Аналитика', icon: <BarChart3 className={ICON} /> },
       { to: '/app/automations', label: 'Автоматизации', icon: <Workflow className={ICON} /> },
       { to: '/app/integrations', label: 'Интеграции', icon: <Plug className={ICON} /> },
+      { to: '/app/api-keys', label: 'API-ключи', icon: <Zap className={ICON} />, permission: 'settings.read' },
+      { to: '/app/webhooks', label: 'Webhooks', icon: <Workflow className={ICON} />, permission: 'settings.read' },
       { to: '/app/marketplace', label: 'Marketplace', icon: <Blocks className={ICON} /> },
       { to: '/app/plugins', label: 'Plugin Manager', icon: <Plug className={ICON} /> },
     ],
@@ -115,6 +122,9 @@ const GROUPS: NavGroup[] = [
     label: 'Компания',
     items: [
       { to: '/app/team', label: 'Команда', icon: <Users className={ICON} />, permission: 'team.read' },
+      { to: '/app/roles', label: 'Роли и права', icon: <ShieldCheck className={ICON} />, permission: 'team.read' },
+      { to: '/app/files', label: 'Файлы', icon: <FileText className={ICON} /> },
+      { to: '/app/usage', label: 'Использование', icon: <BarChart3 className={ICON} />, permission: 'billing.read' },
       { to: '/app/nexio-services', label: 'Заказать у Nexio', icon: <Store className={ICON} /> },
       { to: '/app/billing', label: 'Подписка', icon: <CreditCard className={ICON} />, permission: 'billing.read' },
       { to: '/app/settings', label: 'Настройки', icon: <Settings className={ICON} /> },
