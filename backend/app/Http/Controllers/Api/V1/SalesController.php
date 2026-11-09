@@ -60,6 +60,22 @@ class SalesController
         return H::json(['data' => $rows, 'total' => (int) ($total->c ?? 0), 'page' => $page, 'limit' => $limit, 'stats' => $stats, 'bySource' => $bySource]);
     }
 
+    public function getLead(Ctx $ctx)
+    {
+        $ctx->auth();
+        $t = $ctx->tenantId;
+        $lead = DB::selectOne(
+            'SELECT l.*, u.name AS owner_name, u.avatar_color AS owner_color, o.name AS org_name
+               FROM leads l LEFT JOIN users u ON u.id = l.owner_id LEFT JOIN organizations o ON o.id = l.org_id
+              WHERE l.id = ? AND l.tenant_id = ?',
+            [$ctx->params['id'], $t]
+        );
+        if (!$lead) throw new ApiException(404, 'Лид не найден', 'not_found');
+        $activity = DB::select("SELECT id,kind,subject,body,actor_name,created_at FROM activities WHERE tenant_id=? AND entity_type='lead' AND entity_id=? ORDER BY created_at DESC LIMIT 50", [$t, $ctx->params['id']]);
+        $tasks = DB::select("SELECT id, title, status, priority, due_date FROM tasks WHERE tenant_id=? AND entity_type='lead' AND entity_id=? ORDER BY created_at DESC", [$t, $ctx->params['id']]);
+        return H::json([...(array) $lead, 'activity' => $activity, 'tasks' => $tasks]);
+    }
+
     public function createLead(Ctx $ctx)
     {
         $user = $ctx->auth();

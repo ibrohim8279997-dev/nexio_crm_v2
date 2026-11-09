@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { CheckCircle2, Download, FolderKanban, Plus, ShoppingCart, Trash2, Wallet } from 'lucide-react'
 import { Badge, Button, Card, PageHeader, QueryState, SectionCard, StatCard, StatusPill, Tabs } from '../../components/ui/core'
@@ -139,6 +140,7 @@ function OrderDrawer({ order, onClose, onConfirm, onProject, onStatus, busy }: {
   return (
     <Drawer open={!!order} onClose={onClose} title={order.number} description={`${order.org_name ?? '—'} · ${label(order.source)}`} width="max-w-xl"
       footer={<>
+        <Link to={`/app/orders/${order.id}`}><Button size="sm" variant="ghost">Страница заказа</Button></Link>
         {can('orders.write') && order.status === 'draft' && <Button size="sm" onClick={() => onConfirm(order)}>Подтвердить</Button>}
         {can('orders.write') && order.status === 'confirmed' && <Button size="sm" variant="secondary" onClick={() => onStatus(order, 'in_progress')} loading={busy}>В работу</Button>}
         {can('orders.write') && order.status === 'in_progress' && <Button size="sm" variant="secondary" onClick={() => onStatus(order, 'fulfilled')} loading={busy}>Выполнен</Button>}

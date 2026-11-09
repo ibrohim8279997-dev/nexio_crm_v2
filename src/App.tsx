@@ -11,6 +11,8 @@ const Register = lazy(() => import('./pages/public/Register'))
 const ResetPassword = lazy(() => import('./pages/public/ResetPassword'))
 const VerifyEmail = lazy(() => import('./pages/public/VerifyEmail'))
 const InvitePage = lazy(() => import('./pages/public/InvitePage'))
+const ChooseWorkspace = lazy(() => import('./pages/public/ChooseWorkspace'))
+const Onboarding = lazy(() => import('./pages/public/Onboarding'))
 const Marketing = lazy(() => import('./pages/public/Marketing'))
 const Legal = lazy(() => import('./pages/public/Legal'))
 const NotFound = lazy(() => import('./pages/public/NotFound'))
@@ -18,6 +20,10 @@ const NotFound = lazy(() => import('./pages/public/NotFound'))
 const Dashboard = lazy(() => import('./pages/app/Dashboard'))
 const MyDay = lazy(() => import('./pages/app/MyDay'))
 const Leads = lazy(() => import('./pages/app/Leads'))
+const LeadDetail = lazy(() => import('./pages/app/LeadDetail'))
+const ContactDetail = lazy(() => import('./pages/app/ContactDetail'))
+const DealDetail = lazy(() => import('./pages/app/DealDetail'))
+const OrderDetail = lazy(() => import('./pages/app/OrderDetail'))
 const Deals = lazy(() => import('./pages/app/Deals'))
 const Companies = lazy(() => import('./pages/app/Companies'))
 const CompanyDetail = lazy(() => import('./pages/app/CompanyDetail'))
@@ -29,6 +35,7 @@ const InventoryProcurement = lazy(() => import('./pages/app/InventoryProcurement
 const Projects = lazy(() => import('./pages/app/Projects'))
 const ProjectDetail = lazy(() => import('./pages/app/ProjectDetail'))
 const Tasks = lazy(() => import('./pages/app/Tasks'))
+const CalendarPage = lazy(() => import('./pages/app/Calendar'))
 const Communications = lazy(() => import('./pages/app/Communications'))
 const Helpdesk = lazy(() => import('./pages/app/Helpdesk'))
 const DocumentsPage = lazy(() => import('./pages/app/Documents'))
@@ -86,6 +93,8 @@ export function App() {
         <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/verify-email/:token" element={<VerifyEmail />} />
         <Route path="/invite/:token" element={<InvitePage />} />
+        <Route path="/choose-workspace" element={<RequireAuth><ChooseWorkspace /></RequireAuth>} />
+        <Route path="/onboarding" element={<RequireAuth><Onboarding /></RequireAuth>} />
         <Route path="/pricing" element={<Marketing page="pricing" />} />
         <Route path="/features" element={<Marketing page="features" />} />
         <Route path="/security" element={<Marketing page="security" />} />
@@ -116,18 +125,23 @@ export function App() {
           <Route index element={<Dashboard />} />
           <Route path="my-day" element={<MyDay />} />
           <Route path="leads" element={<Leads />} />
+          <Route path="leads/:id" element={<LeadDetail />} />
           <Route path="contacts" element={<Contacts />} />
+          <Route path="contacts/:id" element={<ContactDetail />} />
           <Route path="companies" element={<Companies />} />
           <Route path="companies/:id" element={<CompanyDetail />} />
           <Route path="deals" element={<Deals />} />
+          <Route path="deals/:id" element={<DealDetail />} />
           <Route path="pipelines" element={<Navigate to="/app/deals" replace />} />
           <Route path="orders" element={<Orders />} />
+          <Route path="orders/:id" element={<OrderDetail />} />
           <Route path="catalog" element={<CatalogPage />} />
           <Route path="inventory" element={<Inventory />} />
           <Route path="inventory/procurement" element={<InventoryProcurement />} />
           <Route path="projects" element={<Projects />} />
           <Route path="projects/:id" element={<ProjectDetail />} />
           <Route path="tasks" element={<Tasks />} />
+          <Route path="calendar" element={<CalendarPage />} />
           <Route path="team" element={<Team />} />
           <Route path="finance" element={<Finance />} />
           <Route path="communications" element={<Communications />} />

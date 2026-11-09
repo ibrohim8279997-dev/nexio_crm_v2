@@ -10,6 +10,7 @@ import { dateTime, label, num } from '../../lib/format'
 import { useAuth, useCan } from '../../lib/auth'
 import { useToast } from '../../components/ui/toast'
 import { useI18n, type Locale } from '../../lib/i18n'
+import MfaCard from './MfaCard'
 import { TIMEZONES, formatUtcOffset } from '../../lib/timezones'
 
 interface Stage { id: string; key: string; name: string; position: number; probability: number; kind: string; color: string }
@@ -29,7 +30,7 @@ const FLAG_LABELS: Record<string, string> = {
 }
 
 export default function SettingsPage() {
-  const [tab, setTab] = useState<'company' | 'pipeline' | 'flags' | 'audit'>('company')
+  const [tab, setTab] = useState<'company' | 'pipeline' | 'flags' | 'security' | 'audit'>('company')
   const [form, setForm] = useState<Partial<SettingsData['tenant']>>({})
   const [prefs, setPrefs] = useState<Record<string, unknown>>({})
   const [newStage, setNewStage] = useState({ name: '', probability: '50' })
@@ -75,7 +76,7 @@ export default function SettingsPage() {
 
       <SectionCard padded={false}>
         <div className="border-b border-line px-4 py-3">
-          <Tabs tabs={[{ value: 'company', label: 'Компания и локализация' }, { value: 'pipeline', label: 'Воронки', count: q.data?.stages.length }, { value: 'flags', label: 'Модули' }, { value: 'audit', label: 'Журнал аудита' }]}
+          <Tabs tabs={[{ value: 'company', label: 'Компания и локализация' }, { value: 'pipeline', label: 'Воронки', count: q.data?.stages.length }, { value: 'flags', label: 'Модули' }, { value: 'security', label: 'Безопасность' }, { value: 'audit', label: 'Журнал аудита' }]}
             value={tab} onChange={setTab} />
         </div>
 
@@ -184,6 +185,8 @@ export default function SettingsPage() {
                 </p>
               </div>
             )}
+
+            {tab === 'security' && <div className="max-w-2xl"><MfaCard /></div>}
 
             {tab === 'audit' && (
               <div className="space-y-3">

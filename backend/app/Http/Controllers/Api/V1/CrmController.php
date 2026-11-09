@@ -166,6 +166,24 @@ class CrmController
         return H::json(['data' => $data, 'total' => (int) ($total->c ?? 0), 'page' => $page, 'limit' => $limit]);
     }
 
+    public function getContact(Ctx $ctx)
+    {
+        $ctx->auth();
+        $t = $ctx->tenantId;
+        $id = $ctx->params['id'];
+        $c = DB::selectOne(
+            'SELECT c.*, o.name AS org_name, u.name AS owner_name FROM contacts c
+               LEFT JOIN organizations o ON o.id = c.org_id LEFT JOIN users u ON u.id = c.owner_id
+              WHERE c.id = ? AND c.tenant_id = ?',
+            [$id, $t]
+        );
+        if (!$c) throw new ApiException(404, 'Контакт не найден', 'not_found');
+        $deals = DB::select('SELECT id, title, amount, currency, status, created_at FROM deals WHERE tenant_id = ? AND contact_id = ? ORDER BY created_at DESC LIMIT 50', [$t, $id]);
+        $activity = DB::select("SELECT id,kind,subject,body,actor_name,created_at FROM activities WHERE tenant_id=? AND entity_type='contact' AND entity_id=? ORDER BY created_at DESC LIMIT 50", [$t, $id]);
+        $comms = DB::select('SELECT id, channel, direction, subject, created_at FROM communications WHERE tenant_id = ? AND contact_id = ? ORDER BY created_at DESC LIMIT 50', [$t, $id]);
+        return H::json([...(array) $c, 'tags' => H::parseJson($c->tags, []), 'deals' => $deals, 'activity' => $activity, 'communications' => $comms]);
+    }
+
     public function createContact(Ctx $ctx)
     {
         $user = $ctx->auth();

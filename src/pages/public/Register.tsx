@@ -25,7 +25,7 @@ export default function Register() {
       await api.post('/api/v1/auth/register', form)
       await refresh()
       toast.success('Компания создана', 'Пробный период на 14 дней активирован')
-      navigate('/app', { replace: true })
+      navigate('/onboarding', { replace: true })
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Не удалось создать аккаунт')
     } finally { setLoading(false) }

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import {
-  Activity, BarChart3, Bell, BookText, Briefcase, Building2, ChevronDown, Contact, CreditCard, FileText, Clock3,
+  Activity, BarChart3, Bell, BookText, Briefcase, Building2, CalendarDays, ChevronDown, Contact, CreditCard, FileText, Clock3,
   Headphones, LayoutDashboard, LifeBuoy, Menu, MessageSquare, Package, Plug, Search, Settings, ShoppingCart, Blocks,
   Sparkles, Target, Users, Workflow, X, Zap, LogOut, Store, ShieldCheck, PhoneCall, LineChart,
   Truck,
@@ -44,7 +44,7 @@ function navKey(path: string) {
 
 function groupKey(path: string) {
   if (path === '/app') return 'sales'
-  if (path === '/app/projects' || path === '/app/tasks') return 'work'
+  if (path === '/app/projects' || path === '/app/tasks' || path === '/app/calendar') return 'work'
   if (path === '/app/communications' || path === '/app/documents') return 'clients'
   if (path === '/app/finance' || path === '/app/analytics' || path === '/app/automations' || path === '/app/integrations') return 'finance'
   return 'company'
@@ -77,6 +77,7 @@ const GROUPS: NavGroup[] = [
     items: [
       { to: '/app/projects', label: 'Проекты', icon: <Activity className={ICON} /> },
       { to: '/app/tasks', label: 'Задачи', icon: <BookText className={ICON} /> },
+      { to: '/app/calendar', label: 'Календарь', icon: <CalendarDays className={ICON} /> },
       { to: '/app/my-day', label: 'My Day', icon: <Clock3 className={ICON} /> },
     ],
   },

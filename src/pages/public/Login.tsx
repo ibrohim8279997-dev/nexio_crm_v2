@@ -65,6 +65,8 @@ export default function Login() {
   const [show, setShow] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [mfaStep, setMfaStep] = useState(false)
+  const [code, setCode] = useState('')
   const navigate = useNavigate()
   const location = useLocation()
   const toast = useToast()
@@ -77,16 +79,19 @@ export default function Login() {
     setError(null)
     setLoading(true)
     try {
-      const res = await api.post<{ role: string | null; isPlatformAdmin?: boolean; user: { id: string; email: string; name: string; avatar_color: string; is_platform_admin: number } }>('/api/v1/auth/login', { email, password })
+      const res = await api.post<{ role: string | null; isPlatformAdmin?: boolean; user: { id: string; email: string; name: string; avatar_color: string; is_platform_admin: number } }>('/api/v1/auth/login', { email, password, ...(mfaStep ? { code } : {}) })
       acceptLogin(res)
       void refresh()
       toast.success('Добро пожаловать', 'Вы вошли в Nexio CRM')
-      if (from) navigate(from, { replace: true })
-      else if (res.user?.is_platform_admin) navigate('/platform', { replace: true })
-      else if (res.role === 'client_portal_user') navigate('/portal', { replace: true })
-      else navigate('/app', { replace: true })
+      if (from) { navigate(from, { replace: true }); return }
+      if (res.user?.is_platform_admin) { navigate('/platform', { replace: true }); return }
+      if (res.role === 'client_portal_user') { navigate('/portal', { replace: true }); return }
+      // Several companies on one account → explicit workspace choice, never a silent default.
+      const me = await api.get<{ tenants: unknown[] }>('/api/v1/auth/me').catch(() => null)
+      navigate(me && me.tenants.length > 1 ? '/choose-workspace' : '/app', { replace: true })
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Не удалось войти')
+      if (err instanceof ApiError && err.code === 'mfa_required') { setMfaStep(true); setError(null) }
+      else setError(err instanceof ApiError ? err.message : 'Не удалось войти')
     } finally {
       setLoading(false)
     }
@@ -171,6 +176,15 @@ export default function Login() {
                 </button>
               </div>
             </div>
+
+            {mfaStep && (
+              <div className="space-y-1.5">
+                <label htmlFor="mfa-code" className="block text-xs font-medium text-ink">Код подтверждения (MFA)</label>
+                <Input id="mfa-code" inputMode="numeric" autoComplete="one-time-code" autoFocus value={code} onChange={(e) => setCode(e.target.value)}
+                  placeholder="123456 или резервный код" className="h-11 tracking-widest" aria-invalid={!!error} />
+                <p className="text-[11px] text-muted">Откройте приложение-аутентификатор и введите 6-значный код. Потеряли доступ — используйте резервный код.</p>
+              </div>
+            )}
 
             <div className="flex justify-end">
               <Link to="/reset-password" className="text-[12px] font-medium text-primary hover:text-primary-dark">Forgot password?</Link>

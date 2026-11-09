@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import {
   ArrowRight, ArrowUpRight, BadgeCheck, BarChart3, Bot, Calendar, CheckCircle2, Circle, Clock, CreditCard,
   Percent, PhoneCall, Target, TrendingUp, Users, Wallet, Zap,
@@ -45,7 +45,11 @@ export default function Dashboard() {
   const { t } = useI18n()
   const toast = useToast()
   const [telegramPrompt, setTelegramPrompt] = useState(() => localStorage.getItem('nexio_telegram_prompt_seen') !== '1')
-  const [period, setPeriod] = useState('30d')
+  // Period lives in the URL (?period=7d) so a dashboard view can be bookmarked and shared.
+  const [searchParams, setSearchParams] = useSearchParams()
+  const periodParam = searchParams.get('period') ?? ''
+  const period = PERIODS.some((p) => p.value === periodParam) ? periodParam : '30d'
+  const setPeriod = (value: string) => setSearchParams((prev) => { const next = new URLSearchParams(prev); next.set('period', value); return next }, { replace: true })
   const [granularity, setGranularity] = useState<'monthly' | 'quarterly' | 'yearly'>('monthly')
   const currency = tenant?.currency ?? 'UZS'
 

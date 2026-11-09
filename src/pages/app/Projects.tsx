@@ -30,6 +30,7 @@ export default function Projects() {
   const [status, setStatus] = useState('')
   const [q, setQ] = useState('')
   const [open, setOpen] = useState(false)
+  const [view, setView] = useState<'list' | 'gantt'>('list')
   const can = useCan()
   const navigate = useNavigate()
   const list = useApi<ProjectsResponse>(['projects', status, q], `/api/v1/projects?status=${status}&q=${encodeURIComponent(q)}&limit=100`)
@@ -85,16 +86,69 @@ export default function Projects() {
         action={<div className="flex flex-wrap items-center justify-end gap-2">
           <SearchInput value={q} onChange={setQ} placeholder="Поиск проектов…" className="w-full sm:w-56" />
         </div>}>
-        <div className="border-b border-line px-4 py-3"><Tabs tabs={TABS} value={status} onChange={setStatus} /></div>
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-4 py-3">
+          <Tabs tabs={TABS} value={status} onChange={setStatus} />
+          <Tabs tabs={[{ value: 'list', label: 'Список' }, { value: 'gantt', label: 'Гант' }]} value={view} onChange={setView} />
+        </div>
         <QueryState loading={list.isLoading} error={list.error} empty={(list.data?.data.length ?? 0) === 0}
           emptyTitle="Проектов не найдено" emptyDescription="Создайте проект вручную или из подтверждённого заказа."
           emptyAction={can('projects.write') ? <Button size="sm" onClick={() => setOpen(true)}><Plus className="size-4" /> Новый проект</Button> : undefined}
           onRetry={() => list.refetch()}>
-          <DataTable columns={columns} rows={list.data?.data ?? []} onRowClick={(p) => navigate(`/app/projects/${p.id}`)} />
+          {view === 'gantt'
+            ? <GanttChart projects={list.data?.data ?? []} onOpen={(p) => navigate(`/app/projects/${p.id}`)} />
+            : <DataTable columns={columns} rows={list.data?.data ?? []} onRowClick={(p) => navigate(`/app/projects/${p.id}`)} />}
         </QueryState>
       </SectionCard>
 
       <CreateProjectModal open={open} onClose={() => setOpen(false)} />
+    </div>
+  )
+}
+
+const DAY = 86_400_000
+const toMs = (s: string | null) => (s ? new Date(String(s).replace(' ', 'T').slice(0, 10) + 'T00:00:00Z').getTime() : NaN)
+
+/** Timeline (Gantt) of projects: one bar per project from start_date to due_date, filled by progress. */
+function GanttChart({ projects, onOpen }: { projects: Project[]; onOpen: (p: Project) => void }) {
+  const rows = projects.filter((p) => !Number.isNaN(toMs(p.start_date)) || !Number.isNaN(toMs(p.due_date)))
+  if (rows.length === 0) return <p className="px-4 py-10 text-center text-[13px] text-muted">У проектов не заданы даты начала и срока — диаграмма Ганта пуста.</p>
+  const spans = rows.map((p) => {
+    const s = Number.isNaN(toMs(p.start_date)) ? toMs(p.due_date) - 14 * DAY : toMs(p.start_date)
+    const e = Number.isNaN(toMs(p.due_date)) ? s + 14 * DAY : Math.max(toMs(p.due_date), s + DAY)
+    return { p, s, e }
+  })
+  const today = Date.now()
+  const min = Math.min(...spans.map((x) => x.s), today) - 3 * DAY
+  const max = Math.max(...spans.map((x) => x.e), today) + 3 * DAY
+  const total = max - min
+  const pos = (t: number) => `${((t - min) / total) * 100}%`
+  const months: { t: number; label: string }[] = []
+  for (let d = new Date(min); d.getTime() < max; d = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1))) {
+    const first = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1)).getTime()
+    if (first >= min) months.push({ t: first, label: d.toLocaleDateString('ru-RU', { month: 'short', year: '2-digit', timeZone: 'UTC' }) })
+  }
+  const barTone = (p: Project) => (p.status === 'done' ? '#10B981' : p.status === 'on_hold' ? '#94A3B8' : '#2563EB')
+  return (
+    <div className="overflow-x-auto" role="table" aria-label="Диаграмма Ганта">
+      <div className="min-w-[720px] px-4 pb-4">
+        <div className="relative ml-[200px] h-7 border-b border-line text-[10px] text-muted">
+          {months.map((m) => <span key={m.t} className="absolute top-1 -translate-x-0 border-l border-line pl-1" style={{ left: pos(m.t) }}>{m.label}</span>)}
+        </div>
+        <div className="relative">
+          <div className="pointer-events-none absolute bottom-0 top-0 ml-[200px] w-px bg-red-400" style={{ left: `calc((100% - 200px) * ${(today - min) / total})` }} aria-label="Сегодня" />
+          {spans.map(({ p, s, e }) => (
+            <div key={p.id} role="row" className="flex h-11 items-center border-b border-line/60">
+              <button type="button" onClick={() => onOpen(p)} className="w-[200px] shrink-0 truncate pr-3 text-left text-[12px] font-medium text-ink hover:text-primary">{p.name}</button>
+              <div className="relative h-full flex-1">
+                <div title={`${p.name}: ${shortDate(new Date(s).toISOString())} — ${shortDate(new Date(e).toISOString())} · ${p.progress}%`}
+                  className="absolute top-3 h-5 overflow-hidden rounded-md" style={{ left: pos(s), width: `${((e - s) / total) * 100}%`, background: `${barTone(p)}33` }}>
+                  <div className="h-full" style={{ width: `${Math.min(100, p.progress)}%`, background: barTone(p) }} />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   )
 }

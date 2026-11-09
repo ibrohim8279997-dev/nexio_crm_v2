@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { Bot, Columns3, Download, GripVertical, Plus, TrendingUp, Wallet, X } from 'lucide-react'
 import {
@@ -31,6 +32,7 @@ export default function Deals() {
   const [dragId, setDragId] = useState<string | null>(null)
   const [dropStage, setDropStage] = useState<string | null>(null)
   const can = useCan()
+  const navigate = useNavigate()
   const qc = useQueryClient()
 
   const board = useApi<PipelineResponse>(['pipeline'], '/api/v1/pipeline')
@@ -144,7 +146,7 @@ export default function Deals() {
                       >
                         <div className="flex items-start gap-1.5">
                           <GripVertical className="mt-0.5 size-3.5 shrink-0 text-slate-300 group-hover:text-muted" />
-                          <p className="min-w-0 flex-1 text-[12px] font-medium leading-snug text-ink">{d.title}</p>
+                          <Link to={`/app/deals/${d.id}`} draggable={false} className="min-w-0 flex-1 text-[12px] font-medium leading-snug text-ink hover:text-primary hover:underline">{d.title}</Link>
                         </div>
                         <p className="mt-1 truncate pl-5 text-[10px] text-muted">{d.org_name ?? '—'}</p>
                         <div className="mt-2.5 flex items-center justify-between pl-5">
@@ -186,7 +188,7 @@ export default function Deals() {
           }>
           <QueryState loading={table.isLoading} error={table.error} empty={(table.data?.data.length ?? 0) === 0}
             emptyTitle="Сделок не найдено" onRetry={() => table.refetch()}>
-            <DataTable columns={columns} rows={table.data?.data ?? []} />
+            <DataTable columns={columns} rows={table.data?.data ?? []} onRowClick={(r) => navigate(`/app/deals/${r.id}`)} />
           </QueryState>
         </SectionCard>
       )}

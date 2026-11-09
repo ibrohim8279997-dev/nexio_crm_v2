@@ -3,10 +3,13 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Middleware\ApiContext;
 use App\Services\NotificationDispatcher;
+use App\Services\Totp;
 use App\Support\ApiException;
 use App\Support\Ctx;
 use App\Support\H;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\RateLimiter;
 
 class AuthController
 {
@@ -159,11 +162,13 @@ class AuthController
         $password = H::str($b['password'] ?? null, 'password', true, 200);
         // Older accounts may have been created before email normalization was added.
         // Match them case-insensitively while keeping the canonical lowercase value for new accounts.
-        $u = DB::selectOne('SELECT id, email, name, password_hash, avatar_color, is_platform_admin FROM users WHERE LOWER(TRIM(email)) = ?', [$email]);
+        $u = DB::selectOne('SELECT id, email, name, password_hash, avatar_color, is_platform_admin, mfa_enabled, mfa_secret, mfa_last_step, mfa_recovery FROM users WHERE LOWER(TRIM(email)) = ?', [$email]);
         // Uniform failure message so the endpoint does not reveal which emails exist.
         if (!$u || !H::verifyPassword($password, $u->password_hash)) {
             throw new ApiException(401, 'Неверный email или пароль', 'unauthorized');
         }
+        // Second factor: the password alone never creates a session for an MFA-enabled account.
+        if (!empty($u->mfa_enabled)) $this->requireSecondFactor($u, isset($b['code']) ? (string) $b['code'] : '');
         $m = DB::selectOne("SELECT tenant_id, role FROM tenant_memberships WHERE user_id = ? AND status = 'active' ORDER BY created_at LIMIT 1", [$u->id]);
         $sid = $this->createSession($ctx, $u->id, $m->tenant_id ?? null);
         DB::table('users')->where('id', $u->id)->update(['last_login_at' => H::now()]);
@@ -178,6 +183,94 @@ class AuthController
             'user' => ['id' => $u->id, 'email' => $u->email, 'name' => $u->name, 'avatar_color' => $u->avatar_color, 'is_platform_admin' => (int) $u->is_platform_admin],
             'tenantId' => $m->tenant_id ?? null, 'role' => $m->role ?? null,
         ], 200, ['Set-Cookie' => $this->sessionCookie($sid, H::SESSION_TTL, $ctx->request->isSecure())]);
+    }
+
+    // ── MFA (TOTP) ───────────────────────────────────────────────────────────
+    private function mfaKey(string $userId): string
+    {
+        return 'mfa:' . $userId;
+    }
+
+    /** Throws unless $code is a valid TOTP (not replayed) or an unused recovery code. Limited to 5 tries / 5 min per user. */
+    private function requireSecondFactor(object $u, string $code): void
+    {
+        if (trim($code) === '') throw new ApiException(401, 'Введите код из приложения-аутентификатора', 'mfa_required');
+        $key = $this->mfaKey($u->id);
+        if (RateLimiter::tooManyAttempts($key, 5)) {
+            throw new ApiException(429, 'Слишком много попыток. Повторите через несколько минут.', 'too_many_attempts');
+        }
+        $secret = $u->mfa_secret ? Crypt::decryptString($u->mfa_secret) : '';
+        $step = $secret !== '' ? Totp::verify($secret, $code, $u->mfa_last_step !== null ? (int) $u->mfa_last_step : null) : null;
+        if ($step !== null) {
+            DB::table('users')->where('id', $u->id)->update(['mfa_last_step' => $step]);
+            RateLimiter::clear($key);
+            return;
+        }
+        // Recovery code (single use).
+        $hashes = H::parseJson($u->mfa_recovery, []);
+        $given = hash('sha256', strtolower(str_replace([' ', '-'], '', $code)));
+        foreach ($hashes as $i => $h) {
+            if (hash_equals((string) $h, $given)) {
+                unset($hashes[$i]);
+                DB::table('users')->where('id', $u->id)->update(['mfa_recovery' => json_encode(array_values($hashes))]);
+                RateLimiter::clear($key);
+                return;
+            }
+        }
+        RateLimiter::hit($key, 300);
+        throw new ApiException(401, 'Неверный код подтверждения', 'mfa_invalid');
+    }
+
+    public function mfaStatus(Ctx $ctx)
+    {
+        $user = $ctx->auth();
+        $row = DB::table('users')->where('id', $user['id'])->first(['mfa_enabled', 'mfa_recovery']);
+        return H::json(['enabled' => (bool) ($row->mfa_enabled ?? 0), 'recovery_left' => count(H::parseJson($row->mfa_recovery ?? null, []))]);
+    }
+
+    /** Step 1: issue a pending secret. MFA is not active until the user proves they can generate a code. */
+    public function mfaSetup(Ctx $ctx)
+    {
+        $user = $ctx->auth();
+        $row = DB::table('users')->where('id', $user['id'])->first(['email', 'mfa_enabled']);
+        if (!empty($row->mfa_enabled)) throw new ApiException(409, 'MFA уже включена', 'conflict');
+        $secret = Totp::generateSecret();
+        DB::table('users')->where('id', $user['id'])->update(['mfa_secret' => Crypt::encryptString($secret), 'mfa_last_step' => null]);
+        return H::json(['secret' => $secret, 'uri' => Totp::uri($secret, (string) $row->email)]);
+    }
+
+    /** Step 2: confirm with a code from the app; returns one-time recovery codes (shown only now). */
+    public function mfaEnable(Ctx $ctx)
+    {
+        $user = $ctx->auth();
+        $b = H::body($ctx);
+        $row = DB::table('users')->where('id', $user['id'])->first(['mfa_enabled', 'mfa_secret']);
+        if (!empty($row->mfa_enabled)) throw new ApiException(409, 'MFA уже включена', 'conflict');
+        if (!$row->mfa_secret) throw new ApiException(400, 'Сначала начните настройку MFA', 'bad_request');
+        $step = Totp::verify(Crypt::decryptString($row->mfa_secret), (string) ($b['code'] ?? ''));
+        if ($step === null) throw new ApiException(400, 'Неверный код. Проверьте время на устройстве и попробуйте снова.', 'mfa_invalid');
+        $codes = []; $hashes = [];
+        for ($i = 0; $i < 8; $i++) {
+            $raw = bin2hex(random_bytes(5));
+            $codes[] = substr($raw, 0, 5) . '-' . substr($raw, 5);
+            $hashes[] = hash('sha256', $raw);
+        }
+        DB::table('users')->where('id', $user['id'])->update(['mfa_enabled' => 1, 'mfa_last_step' => $step, 'mfa_recovery' => json_encode($hashes), 'updated_at' => H::now()]);
+        H::audit($ctx, 'mfa.enabled', 'user', $user['id']);
+        return H::json(['enabled' => true, 'recovery_codes' => $codes]);
+    }
+
+    public function mfaDisable(Ctx $ctx)
+    {
+        $user = $ctx->auth();
+        $b = H::body($ctx);
+        $u = DB::table('users')->where('id', $user['id'])->first();
+        if (empty($u->mfa_enabled)) throw new ApiException(400, 'MFA не включена', 'bad_request');
+        if (!H::verifyPassword((string) ($b['password'] ?? ''), $u->password_hash)) throw new ApiException(401, 'Неверный пароль', 'unauthorized');
+        $this->requireSecondFactor($u, (string) ($b['code'] ?? ''));
+        DB::table('users')->where('id', $user['id'])->update(['mfa_enabled' => 0, 'mfa_secret' => null, 'mfa_last_step' => null, 'mfa_recovery' => null, 'updated_at' => H::now()]);
+        H::audit($ctx, 'mfa.disabled', 'user', $user['id']);
+        return H::json(['enabled' => false]);
     }
 
     private function sendVerification(string $email, string $token): bool

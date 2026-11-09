@@ -3,7 +3,7 @@ INSERT OR IGNORE INTO plans
   (id, code, name, tagline, price_monthly, price_yearly, currency, seats, api_requests, ai_minutes, storage_gb, modules, is_public, position)
 VALUES
   ('plan_starter', 'starter', 'Starter', 'Для небольших команд, которые только начинают', 49, 490, 'USD', 5, 10000, 0, 5, '["crm","projects"]', 1, 1),
-  ('plan_business', 'business', 'Business', 'Полный набор для растущей компании', 129, 1290, 'USD', 25, 100000, 300, 50, '["crm","projects","finance","helpdesk","analytics","automations","api","portal","documents"]', 1, 2),
+  ('plan_business', 'business', 'Business', 'Полный набор для растущей компании', 199, 1990, 'USD', 15, 70000, 200, 25, '["crm","projects","finance","helpdesk","analytics","automations","api","portal","documents"]', 1, 2),
   ('plan_enterprise', 'enterprise', 'Enterprise', 'Для крупных организаций и AI-продаж', 249, 2490, 'USD', 150, 2000000, 3000, 500, '["crm","projects","finance","helpdesk","analytics","automations","api","ai_agents","voice","portal","documents"]', 1, 3);
 
 INSERT OR IGNORE INTO plan_features (id, plan_id, label, included, position) VALUES
@@ -14,6 +14,7 @@ INSERT OR IGNORE INTO plan_features (id, plan_id, label, included, position) VAL
   ('pf_0005', 'plan_starter', 'AI-агенты и звонки', 0, 4),
   ('pf_0006', 'plan_starter', 'Клиентский портал', 0, 5),
   ('pf_0007', 'plan_starter', 'Email поддержка', 1, 6),
+
   ('pf_0008', 'plan_business', 'До 25 пользователей', 1, 0),
   ('pf_0009', 'plan_business', 'Полная воронка продаж', 1, 1),
   ('pf_000a', 'plan_business', 'Финансы и счета', 1, 2),
@@ -23,6 +24,7 @@ INSERT OR IGNORE INTO plan_features (id, plan_id, label, included, position) VAL
   ('pf_000e', 'plan_business', 'API и вебхуки', 1, 6),
   ('pf_000f', 'plan_business', 'Клиентский портал', 1, 7),
   ('pf_000g', 'plan_business', 'White label / свой домен', 0, 8),
+
   ('pf_000h', 'plan_enterprise', 'До 150 пользователей', 1, 0),
   ('pf_000i', 'plan_enterprise', 'Мультивалютность и прайсы', 1, 1),
   ('pf_000j', 'plan_enterprise', 'AI-агенты продаж', 1, 2),

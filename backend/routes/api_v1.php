@@ -32,6 +32,10 @@ Route::prefix('v1')->group(function () use ($h) {
     Route::post('/auth/logout', $h(AuthController::class, 'logout'));
     Route::get('/auth/me', $h(AuthController::class, 'me'));
     Route::post('/auth/switch-tenant', $h(AuthController::class, 'switchTenant'));
+    Route::get('/auth/mfa', $h(AuthController::class, 'mfaStatus'));
+    Route::post('/auth/mfa/setup', $h(AuthController::class, 'mfaSetup'));
+    Route::post('/auth/mfa/enable', $h(AuthController::class, 'mfaEnable'));
+    Route::post('/auth/mfa/disable', $h(AuthController::class, 'mfaDisable'));
     Route::post('/auth/forgot-password', $h(AuthController::class, 'forgotPassword'));
     Route::post('/auth/reset-password', $h(AuthController::class, 'resetPassword'));
     Route::post('/auth/verify-email', $h(AuthController::class, 'verifyEmail'));
@@ -58,10 +62,12 @@ Route::prefix('v1')->group(function () use ($h) {
     Route::patch('/organizations/{id}', $h(CrmController::class, 'updateOrganization'));
     Route::delete('/organizations/{id}', $h(CrmController::class, 'deleteOrganization'));
     Route::get('/contacts', $h(CrmController::class, 'listContacts'));
+    Route::get('/contacts/{id}', $h(CrmController::class, 'getContact'));
     Route::post('/contacts', $h(CrmController::class, 'createContact'));
     Route::patch('/contacts/{id}', $h(CrmController::class, 'updateContact'));
     Route::delete('/contacts/{id}', $h(CrmController::class, 'deleteContact'));
     Route::get('/leads', $h(SalesController::class, 'listLeads'));
+    Route::get('/leads/{id}', $h(SalesController::class, 'getLead'));
     Route::post('/leads', $h(SalesController::class, 'createLead'));
     Route::patch('/leads/{id}', $h(SalesController::class, 'updateLead'));
     Route::post('/leads/{id}/convert', $h(SalesController::class, 'convertLead'));

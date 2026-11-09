@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Ban, Download, Mail, Phone, Plus, ShieldCheck, UserCheck, Users } from 'lucide-react'
 import { Avatar, Badge, Button, PageHeader, QueryState, SectionCard, StatCard, StatusPill } from '../../components/ui/core'
 import { DataTable, Pagination, type Column } from '../../components/ui/table'
@@ -22,6 +23,7 @@ export default function Contacts() {
   const [page, setPage] = useState(1)
   const [open, setOpen] = useState(false)
   const can = useCan()
+  const navigate = useNavigate()
 
   const list = useApi<ContactsResponse>(['contacts', q, status, page], `/api/v1/contacts?q=${encodeURIComponent(q)}&status=${status}&page=${page}&limit=25`)
   const rows = list.data?.data ?? []
@@ -93,7 +95,7 @@ export default function Contacts() {
           emptyTitle="Контактов не найдено" emptyDescription="Измените фильтры или добавьте новый контакт."
           emptyAction={can('crm.write') ? <Button size="sm" onClick={() => setOpen(true)}><Plus className="size-4" /> Новый контакт</Button> : undefined}
           onRetry={() => list.refetch()}>
-          <DataTable columns={columns} rows={rows} />
+          <DataTable columns={columns} rows={rows} onRowClick={(c) => navigate(`/app/contacts/${c.id}`)} />
           {list.data && <Pagination page={list.data.page} limit={list.data.limit} total={list.data.total} onPage={setPage} />}
         </QueryState>
       </SectionCard>
