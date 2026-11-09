@@ -1583,6 +1583,123 @@
       "lastAccessed": "2026-11-07T12:36:14.646Z",
       "accessCount": 0,
       "expiresAt": "2026-12-07T12:36:14.646Z"
+    },
+    "cmd-1794130642048": {
+      "key": "cmd-1794130642048",
+      "value": "{\"command\":\"git branch --show-current && git log --oneline -1 && git status --short | grep -v '^ M \\\\.\\\\(claude-flow\\\\|swarm\\\\)' | head -20; echo ---; for d in .claude/worktrees/agent-*; do n=$(basename $d); c=$(git -C $d status --porcelain 2>/dev/null | grep -v 'node_modules\\\\|vendor\\\\|\\\\.claude-flow\\\\|\\\\.swarm' | wc -l); a=$(git -C $d log --oneline feat/swarm-i18n-plan-fixes..HEAD 2>/dev/null | wc -l); b=$(git -C $d merge-base --is-ancestor feat/swarm-i18n-plan-fixes HEAD 2>/dev/null && echo infra-ok || echo NO-INFRA); echo \\\"$n changed=$c commits=$a $b\\\"; done\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-08T09:37:22.048Z",
+      "lastAccessed": "2026-11-08T09:37:22.048Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-08T09:37:22.048Z"
+    },
+    "cmd-1794130657537": {
+      "key": "cmd-1794130657537",
+      "value": "{\"command\":\"git log -6 --format='%h %an %ad %s' --date=iso; echo ---; git show --stat --format='%h %an <%ae>%n%s%n%b' 43a9031 | tail -45; echo ---; git branch -a -vv | grep -v 'worktree-agent' ; echo ---; git reflog -12 --date=iso; echo ---; git status -sb | head -3; git rev-parse origin/main; git ls-files -s .claude/worktrees | head -5; git ls-files .claude/worktrees | wc -l\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-08T09:37:37.537Z",
+      "lastAccessed": "2026-11-08T09:37:37.537Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-08T09:37:37.537Z"
+    },
+    "cmd-1794130691300": {
+      "key": "cmd-1794130691300",
+      "value": "{\"command\":\"for d in .claude/worktrees/agent-*; do echo \\\"== $(basename $d) [$(git -C $d branch --show-current)]\\\"; git -C $d diff --stat HEAD -- . ':!.claude-flow' ':!.swarm' | tail -8; git -C $d status --porcelain | grep '^??' | grep -v 'node_modules\\\\|vendor\\\\|\\\\.claude-flow\\\\|\\\\.swarm' | head -8; done 2>/dev/null\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-08T09:38:11.300Z",
+      "lastAccessed": "2026-11-08T09:38:11.300Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-08T09:38:11.300Z"
+    },
+    "cmd-1794130771854": {
+      "key": "cmd-1794130771854",
+      "value": "{\"command\":\"git status --short; git branch --show-current; git log --oneline -1; git cat-file -t 41afbb8; git merge --ff-only 41afbb8 2>&1 | tail -5\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-08T09:39:31.854Z",
+      "lastAccessed": "2026-11-08T09:39:31.854Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-08T09:39:31.854Z"
+    },
+    "cmd-1794131070681": {
+      "key": "cmd-1794131070681",
+      "value": "{\"command\":\"python \\\"C:/Users/Ibrohim/AppData/Local/Temp/claude/a5e33a921a1bd9fd/3de3eb3f-8869-457b-a400-717c021bff0e/scratchpad/sales_edit2.py\\\" backend/app/Http/Controllers/Api/V1/SalesController.php\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-08T09:44:30.681Z",
+      "lastAccessed": "2026-11-08T09:44:30.681Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-08T09:44:30.681Z"
+    },
+    "cmd-1794131158634": {
+      "key": "cmd-1794131158634",
+      "value": "{\"command\":\"cd backend; grep -n \\\"contacts\\\\|leads\\\" routes/api.php | head -5; sed -n 1,40p tests/Feature/PluginTestCase.php; grep -n \\\"DB_\\\\|CACHE\\\\|SESSION\\\" phpunit.xml\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-08T09:45:58.634Z",
+      "lastAccessed": "2026-11-08T09:45:58.634Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-08T09:45:58.634Z"
+    },
+    "cmd-1794131161601": {
+      "key": "cmd-1794131161601",
+      "value": "{\"command\":\"sed -n 55,100p src/pages/platform/Tenants.tsx\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-08T09:46:01.601Z",
+      "lastAccessed": "2026-11-08T09:46:01.601Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-08T09:46:01.601Z"
+    },
+    "cmd-1794131281210": {
+      "key": "cmd-1794131281210",
+      "value": "{\"command\":\"npx tsc -p tsconfig.app.json --noEmit 2>&1 | head -30; git status --short\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-08T09:48:01.210Z",
+      "lastAccessed": "2026-11-08T09:48:01.210Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-08T09:48:01.210Z"
+    },
+    "cmd-1794131286339": {
+      "key": "cmd-1794131286339",
+      "value": "{\"command\":\"cd backend && python - <<'PYEOF'\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-08T09:48:06.339Z",
+      "lastAccessed": "2026-11-08T09:48:06.339Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-08T09:48:06.339Z"
+    },
+    "cmd-1794131710888": {
+      "key": "cmd-1794131710888",
+      "value": "{\"command\":\"cd C:/Users/Ibrohim/nexio_crm_v2/.claude/worktrees/agent-ac33e8c90f2475d9d/backend && php vendor/phpunit/phpunit/phpunit --filter \\\"DeveloperPortalSmokeTest|PluginLifecycleTest|PluginTenantIsolationTest|PluginUsageLimitTest\\\" 2>&1 | head -c 2500\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-08T09:55:10.888Z",
+      "lastAccessed": "2026-11-08T09:55:10.888Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-08T09:55:10.888Z"
+    },
+    "cmd-1794131714725": {
+      "key": "cmd-1794131714725",
+      "value": "{\"command\":\"cd backend && cp /tmp/ptp.bak tests/Feature/PlatformTenantPlanTest.php && APP_BASE_PATH=\\\"C:/Users/Ibrohim/nexio_crm_v2/.claude/worktrees/agent-a5b5e88acdf90aee5/backend\\\" php vendor/bin/phpunit --bootstrap \\\"C:/Users/Ibrohim/AppData/Local/Temp/claude/a5e33a921a1bd9fd/3de3eb3f-8869-457b-a400-717c021bff0e/scratchpad/tariff_bootstrap.php\\\" --filter PlatformTenantPlanTest 2>&1 | cut -c1-1800 | head -20\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-08T09:55:14.725Z",
+      "lastAccessed": "2026-11-08T09:55:14.725Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-08T09:55:14.725Z"
+    },
+    "cmd-1794131997808": {
+      "key": "cmd-1794131997808",
+      "value": "{\"command\":\"S=/c/Users/Ibrohim/AppData/Local/Temp/claude/a5e33a921a1bd9fd/3de3eb3f-8869-457b-a400-717c021bff0e/scratchpad; cd \\\"$S/integration\\\" && git status --short | grep -v 'node_modules\\\\|vendor' | head; cat > \\\"$S/patch-api.cjs\\\" <<'EOF'\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-08T09:59:57.808Z",
+      "lastAccessed": "2026-11-08T09:59:57.808Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-08T09:59:57.808Z"
+    },
+    "cmd-1794132012668": {
+      "key": "cmd-1794132012668",
+      "value": "{\"command\":\"npx tsc -p tsconfig.app.json --noEmit 2>&1 | tail -15\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-08T10:00:12.668Z",
+      "lastAccessed": "2026-11-08T10:00:12.668Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-08T10:00:12.668Z"
     }
   },
   "version": "3.0.0"
