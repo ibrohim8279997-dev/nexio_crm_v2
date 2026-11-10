@@ -311,12 +311,17 @@ class AiController
             throw new ApiException(403, 'Запуск заблокирован: ' . implode('; ', $blockers), 'forbidden');
         }
         DB::update("UPDATE ai_campaigns SET status='running', started_at=?, total_contacts=? WHERE id=? AND tenant_id=?", [H::now(), count($eligible), $campaign->id, $t]);
+        // Honest status: "provider" only when the signed callback endpoint is enabled and a real call has arrived through it.
+        $voiceLive = (string) config('nexio.ai_voice.webhook_secret') !== ''
+            && DB::table('ai_calls')->where('tenant_id', $t)->where('sandbox', 0)->whereNotNull('provider_call_id')->exists();
         H::audit($ctx, 'ai.campaign_started', 'ai_campaign', $campaign->id, ['eligible' => count($eligible), 'excluded' => (int) ($blocked->c ?? 0)]);
         return H::json([
             'ok' => true, 'status' => 'running',
             'eligible' => count($eligible), 'excluded' => (int) ($blocked->c ?? 0),
-            'telephony' => 'sandbox',
-            'note' => 'Телефония работает в sandbox-режиме: реальные звонки не совершаются.',
+            'telephony' => $voiceLive ? 'provider' : 'sandbox',
+            'note' => $voiceLive
+                ? 'Провайдер голосовых звонков подключён: результаты звонков приходят через подписанный webhook.'
+                : 'Телефония работает в sandbox-режиме: реальные звонки не совершаются.',
         ]);
     }
 

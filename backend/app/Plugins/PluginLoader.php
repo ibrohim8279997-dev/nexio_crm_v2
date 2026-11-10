@@ -229,13 +229,31 @@ class PluginLoader
 
     private static function phpLint(string $file): bool
     {
-        if (!function_exists('exec') || !defined('PHP_BINARY') || PHP_BINARY === '') {
-            return true; // In-process linting is impossible in this SAPI; the require will surface it.
+        $php = self::cliBinary();
+        if ($php === null || !function_exists('exec')) {
+            return true; // No usable CLI to lint with; the require will surface a real syntax error.
         }
         $output = [];
         $code = 0;
-        @exec(escapeshellarg(PHP_BINARY) . ' -l ' . escapeshellarg($file) . ' 2>&1', $output, $code);
-        return $code === 0;
+        @exec(escapeshellarg($php) . ' -l ' . escapeshellarg($file) . ' 2>&1', $output, $code);
+        // Only a genuine parse failure rejects the plugin. A tool that cannot lint (wrong binary,
+        // sandboxed exec) must not make every plugin look broken.
+        $text = implode("\n", $output);
+        return !($code !== 0 && (str_contains($text, 'Parse error') || str_contains($text, 'Errors parsing') || str_contains($text, 'syntax error')));
+    }
+
+    /** Under PHP-FPM, PHP_BINARY is php-fpm, which has no -l flag; use the CLI binary instead. */
+    private static function cliBinary(): ?string
+    {
+        if (PHP_SAPI === 'cli' && defined('PHP_BINARY') && PHP_BINARY !== '') {
+            return PHP_BINARY;
+        }
+        foreach ([PHP_BINDIR . '/php', PHP_BINDIR . '/php' . PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION] as $candidate) {
+            if (is_file($candidate) && is_executable($candidate)) {
+                return $candidate;
+            }
+        }
+        return null;
     }
 
     private static function isInside(string $path, string $root): bool

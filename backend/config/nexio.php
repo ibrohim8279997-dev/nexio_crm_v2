@@ -79,4 +79,13 @@ return [
         /* Default enforcement policy for a metric that has no explicit limit row. */
         'default_enforcement' => 'BLOCK',
     ],
+
+    /*
+     * Voice provider callbacks (POST /api/webhooks/ai-voice). The provider signs
+     * "{timestamp}.{raw body}" with HMAC-SHA256 using this secret. Empty = endpoint disabled.
+     */
+    'ai_voice' => [
+        'webhook_secret' => env('AI_VOICE_WEBHOOK_SECRET', ''),
+        'tolerance_seconds' => 300,
+    ],
 ];

@@ -14,6 +14,7 @@ Route::get('/health', function () {
 
 Route::post('/webhooks/click', [ClickWebhookController::class, 'handle']);
 Route::post('/webhooks/payme', [\App\Http\Controllers\PaymeWebhookController::class, 'handle']);
+Route::post('/webhooks/ai-voice', [\App\Http\Controllers\AiVoiceWebhookController::class, 'handle']);
 Route::post('/webhooks/telegram', [TelegramWebhookController::class, 'handle']);
 
 require __DIR__.'/api_v1.php';

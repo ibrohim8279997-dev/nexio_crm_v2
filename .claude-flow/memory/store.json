@@ -2177,6 +2177,141 @@
       "lastAccessed": "2026-11-09T19:21:29.193Z",
       "accessCount": 0,
       "expiresAt": "2026-12-09T19:21:29.193Z"
+    },
+    "cmd-1794312039599": {
+      "key": "cmd-1794312039599",
+      "value": "{\"command\":\"ls docs; cat /c/Users/Ibrohim/.claude/projects/c--Users-Ibrohim-nexio-crm-v2/memory/keep-tz-pdf-updated.md /c/Users/Ibrohim/.claude/projects/c--Users-Ibrohim-nexio-crm-v2/memory/prod-stack-laravel.md\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T12:00:39.599Z",
+      "lastAccessed": "2026-11-10T12:00:39.599Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T12:00:39.599Z"
+    },
+    "cmd-1794312039900": {
+      "key": "cmd-1794312039900",
+      "value": "{\"command\":\"python -I -c \\\"\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T12:00:39.900Z",
+      "lastAccessed": "2026-11-10T12:00:39.900Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T12:00:39.900Z"
+    },
+    "cmd-1794312059242": {
+      "key": "cmd-1794312059242",
+      "value": "{\"command\":\"cd /c/Users/Ibrohim/nexio_crm_v2/backend/plugins/nexio.telephony && wc -l Plugin.php Providers/*.php && cat Providers/TelephonyProvider.php Providers/ProviderRegistry.php Providers/HttpTelephonyProvider.php Providers/SandboxProvider.php; ls; grep -n \\\"telephony\\\" ../../config/nexio.php\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T12:00:59.242Z",
+      "lastAccessed": "2026-11-10T12:00:59.242Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T12:00:59.242Z"
+    },
+    "cmd-1794312102536": {
+      "key": "cmd-1794312102536",
+      "value": "{\"command\":\"cd /c/Users/Ibrohim/nexio_crm_v2/backend && sed -n 105,150p database/migrations/2026_11_09_000600_commercial_collab_ai_limits.php; grep -rn \\\"ai_calls\\\" database/ ../migrations 2>/dev/null | grep -i \\\"create table\\\" ; grep -n \\\"CALL_STATES\\\" -A6 app/Http/Controllers/Api/V1/AiController.php | head -20; ls database/migrations | tail -5; sed -n 50,75p config/nexio.php; ls tests/Feature | grep -i ai\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T12:01:42.536Z",
+      "lastAccessed": "2026-11-10T12:01:42.536Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T12:01:42.536Z"
+    },
+    "cmd-1794312110475": {
+      "key": "cmd-1794312110475",
+      "value": "{\"command\":\"sed -n 572,610p ../migrations/0001_init.sql; grep -n \\\"provider\\\" database/migrations/*.php | grep -i \\\"ai_calls\\\"; head -60 tests/Feature/AiLimitsSecurityTest.php; grep -n \\\"H::json\\\\|function json\\\" app/Support/H.php | head -3; tail -30 config/nexio.php\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T12:01:50.475Z",
+      "lastAccessed": "2026-11-10T12:01:50.475Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T12:01:50.475Z"
+    },
+    "cmd-1794312270457": {
+      "key": "cmd-1794312270457",
+      "value": "{\"command\":\"php -v | head -1 && php artisan test --filter=\\\"AiVoiceWebhookTest|AiLimitsSecurityTest|AiExtrasTest\\\" 2>&1 | tail -40\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T12:04:30.457Z",
+      "lastAccessed": "2026-11-10T12:04:30.457Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T12:04:30.457Z"
+    },
+    "cmd-1794312414217": {
+      "key": "cmd-1794312414217",
+      "value": "{\"command\":\"php artisan test 2>&1 | tail -15\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T12:06:54.217Z",
+      "lastAccessed": "2026-11-10T12:06:54.217Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T12:06:54.217Z"
+    },
+    "cmd-1794312477227": {
+      "key": "cmd-1794312477227",
+      "value": "{\"command\":\"php artisan test 2>&1 | grep -o '\\\"test\\\":\\\"[^\\\"]*\\\"' | sort > /tmp/after.txt; cat /tmp/after.txt; git stash -u -q && php artisan test --filter=\\\"PluginLifecycleTest|PluginMarketplaceTest\\\" 2>&1 | grep -o '\\\"test\\\":\\\"[^\\\"]*\\\"' | sort; git stash pop -q && git status --short\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T12:07:57.227Z",
+      "lastAccessed": "2026-11-10T12:07:57.227Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T12:07:57.227Z"
+    },
+    "cmd-1794312484592": {
+      "key": "cmd-1794312484592",
+      "value": "{\"command\":\"cd \\\"/c/Users/Ibrohim/AppData/Local/Temp/claude/a5e33a921a1bd9fd/3b49979d-f85b-4536-8ed0-d25921ab8b34/scratchpad\\\" && grep -n \\\"AI Control Center\\\" -B2 -A8 make_report.py | head -50; grep -n \\\"PHPUnit\\\\|216\\\" make_report.py | head\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T12:08:04.592Z",
+      "lastAccessed": "2026-11-10T12:08:04.592Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T12:08:04.592Z"
+    },
+    "cmd-1794312499436": {
+      "key": "cmd-1794312499436",
+      "value": "{\"command\":\"cd \\\"/c/Users/Ibrohim/AppData/Local/Temp/claude/a5e33a921a1bd9fd/3b49979d-f85b-4536-8ed0-d25921ab8b34/scratchpad\\\" && python -I - <<'EOF'\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T12:08:19.436Z",
+      "lastAccessed": "2026-11-10T12:08:19.436Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T12:08:19.436Z"
+    },
+    "cmd-1794312950299": {
+      "key": "cmd-1794312950299",
+      "value": "{\"command\":\"cd /c/Users/Ibrohim/nexio_crm_v2/backend && for f in plugins/*/Plugin.php app/Plugins/*.php; do php -l \\\"$f\\\" 2>&1 | grep -v \\\"^No syntax\\\"; done; ls plugins; sed -n 1,200p app/Plugins/PluginLoader.php; git log --oneline -8 -- plugins app/Plugins; ls storage/logs 2>/dev/null | tail -3\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T12:15:50.299Z",
+      "lastAccessed": "2026-11-10T12:15:50.299Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T12:15:50.299Z"
+    },
+    "cmd-1794312960487": {
+      "key": "cmd-1794312960487",
+      "value": "{\"command\":\"grep -n \\\"Plugin.php\\\\|plugin\\\" storage/logs/laravel.log | tail -15; sed -n 1,48p config/nexio.php; grep -rn \\\"^namespace\\\\|^use .*Providers\\\\|require\\\" plugins/*/Plugin.php | head -30; git status --short plugins; git ls-files plugins | head -40; cat ../.gitignore | head -30\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T12:16:00.487Z",
+      "lastAccessed": "2026-11-10T12:16:00.487Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T12:16:00.487Z"
+    },
+    "cmd-1794312971610": {
+      "key": "cmd-1794312971610",
+      "value": "{\"command\":\"sed -n 1,22p plugins/nexio.telephony/Plugin.php; grep -n \\\"Nexio\\\\|autoload\\\" -A4 composer.json | head -30; grep -rn \\\"plugins\\\" app/Providers/*.php bootstrap/*.php | head; grep -n \\\"require_once\\\\|^use \\\\|^namespace\\\" plugins/nexio.{inventory,uzum.delivery,yandex.delivery,ai.assistant}/Plugin.php\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T12:16:11.610Z",
+      "lastAccessed": "2026-11-10T12:16:11.610Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T12:16:11.610Z"
+    },
+    "cmd-1794312976542": {
+      "key": "cmd-1794312976542",
+      "value": "{\"command\":\"sed -n 200,300p app/Plugins/PluginLoader.php\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T12:16:16.542Z",
+      "lastAccessed": "2026-11-10T12:16:16.542Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T12:16:16.542Z"
+    },
+    "cmd-1794313025445": {
+      "key": "cmd-1794313025445",
+      "value": "{\"command\":\"php -l app/Plugins/PluginLoader.php && php artisan test --filter=\\\"Plugin|Telephony|Delivery\\\" 2>&1 | grep -o '\\\"tests\\\":[0-9]*,\\\"passed\\\":[0-9]*\\\\|\\\"test\\\":\\\"[^\\\"]*\\\"'\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T12:17:05.445Z",
+      "lastAccessed": "2026-11-10T12:17:05.445Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T12:17:05.445Z"
     }
   },
   "version": "3.0.0"
