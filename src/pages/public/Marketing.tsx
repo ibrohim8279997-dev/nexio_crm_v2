@@ -1,46 +1,97 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight, BarChart3, Building2, Check, Database, FileText, Gauge, Headphones, Lock, Network, ShieldCheck, Sparkles, Workflow, X } from 'lucide-react'
 import { Badge, Button, Card, Grid, PageHeader, SectionCard } from '../../components/ui/core'
 import { useApi } from '../../lib/hooks'
-import { money } from '../../lib/format'
 import { PublicHeader, PublicFooter } from './Landing'
 
-interface Plan { id: string; code: string; name: string; tagline: string; price_monthly: number; price_yearly: number; currency: string; seats: number; api_requests: number; ai_minutes: number; storage_gb: number; modules: string[]; features: { label: string; included: boolean }[] }
+interface Plan {
+  id: string; code: string; name: string; tagline: string; price_monthly: number; price_yearly: number; currency: string
+  seats: number; api_requests: number; ai_minutes: number; storage_gb: number; modules: string[]; features: { label: string; included: boolean }[]
+  old_price?: number | null; badge?: string | null; note?: string | null; price_from?: number | boolean; cta?: 'start' | 'contact'; cta_url?: string | null
+}
 
+const SYMBOL: Record<string, string> = { USD: '$', EUR: '€', UZS: 'сум' }
+const fmt = (n: number, cur: string) => {
+  const v = n.toLocaleString('ru-RU', { maximumFractionDigits: 2, minimumFractionDigits: Number.isInteger(n) ? 0 : 2 })
+  return `${v} ${SYMBOL[cur] ?? cur}`
+}
+
+/** All numbers, labels, badges and CTAs come from /billing/plans (the plans table); this component only lays them out. */
 export function PlanCards({ compact }: { compact?: boolean }) {
   const { data, isLoading } = useApi<{ data: Plan[] }>(['public-plans'], '/api/v1/billing/plans')
+  const [yearly, setYearly] = useState(false)
   const plans = data?.data ?? []
+  const hasDiscount = plans.some((p) => p.price_yearly > 0 && p.price_yearly < p.price_monthly * 12)
+
   return (
-    <div className="grid gap-4 lg:grid-cols-3">
-      {isLoading && Array.from({ length: 3 }).map((_, i) => <Card key={i} className="h-72 animate-pulse" />)}
-      {plans.map((p, i) => (
-        <Card key={p.id} className={`flex flex-col p-6 ${i === 1 ? 'border-primary shadow-[var(--shadow-pop)] lg:-mt-3 lg:mb-3' : ''}`}>
-          {i === 1 && <Badge tone="primary" className="mb-3 self-start">Самый популярный</Badge>}
-          <h3 className="text-[17px] font-bold text-ink">{p.name}</h3>
-          <p className="mt-1 min-h-[36px] text-[12px] leading-relaxed text-muted">{p.tagline}</p>
-          <p className="mt-4 flex items-baseline gap-1">
-            <span className="text-[32px] font-extrabold tracking-tight text-ink">{money(p.price_monthly, p.currency)}</span>
-            <span className="text-[12px] text-muted">/ мес</span>
-          </p>
-          <ul className={`mt-4 space-y-2 ${compact ? 'max-h-52 overflow-y-auto' : ''}`}>
-            {p.features.map((f) => (
-              <li key={f.label} className="flex items-start gap-2 text-[12px]">
-                {f.included ? <Check className="mt-0.5 size-3.5 shrink-0 text-success" /> : <X className="mt-0.5 size-3.5 shrink-0 text-slate-300" />}
-                <span className={f.included ? 'text-ink' : 'text-slate-400'}>{f.label}</span>
-              </li>
-            ))}
-          </ul>
-          <div className="mt-4 rounded-xl bg-bg p-3 text-[11px] text-muted">
-            <p>Пользователей: <span className="font-semibold text-ink">{p.seats}</span></p>
-            <p>API-запросов/мес: <span className="font-semibold text-ink">{p.api_requests.toLocaleString('ru-RU')}</span></p>
-            <p>AI-минут: <span className="font-semibold text-ink">{p.ai_minutes}</span></p>
-            <p>Хранилище: <span className="font-semibold text-ink">{p.storage_gb} ГБ</span></p>
-          </div>
-          <Link to="/register" className="mt-5">
-            <Button variant={i === 1 ? 'primary' : 'secondary'} className="w-full">Начать с {p.name}</Button>
-          </Link>
-        </Card>
-      ))}
+    <div className="rounded-3xl bg-gradient-to-b from-[#030712] via-[#071230] to-[#0b1d4d] p-5 sm:p-8">
+      <div className="mb-8 flex flex-col items-center gap-2">
+        <div role="tablist" aria-label="Период оплаты" className="inline-flex rounded-full border border-blue-500/30 bg-black/40 p-1">
+          {[[false, 'Помесячно'], [true, 'Годовая оплата']].map(([val, label]) => (
+            <button
+              key={String(label)} type="button" role="tab" aria-selected={yearly === val} onClick={() => setYearly(val as boolean)}
+              className={`rounded-full px-4 py-1.5 text-[12px] font-semibold transition ${yearly === val ? 'bg-blue-600 text-white shadow-[0_0_18px_rgba(37,99,235,.55)]' : 'text-sky-200/70 hover:text-white'}`}
+            >{label as string}</button>
+          ))}
+        </div>
+        {hasDiscount && <span className="text-[11px] font-medium text-sky-300">{yearly ? '2 месяца в подарок' : 'При годовой оплате — 2 месяца в подарок'}</span>}
+      </div>
+
+      <div className="grid items-center gap-4 lg:grid-cols-3">
+        {isLoading && Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-80 animate-pulse rounded-2xl bg-white/5" />)}
+        {plans.map((p) => {
+          const featured = !!p.badge
+          const perMonth = yearly && p.price_yearly > 0 ? p.price_yearly / 12 : p.price_monthly
+          const perUser = p.seats > 0 ? perMonth / p.seats : 0
+          const oldMonthly = p.old_price ? (yearly ? p.old_price * 10 / 12 : p.old_price) : null
+          const contact = p.cta === 'contact'
+          const ctaTo = p.cta_url || `/register?plan=${p.code}`
+          return (
+            <div
+              key={p.id}
+              className={`relative flex flex-col rounded-2xl border p-6 text-white ${featured
+                ? 'border-blue-400 bg-[#0a1a45] shadow-[0_0_40px_rgba(37,99,235,.35)] lg:scale-105 lg:py-8'
+                : 'border-white/10 bg-[#07102a]'}`}
+            >
+              {featured && <span className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-blue-500 px-3 py-1 text-[11px] font-bold text-white">{p.badge}</span>}
+              <h3 className="text-[17px] font-bold">{p.name}</h3>
+              <p className="mt-1 min-h-[36px] text-[12px] leading-relaxed text-sky-200/70">{p.tagline}</p>
+
+              <div className="mt-4">
+                {oldMonthly != null && <p className="text-[13px] text-sky-200/50 line-through">{fmt(oldMonthly, p.currency)}</p>}
+                <p className="flex items-baseline gap-1">
+                  {!!p.price_from && <span className="text-[12px] text-sky-200/70">от</span>}
+                  <span className="text-[34px] font-extrabold tracking-tight">{fmt(Math.round(perMonth * 100) / 100, p.currency)}</span>
+                  <span className="text-[12px] text-sky-200/70">/ мес</span>
+                </p>
+                {yearly && p.price_yearly > 0 && <p className="text-[11px] text-sky-300">{fmt(p.price_yearly, p.currency)} в год</p>}
+                <p className="mt-1 text-[11px] text-sky-200/60">≈ {fmt(Math.round(perUser * 10) / 10, p.currency)} за пользователя в месяц</p>
+                {p.note && <p className="mt-2 inline-block rounded-md border border-sky-400/30 bg-sky-400/10 px-2 py-0.5 text-[11px] font-medium text-sky-300">{p.note}</p>}
+              </div>
+
+              <ul className={`mt-5 space-y-2 ${compact ? 'max-h-52 overflow-y-auto' : ''}`}>
+                {p.features.map((f) => (
+                  <li key={f.label} className="flex items-start gap-2 text-[12px]">
+                    {f.included ? <Check className="mt-0.5 size-3.5 shrink-0 text-sky-400" /> : <X className="mt-0.5 size-3.5 shrink-0 text-slate-600" />}
+                    <span className={f.included ? 'text-slate-100' : 'text-slate-500'}>{f.included ? f.label : `Без: ${f.label.toLowerCase()}`}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="mt-5 rounded-xl border border-white/10 bg-black/30 p-3 text-[11px] text-sky-200/70">
+                <p>AI API-запросов в месяц: <span className="font-semibold text-white">{p.api_requests.toLocaleString('ru-RU')}</span></p>
+                <p>AI-телефония: <span className="font-semibold text-white">{p.ai_minutes} мин</span></p>
+                <p>Хранилище: <span className="font-semibold text-white">{p.storage_gb} ГБ</span></p>
+              </div>
+
+              {ctaTo.startsWith('http') || ctaTo.startsWith('mailto:')
+                ? <a href={ctaTo} className="mt-5"><Button variant={contact ? 'secondary' : 'primary'} className="w-full">{contact ? 'Связаться с менеджером' : 'Начать'}</Button></a>
+                : <Link to={ctaTo} className="mt-5"><Button variant={contact ? 'secondary' : 'primary'} className="w-full">{contact ? 'Связаться с менеджером' : 'Начать'}</Button></Link>}
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }

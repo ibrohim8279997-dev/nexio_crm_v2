@@ -2447,6 +2447,51 @@
       "lastAccessed": "2026-11-10T12:37:15.983Z",
       "accessCount": 0,
       "expiresAt": "2026-12-10T12:37:15.983Z"
+    },
+    "cmd-1794318595932": {
+      "key": "cmd-1794318595932",
+      "value": "{\"command\":\"head -c 3500 backend/database/schema/default_plans.json; echo; grep -n \\\"plans\\\" backend/app/Http/Controllers/Api/V1/BillingController.php | head -20; grep -rn \\\"PlanCards\\\" src | head; grep -n \\\"Schema::create('plans'\\\" -A25 backend/database/migrations/2024_01_01_000000_nexio_schema.php | head -50\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T13:49:55.932Z",
+      "lastAccessed": "2026-11-10T13:49:55.932Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T13:49:55.932Z"
+    },
+    "cmd-1794318608610": {
+      "key": "cmd-1794318608610",
+      "value": "{\"command\":\"sed -n 45,65p backend/app/Http/Controllers/Api/V1/BillingController.php; grep -n \\\"create('plans'\\\" -A22 backend/database/migrations/2024_01_01_000000_nexio_schema.php; python3 - <<'E' 2>/dev/null || python - <<'E2'\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T13:50:08.610Z",
+      "lastAccessed": "2026-11-10T13:50:08.610Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T13:50:08.610Z"
+    },
+    "cmd-1794318624722": {
+      "key": "cmd-1794318624722",
+      "value": "{\"command\":\"grep -rnoE \\\"mailto:[^'\\\\\\\"]+|t\\\\.me/[A-Za-z0-9_]+|@nexiolab\\\\.uz|[a-z]+@[a-z.]*nexio[a-z.]*\\\" src --include=*.tsx | head; grep -n \\\"plans\\\" backend/tests -r | grep -E \\\"seats|price|25|150\\\" | head; grep -rn \\\"seats.*25\\\\|= 25\\\\|150\\\" backend/tests/Feature/PluginTestCase.php | head -5\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T13:50:24.722Z",
+      "lastAccessed": "2026-11-10T13:50:24.722Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T13:50:24.722Z"
+    },
+    "cmd-1794318799416": {
+      "key": "cmd-1794318799416",
+      "value": "{\"command\":\"python - <<'E'\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T13:53:19.416Z",
+      "lastAccessed": "2026-11-10T13:53:19.416Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T13:53:19.416Z"
+    },
+    "cmd-1794318840119": {
+      "key": "cmd-1794318840119",
+      "value": "{\"command\":\"tail -c 1500 \\\"C:/Users/Ibrohim/AppData/Local/Temp/claude/a5e33a921a1bd9fd/aca2505b-5ffe-4570-987e-093ce3a3cb88/tasks/b9d3xetzs.output\\\"\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T13:54:00.119Z",
+      "lastAccessed": "2026-11-10T13:54:00.119Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T13:54:00.119Z"
     }
   },
   "version": "3.0.0"
