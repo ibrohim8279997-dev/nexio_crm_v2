@@ -6,7 +6,7 @@ import { useAuth } from '../../lib/auth'
 import { PlanCards } from './Marketing'
 import { useI18n, type Locale } from '../../lib/i18n'
 import { ThemeToggle } from '../../components/ui/ThemeToggle'
-import logoUrl from '../../assets/nexio-lab-logo.svg'
+import { NexioMark } from '../../components/ui/NexioMark'
 
 function LanguageSwitcher() {
   const { locale, setLocale, t } = useI18n()
@@ -27,7 +27,7 @@ export function PublicHeader() {
       <span className="sr-only">{t('features')}</span>
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
         <Link to="/" className="flex items-center gap-2.5">
-          <img src={logoUrl} alt="Nexio CRM" className="h-14 w-[150px] rounded-xl bg-white p-1 object-contain object-left" />
+          <NexioMark className="size-11" />
           <span>
             <span className="block text-[16px] font-extrabold leading-tight tracking-tight text-ink">Nexio CRM</span>
             <span className="block text-[10px] font-semibold uppercase tracking-wider text-muted">Nexio Lab</span>
@@ -69,7 +69,7 @@ export function PublicFooter() {
       <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:grid-cols-2 lg:grid-cols-4">
         <div>
           <div className="flex items-center gap-2.5">
-            <span className="inline-flex size-8 items-center justify-center rounded-lg bg-primary text-[13px] font-extrabold text-white">N</span>
+            <NexioMark className="size-8" />
             <span className="text-[15px] font-bold text-ink">Nexio CRM</span>
           </div>
           <p className="mt-3 text-[12px] leading-relaxed text-muted">

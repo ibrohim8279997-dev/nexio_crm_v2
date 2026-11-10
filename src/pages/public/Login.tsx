@@ -6,12 +6,12 @@ import { Input } from '../../components/ui/form'
 import { useToast } from '../../components/ui/toast'
 import { api, ApiError } from '../../lib/api'
 import { useAuth } from '../../lib/auth'
-import logoUrl from '../../assets/nexio-lab-logo.svg'
+import { NexioMark } from '../../components/ui/NexioMark'
 
 export function BrandMark({ dark }: { dark?: boolean }) {
   return (
     <Link to="/" className="flex items-center gap-2.5">
-      <img src={logoUrl} alt="Nexio Lab" className="h-14 w-[150px] rounded-xl bg-white p-1 object-contain object-left" />
+      <NexioMark className="size-11" />
       <span>
         <span className={`block text-[17px] font-extrabold leading-tight tracking-tight ${dark ? 'text-white' : 'text-ink'}`}>Nexio CRM</span>
         <span className={`block text-[10px] font-semibold uppercase tracking-wider ${dark ? 'text-blue-200' : 'text-muted'}`}>Nexio Lab</span>

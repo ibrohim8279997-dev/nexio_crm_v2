@@ -1,5 +1,6 @@
 import { Link, useParams } from 'react-router-dom'
 import { Card } from '../../components/ui/core'
+import { NexioMark } from '../../components/ui/NexioMark'
 
 type Section = { heading: string; paragraphs: string[] }
 type LegalDoc = { title: string; version: string; sections: Section[] }
@@ -63,7 +64,7 @@ export default function Legal() {
     <div className="min-h-screen bg-bg">
       <header className="border-b border-line bg-surface">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4">
-          <Link to="/" className="flex items-center gap-2"><span className="inline-flex size-8 items-center justify-center rounded-lg bg-primary text-sm font-extrabold text-white">N</span><span className="text-[15px] font-bold text-ink">Nexio CRM</span></Link>
+          <Link to="/" className="flex items-center gap-2"><NexioMark className="size-8" /><span className="text-[15px] font-bold text-ink">Nexio CRM</span></Link>
           <nav className="flex flex-wrap justify-end gap-3 text-[12px] text-muted">{Object.entries(DOCS).map(([key, value]) => <Link key={key} to={`/legal/${key}`} className="hover:text-primary">{value.title.split(' ')[0]}</Link>)}</nav>
         </div>
       </header>

@@ -9,7 +9,7 @@ import { useAuth } from '../../lib/auth'
 import { Avatar, Button, IconButton } from '../ui/core'
 import { ThemeToggle } from '../ui/ThemeToggle'
 import { useI18n } from '../../lib/i18n'
-import logoUrl from '../../assets/nexio-lab-logo.svg'
+import { NexioMark } from '../ui/NexioMark'
 
 const ICON = 'size-[18px]'
 const NAV = [
@@ -59,7 +59,7 @@ export function PlatformShell({ children }: { children: ReactNode }) {
       <aside className="sticky top-0 hidden h-screen w-[264px] shrink-0 flex-col border-r border-line bg-surface lg:flex">
         <div className="px-4 py-4">
           <div className="flex items-center gap-2.5">
-            <img src={logoUrl} alt="Nexio CRM" className="h-14 w-[150px] rounded-xl bg-white p-1 object-contain object-left" />
+            <NexioMark className="size-11" />
             <span>
               <span className="block text-[15px] font-bold leading-tight tracking-tight text-ink">Nexio Platform</span>
               <span className="block text-[10px] font-medium uppercase tracking-wider text-muted">Nexio Lab · Superadmin</span>
@@ -77,7 +77,7 @@ export function PlatformShell({ children }: { children: ReactNode }) {
           <div className="absolute inset-0 bg-ink/40" onClick={() => setOpen(false)} />
           <div className="absolute inset-y-0 left-0 flex w-[280px] flex-col border-r border-line bg-surface">
             <div className="flex items-center justify-between p-3">
-              <span className="flex items-center gap-2 font-bold text-ink"><ShieldCheck className="size-4 text-ai" /> Nexio Platform</span>
+              <span className="flex items-center gap-2 font-bold text-ink"><NexioMark className="size-8" /> Nexio Platform</span>
               <IconButton onClick={() => setOpen(false)} title={t('close')}><X className="size-4" /></IconButton>
             </div>
             <Nav onNavigate={() => setOpen(false)} />

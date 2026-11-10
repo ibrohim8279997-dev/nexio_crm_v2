@@ -14,7 +14,7 @@ import { api } from '../../lib/api'
 import { useToast } from '../ui/toast'
 import { CommandPalette } from './CommandPalette'
 import { useI18n } from '../../lib/i18n'
-import logoUrl from '../../assets/nexio-lab-logo.svg'
+import logoUrl from '../../assets/nexio-lab-mark.png'
 import { ThemeToggle } from '../ui/ThemeToggle'
 
 interface NavItem { to: string; label: string; icon: ReactNode; permission?: string }
@@ -135,7 +135,7 @@ const GROUPS: NavGroup[] = [
 function Logo({ text, logoUrl: customLogo, name }: { text?: string | null; logoUrl?: string | null; name?: string }) {
   return (
     <div className="flex items-center gap-2.5">
-      <img src={customLogo || logoUrl} alt={name ?? 'Nexio Lab'} title={text ?? undefined} className="h-14 w-[150px] rounded-xl bg-white p-1 object-contain object-left" />
+      <img src={customLogo || logoUrl} alt={name ?? 'Nexio Lab'} title={text ?? undefined} className="size-11 shrink-0 rounded-xl bg-[#fff] object-contain p-1" />
       <span className="min-w-0">
         <span className="block truncate text-[15px] font-bold leading-tight tracking-tight text-ink">{name ?? 'Nexio CRM'}</span>
         <span className="block text-[10px] font-medium uppercase tracking-wider text-muted">Nexio Lab · CRM</span>

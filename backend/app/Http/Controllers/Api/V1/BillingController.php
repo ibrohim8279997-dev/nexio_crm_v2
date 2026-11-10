@@ -131,15 +131,16 @@ class BillingController
         $price = $interval === 'year' ? $plan->price_yearly : $plan->price_monthly;
         $periodEnd = gmdate('Y-m-d H:i:s', time() + ($interval === 'year' ? 365 : 30) * 86400);
 
-        // Proration: unused part of the current period is credited, the remainder is charged.
+        // Proration: the new plan is charged in full; the unused part of a PAID current period is credited.
+        // A trial or unpaid subscription has nothing to credit, so the customer pays exactly the plan price.
         $proration = 0;
-        if ($current && $current->period_end) {
+        if ($current && $current->status === 'active' && $current->period_end && (float) $current->amount > 0) {
             $end = strtotime($current->period_end . ' UTC');
             $start = strtotime($current->period_start . ' UTC');
-            $total = max(1, $end - $start);
-            $remaining = max(0, $end - time());
-            $ratio = $remaining / $total;
-            $proration = round((($price - $current->current_price) * $ratio) * 100) / 100;
+            $span = max(1, $end - $start);
+            $remaining = max(0, min($span, $end - time()));
+            $proration = -round(((float) $current->amount * ($remaining / $span)) * 100) / 100;
+            $proration = max($proration, -$price);   // credit never exceeds the new price
         }
 
         $invoiceId = H::newId('inv');
@@ -149,9 +150,9 @@ class BillingController
             ['label' => $plan->name . ' · ' . ($interval === 'year' ? 'годовая' : 'месячная') . ' подписка', 'qty' => 1, 'amount' => $price],
         ];
         if ($proration !== 0) {
-            $lineItems[] = ['label' => 'Пропорциональный пересчёт', 'qty' => 1, 'amount' => $proration];
+            $lineItems[] = ['label' => 'Зачёт неиспользованной части текущего тарифа', 'qty' => 1, 'amount' => $proration];
         }
-        $total = round(($price + ($proration > 0 ? $proration : 0)) * 100) / 100;
+        $total = round(($price + $proration) * 100) / 100;
         $provider = $this->resolveProvider($b);
         $clickQuote = null;
         if ($provider !== 'sandbox') {

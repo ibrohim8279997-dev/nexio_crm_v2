@@ -2492,6 +2492,249 @@
       "lastAccessed": "2026-11-10T13:54:00.119Z",
       "accessCount": 0,
       "expiresAt": "2026-12-10T13:54:00.119Z"
+    },
+    "cmd-1794319090709": {
+      "key": "cmd-1794319090709",
+      "value": "{\"command\":\"cd /c/Users/Ibrohim/nexio_crm_v2/backend && sed -n 100,330p app/Http/Controllers/Api/V1/BillingController.php\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T13:58:10.709Z",
+      "lastAccessed": "2026-11-10T13:58:10.709Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T13:58:10.709Z"
+    },
+    "cmd-1794319104470": {
+      "key": "cmd-1794319104470",
+      "value": "{\"command\":\"grep -rn \\\"proration\\\\|Пропорц\\\" tests app ../src --include=*.php --include=*.tsx | grep -v \\\"^app/Http/Controllers/Api/V1/BillingController.php\\\" | head\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T13:58:24.470Z",
+      "lastAccessed": "2026-11-10T13:58:24.470Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T13:58:24.470Z"
+    },
+    "cmd-1794319120696": {
+      "key": "cmd-1794319120696",
+      "value": "{\"command\":\"cd /c/Users/Ibrohim/nexio_crm_v2 && ls public 2>/dev/null | head -20; grep -n \\\"icon\\\\|favicon\\\\|<title\\\" index.html; grep -rniE \\\"logo|Zap|brand\\\" src --include=*.tsx -l | head -20; grep -rn \\\"dark\\\" src/index.css src/styles 2>/dev/null | head -20; grep -rln \\\"dark\\\" src --include=*.css --include=*.tsx | head; python - <<'E'\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T13:58:40.696Z",
+      "lastAccessed": "2026-11-10T13:58:40.696Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T13:58:40.696Z"
+    },
+    "cmd-1794319130065": {
+      "key": "cmd-1794319130065",
+      "value": "{\"command\":\"grep -rnE \\\"Nexio|Zap|Sparkles.*brand|bg-primary.*font-(black|extrabold)\\\" src --include=*.tsx | grep -E \\\"size-|rounded.*(bg-primary|gradient)|<span.*Nexio|Logo|Brand\\\" | head -30; sed -n 55,140p src/styles/index.css\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T13:58:50.065Z",
+      "lastAccessed": "2026-11-10T13:58:50.065Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T13:58:50.065Z"
+    },
+    "cmd-1794319134069": {
+      "key": "cmd-1794319134069",
+      "value": "{\"command\":\"grep -rn \\\"logoUrl\\\\|logo\\\\.\\\" src --include=*.tsx --include=*.ts | head; ls src/assets 2>/dev/null; sed -n 25,36p src/pages/public/Landing.tsx; sed -n 66,76p src/pages/public/Landing.tsx; sed -n 8,22p src/pages/public/Login.tsx; sed -n 130,145p src/components/layout/AppShell.tsx; sed -n 212,222p src/components/layout/AppShell.tsx; sed -n 58,68p src/components/layout/PlatformShell.tsx; sed -n 76,82p src/components/layout/PlatformShell.tsx\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T13:58:54.069Z",
+      "lastAccessed": "2026-11-10T13:58:54.069Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T13:58:54.069Z"
+    },
+    "cmd-1794319150455": {
+      "key": "cmd-1794319150455",
+      "value": "{\"command\":\"python - <<'E'\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T13:59:10.455Z",
+      "lastAccessed": "2026-11-10T13:59:10.455Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T13:59:10.455Z"
+    },
+    "cmd-1794319160290": {
+      "key": "cmd-1794319160290",
+      "value": "{\"command\":\"python - <<'E'\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T13:59:20.290Z",
+      "lastAccessed": "2026-11-10T13:59:20.290Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T13:59:20.290Z"
+    },
+    "cmd-1794319174686": {
+      "key": "cmd-1794319174686",
+      "value": "{\"command\":\"python - <<'E'\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T13:59:34.686Z",
+      "lastAccessed": "2026-11-10T13:59:34.686Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T13:59:34.686Z"
+    },
+    "cmd-1794319183194": {
+      "key": "cmd-1794319183194",
+      "value": "{\"command\":\"python - <<'E'\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T13:59:43.194Z",
+      "lastAccessed": "2026-11-10T13:59:43.194Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T13:59:43.194Z"
+    },
+    "cmd-1794319193372": {
+      "key": "cmd-1794319193372",
+      "value": "{\"command\":\"grep -n \\\"color-scheme\\\" src/styles/index.css src/lib/theme.tsx index.html; grep -rhoE \\\"(hover|focus|disabled|data-\\\\[[a-z=-]+\\\\]|odd|even):(bg|border|text)-[a-z]+-?[0-9]*\\\" src --include=*.tsx | sort | uniq -c | sort -rn | head -20; grep -rhoE \\\"style=\\\\{\\\\{[^}]*#[0-9a-fA-F]{3,6}[^}]*\\\\}\\\\}|bg-\\\\[#[0-9a-fA-F]+\\\\]|text-\\\\[#[0-9a-fA-F]+\\\\]\\\" src --include=*.tsx | sort | uniq -c | sort -rn | head\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T13:59:53.372Z",
+      "lastAccessed": "2026-11-10T13:59:53.372Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T13:59:53.372Z"
+    },
+    "cmd-1794319231833": {
+      "key": "cmd-1794319231833",
+      "value": "{\"command\":\"npm run build 2>&1 | grep -iE \\\"error|TS[0-9]+|built in\\\" | head\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T14:00:31.833Z",
+      "lastAccessed": "2026-11-10T14:00:31.833Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T14:00:31.833Z"
+    },
+    "cmd-1794319236239": {
+      "key": "cmd-1794319236239",
+      "value": "{\"command\":\"grep -rn \\\"\\\\*.svg\\\" src --include=*.d.ts\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T14:00:36.239Z",
+      "lastAccessed": "2026-11-10T14:00:36.239Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T14:00:36.239Z"
+    },
+    "cmd-1794321304192": {
+      "key": "cmd-1794321304192",
+      "value": "{\"command\":\"npm run build 2>&1 | grep -iE \\\"error|TS[0-9]+|built in\\\" | head; cd backend && php artisan test --filter='PaymeBilling|ProductionFixes|Billing|Plugin' 2>&1 | tail -6\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T14:35:04.192Z",
+      "lastAccessed": "2026-11-10T14:35:04.192Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T14:35:04.192Z"
+    },
+    "cmd-1794321441975": {
+      "key": "cmd-1794321441975",
+      "value": "{\"command\":\"cd /c/Users/Ibrohim/nexio_crm_v2 && grep -rliE \\\"telephony|extension|sip\\\" backend/app backend/routes backend/database/migrations src --include=*.php --include=*.tsx | head -30; grep -n \\\"interface TelephonyProvider\\\" -A30 -r backend/app | head -50\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T14:37:21.975Z",
+      "lastAccessed": "2026-11-10T14:37:21.975Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T14:37:21.975Z"
+    },
+    "cmd-1794321448504": {
+      "key": "cmd-1794321448504",
+      "value": "{\"command\":\"grep -niE \\\"telephony|extension|sip|call\\\" backend/app/Http/Controllers/Api/V1/CrmExtrasController.php | head -30; grep -n \\\"call\\\" backend/routes/api_v1.php | head -20; grep -niE \\\"call|phone|telephony\\\" src/pages/app/Communications.tsx | head -20; grep -n \\\"create('calls'\\\\|create('ai_calls'\\\\|create('call_logs'\\\\|create('members'\\\" -A18 backend/database/migrations/*.php | head -70\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T14:37:28.504Z",
+      "lastAccessed": "2026-11-10T14:37:28.504Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T14:37:28.504Z"
+    },
+    "cmd-1794321461066": {
+      "key": "cmd-1794321461066",
+      "value": "{\"command\":\"ls plugins backend/plugins 2>/dev/null | head; find . -path ./node_modules -prune -o -path ./backend/vendor -prune -o -ipath \\\"*telephony*\\\" -print | grep -v \\\"\\\\.git/\\\" | head -20; sed -n 15,60p backend/database/migrations/2026_01_15_000100_official_plugins.php\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T14:37:41.066Z",
+      "lastAccessed": "2026-11-10T14:37:41.066Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T14:37:41.066Z"
+    },
+    "cmd-1794321466538": {
+      "key": "cmd-1794321466538",
+      "value": "{\"command\":\"cd /c/Users/Ibrohim/nexio_crm_v2/backend/plugins/nexio.telephony && ls -R . | head -30; wc -l Plugin.php; grep -n \\\"telephony_numbers\\\\|telephony_calls\\\" -r . ../../database/schema 2>/dev/null | head -20; cat manifest.json | head -60\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T14:37:46.538Z",
+      "lastAccessed": "2026-11-10T14:37:46.538Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T14:37:46.538Z"
+    },
+    "cmd-1794321471755": {
+      "key": "cmd-1794321471755",
+      "value": "{\"command\":\"cd /c/Users/Ibrohim/nexio_crm_v2/backend && sed -n 14,60p database/schema/0003_official_plugins.sql; sed -n 85,200p plugins/nexio.telephony/Plugin.php; sed -n 320,370p plugins/nexio.telephony/Plugin.php\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T14:37:51.755Z",
+      "lastAccessed": "2026-11-10T14:37:51.755Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T14:37:51.755Z"
+    },
+    "cmd-1794321484079": {
+      "key": "cmd-1794321484079",
+      "value": "{\"command\":\"sed -n 1,30p app/Http/Controllers/Api/V1/PluginOperationsController.php; grep -n \\\"userId\\\\|public function can\\\\|function hasPermission\\\\|function requirePermission\\\" app/Support/Ctx.php app/Support/H.php | head; grep -rhoE \\\"'(integrations|settings|team|telephony|calls)\\\\.[a-z_]+'\\\" app/Support app/Http/Controllers | sort | uniq -c | head -20; grep -n \\\"create('users'\\\\|CREATE TABLE users\\\\|CREATE TABLE memberships\\\" -A8 database/schema/*.sql | head -30\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T14:38:04.079Z",
+      "lastAccessed": "2026-11-10T14:38:04.079Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T14:38:04.079Z"
+    },
+    "cmd-1794321487588": {
+      "key": "cmd-1794321487588",
+      "value": "{\"command\":\"sed -n 195,215p app/Support/H.php; grep -n \\\"public\\\" app/Support/Ctx.php | head -20; grep -n \\\"memberRef\\\" -A12 app/Support/H.php | head -25; grep -n \\\"telephony\\\" routes/api_v1.php; grep -rn \\\"telephony\\\" tests -l | head\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T14:38:07.588Z",
+      "lastAccessed": "2026-11-10T14:38:07.588Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T14:38:07.588Z"
+    },
+    "cmd-1794321537508": {
+      "key": "cmd-1794321537508",
+      "value": "{\"command\":\"sed -n 100,150p tests/Feature/PluginTestCase.php; grep -rn \\\"'sales_manager'\\\\|'sales_rep'\\\\|'sales'\\\" app/Support/Rbac.php | head -5\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T14:38:57.508Z",
+      "lastAccessed": "2026-11-10T14:38:57.508Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T14:38:57.508Z"
+    },
+    "cmd-1794321559115": {
+      "key": "cmd-1794321559115",
+      "value": "{\"command\":\"php artisan test --filter='TelephonyUserLines' 2>&1 | head -c 2500\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T14:39:19.115Z",
+      "lastAccessed": "2026-11-10T14:39:19.115Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T14:39:19.115Z"
+    },
+    "cmd-1794321565458": {
+      "key": "cmd-1794321565458",
+      "value": "{\"command\":\"cd /c/Users/Ibrohim/nexio_crm_v2 && grep -n \\\"telephony\\\\|numbers\\\\|Numbers\\\" src/pages/app/PluginWorkspace.tsx | cut -c1-220 | head -20; wc -l src/pages/app/PluginWorkspace.tsx; grep -n \\\"api/v1/team\\\\|/team\\\" src/pages/app/Team.tsx | head -3; grep -n \\\"export function useApi\\\\|export function useMutation\\\\|export function useSend\\\\|export\\\" src/lib/hooks.ts* | head\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T14:39:25.458Z",
+      "lastAccessed": "2026-11-10T14:39:25.458Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T14:39:25.458Z"
+    },
+    "cmd-1794321570513": {
+      "key": "cmd-1794321570513",
+      "value": "{\"command\":\"grep -n \\\"TeamResponse\\\" -B1 -A3 src/pages/app/Team.tsx | head -14\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T14:39:30.513Z",
+      "lastAccessed": "2026-11-10T14:39:30.513Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T14:39:30.513Z"
+    },
+    "cmd-1794321579214": {
+      "key": "cmd-1794321579214",
+      "value": "{\"command\":\"grep -n \\\"export function useCan\\\" -A6 src/lib/auth.tsx; grep -n \\\"useCan(\\\" src/pages/app/Team.tsx | head -2\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T14:39:39.214Z",
+      "lastAccessed": "2026-11-10T14:39:39.214Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T14:39:39.214Z"
+    },
+    "cmd-1794321610158": {
+      "key": "cmd-1794321610158",
+      "value": "{\"command\":\"python - <<'E'\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T14:40:10.158Z",
+      "lastAccessed": "2026-11-10T14:40:10.158Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T14:40:10.158Z"
+    },
+    "cmd-1794321671672": {
+      "key": "cmd-1794321671672",
+      "value": "{\"command\":\"sed -i \\\"s/success: 'Raqam qo‘shildi', onSuccess: () => setPhone('')/success: 'Raqam qo‘shildi', onDone: () => setPhone('')/\\\" src/pages/app/PluginWorkspace.tsx && npm run build 2>&1 | grep -iE \\\"error|TS[0-9]+|built in\\\"\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T14:41:11.672Z",
+      "lastAccessed": "2026-11-10T14:41:11.672Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T14:41:11.672Z"
     }
   },
   "version": "3.0.0"

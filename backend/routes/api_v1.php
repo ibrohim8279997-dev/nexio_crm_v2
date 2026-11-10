@@ -366,6 +366,8 @@ Route::prefix('v1')->group(function () use ($h) {
     Route::get('/telephony/provider', $h(PluginOperationsController::class, 'telephonyProvider'));
     Route::get('/telephony/numbers', $h(PluginOperationsController::class, 'telephonyNumbers'));
     Route::post('/telephony/numbers/sync', $h(PluginOperationsController::class, 'telephonySyncNumbers'));
+    Route::post('/telephony/numbers', $h(PluginOperationsController::class, 'telephonyCreateNumber'));
+    Route::patch('/telephony/numbers/{id}', $h(PluginOperationsController::class, 'telephonyAssignNumber'));
     Route::get('/telephony/calls', $h(PluginOperationsController::class, 'telephonyCalls'));
     Route::post('/telephony/calls', $h(PluginOperationsController::class, 'telephonyPlaceCall'));
     Route::get('/telephony/calls/{id}', $h(PluginOperationsController::class, 'telephonyCall'));
