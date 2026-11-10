@@ -26,7 +26,8 @@ class ApiContext
 
         // CSRF: browsers send Origin on cross-site mutations. Reject origins other than the API
         // itself and the frontend origins allowed in config/cors.php.
-        if ($isMutation) {
+        // api/public/* is the embeddable lead form: it is cross-origin by design and does its own per-form origin allowlist.
+        if ($isMutation && !str_starts_with($request->path(), 'api/public/')) {
             $origin = $request->header('Origin');
             $allowed = array_merge([rtrim($request->getSchemeAndHttpHost(), '/')], (array) config('cors.allowed_origins', []));
             if ($origin && !in_array(rtrim($origin, '/'), $allowed, true)) {

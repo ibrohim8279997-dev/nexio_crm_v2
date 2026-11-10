@@ -44,6 +44,35 @@ A queue worker (`php artisan queue:work`) must run if the queue connection is no
 - Audit trail: `audit_logs`; AI blocks appear as `ai.call_blocked`, `ai.call_blocked_budget`, `ai.order_blocked`.
 - Logs: `backend/storage/logs/`.
 
+## Health, alerts, backup (runbook)
+
+- `GET /api/v1/platform/health` (platform admin; 503 when degraded) checks: database latency, scheduler heartbeat (stale > 5 min = cron not running), queue backlog / failed jobs, dead webhooks (24 h), free disk, last backup age (> 36 h = failed).
+- `php artisan nexio:health:alert` (every 5 min via scheduler) logs `critical` and POSTs `{"text": "..."}` to `ALERT_WEBHOOK_URL` (https only) once per incident, plus one "recovered" notice.
+- **Backup**: `php artisan nexio:backup` (daily 02:00) writes `storage/app/backups/nexio-<UTC>.{sql|sqlite}.gz` (pg_dump / mysqldump / file copy), keeps the newest 14 and records `last.json`. Needs `pg_dump` (or `mysqldump`) on the server PATH. Copy the folder off-server (rsync/S3) — a backup on the same disk is not a disaster-recovery plan.
+- **Restore (PostgreSQL)**: put the app in maintenance (`php artisan down`), then `gunzip -c nexio-XXXX.sql.gz | psql -h HOST -U USER DBNAME`, `php artisan migrate --force`, `php artisan up`. Rehearse on a staging DB first.
+- **Sentry**: set `SENTRY_LARAVEL_DSN` (and optionally `SENTRY_TRACES_SAMPLE_RATE`); unset = disabled.
+
+## Redis, Horizon, S3 (optional, env-driven)
+
+Defaults stay `database` queue/cache and local files. To switch:
+
+| Goal | Env |
+|------|-----|
+| Redis cache + queue | `CACHE_STORE=redis`, `QUEUE_CONNECTION=redis`, `REDIS_HOST`, `REDIS_PASSWORD` (client: predis, no PHP extension needed) |
+| Horizon supervisor | run `php artisan horizon` instead of `queue:work` (needs `ext-pcntl`, Linux); dashboard at `/horizon` is gated by `HORIZON_ALLOWED_EMAILS` and the CRM uses its own sessions, so rely on `php artisan horizon:status` / metrics unless you add an auth bridge |
+| S3 attachments | `ATTACHMENTS_DISK=s3`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_DEFAULT_REGION`, `AWS_BUCKET` (+ `AWS_ENDPOINT`, `AWS_USE_PATH_STYLE_ENDPOINT=true` for MinIO/R2). Only new uploads move; each row stores its `disk`, old files stay readable. |
+
+## Docker and CI
+
+- `docker compose up --build` starts Postgres 16, Redis 7, the API (`backend/Dockerfile`: php-fpm + nginx + queue worker + scheduler under supervisord, migrates on start) and the SPA (`Dockerfile`: Vite build behind nginx, `/api` proxied). Put secrets in an untracked `.env.docker`. The Docker files are not exercised by the current production deploy (`deploy.sh` on CloudPanel).
+- `.github/workflows/ci.yml`: backend `php artisan test` + `nexio:openapi --check`, frontend build + Vitest, Playwright smoke, and image builds.
+
+## Integrations surface
+
+- **OpenAPI 3.1** `docs/openapi.json` and Postman collection `docs/nexio.postman_collection.json` are generated from the route table: `php artisan nexio:openapi` (CI fails when stale). Request/response bodies are described generically.
+- **OAuth2 client_credentials**: `POST /api/oauth/token` with `grant_type=client_credentials`, `client_id` = API key id, `client_secret` = the key token (body or HTTP Basic), optional narrower `scope`. Returns a 1 h Bearer token usable like an API key; revoking the key revokes its tokens. Authorization-code flow for third-party apps is not implemented.
+- **Lead-capture widget**: create a form via `POST /api/v1/lead-forms` `{name, allowed_origins:["https://site.uz"]}`, then embed `<script src="https://API_HOST/nexio-widget.js" data-key="lfk_…" async></script>` (optional `data-lang="uz|ru|en"`, mount point `<div id="nexio-form">`). Public endpoint is origin-allowlisted, 5 submissions/min/IP, honeypot-protected; leads get `source = web_form`. There is no admin UI yet — manage forms through the API.
+
 ## Tests before release
 
 ```bash

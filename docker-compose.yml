@@ -1,0 +1,50 @@
+# Local / staging stack: docker compose up --build
+# Copy .env values you need into a `.env.docker` file (see docs/OPERATIONS.md) — never commit secrets.
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: nexio
+      POSTGRES_USER: nexio
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-nexio_dev_only}
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nexio -d nexio"]
+      interval: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes: [redisdata:/data]
+
+  api:
+    build: ./backend
+    env_file:
+      - path: .env.docker
+        required: false
+    environment:
+      APP_ENV: production
+      DB_CONNECTION: pgsql
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: nexio
+      DB_USERNAME: nexio
+      DB_PASSWORD: ${DB_PASSWORD:-nexio_dev_only}
+      CACHE_STORE: redis
+      QUEUE_CONNECTION: redis
+      REDIS_HOST: redis
+    depends_on:
+      db: { condition: service_healthy }
+      redis: { condition: service_started }
+    volumes: [apistorage:/var/www/html/storage]
+
+  web:
+    build: .
+    ports: ["8080:80"]
+    depends_on: [api]
+
+volumes:
+  pgdata:
+  redisdata:
+  apistorage:

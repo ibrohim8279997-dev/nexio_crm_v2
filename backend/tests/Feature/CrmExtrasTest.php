@@ -69,6 +69,29 @@ class CrmExtrasTest extends PluginTestCase
     }
 
     // ── attachments ──────────────────────────────────────────────────────────────────
+    public function test_new_uploads_go_to_the_configured_disk_while_old_files_stay_readable(): void
+    {
+        Storage::fake('local');
+        Storage::fake('s3');
+        $cid = $this->contact();
+        $up = fn () => $this->actingAsAlpha()->post('/api/v1/attachments', [
+            'entity_type' => 'contact', 'entity_id' => $cid, 'file' => UploadedFile::fake()->createWithContent('a.pdf', '%PDF-1.4 x'),
+        ], ['Accept' => 'application/json'])->assertStatus(201)->json('id');
+
+        $old = $up();                                         // default disk
+        config(['filesystems.attachments_disk' => 's3']);
+        $new = $up();                                         // after switching to S3
+
+        $this->assertSame('local', DB::table('attachments')->where('id', $old)->value('disk'));
+        $this->assertSame('s3', DB::table('attachments')->where('id', $new)->value('disk'));
+        Storage::disk('s3')->assertExists("tenants/tnt_a/attachments/{$new}");
+        Storage::disk('local')->assertExists("tenants/tnt_a/attachments/{$old}");
+        $this->actingAsAlpha()->get("/api/v1/attachments/{$old}/download")->assertStatus(200);
+        $this->actingAsAlpha()->get("/api/v1/attachments/{$new}/download")->assertStatus(200);
+        $this->actingAsAlpha()->deleteJson("/api/v1/attachments/{$new}")->assertOk();
+        Storage::disk('s3')->assertMissing("tenants/tnt_a/attachments/{$new}");
+    }
+
     public function test_attachments_upload_download_and_isolation(): void
     {
         Storage::fake('local');

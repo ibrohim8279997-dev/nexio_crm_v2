@@ -1,0 +1,17 @@
+node_modules
+dist
+.git
+.claude
+.claude-flow
+.swarm
+.wrangler
+.env
+.env.*
+!.env.example
+backend/vendor
+backend/storage/logs
+backend/storage/app/backups
+backend/.env
+*.log
+test-results
+playwright-report

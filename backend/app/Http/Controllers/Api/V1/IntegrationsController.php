@@ -26,7 +26,7 @@ class IntegrationsController
     public function listKeys(Ctx $ctx)
     {
         $this->guard($ctx, false);
-        $rows = DB::table('api_keys')->where('tenant_id', $ctx->tenantId)->orderByDesc('created_at')->get(['id', 'name', 'prefix', 'scopes', 'last_used_at', 'expires_at', 'revoked_at', 'created_at']);
+        $rows = DB::table('api_keys')->where('tenant_id', $ctx->tenantId)->whereNull('parent_id')->orderByDesc('created_at')->get(['id', 'name', 'prefix', 'scopes', 'last_used_at', 'expires_at', 'revoked_at', 'created_at']);
         return H::json(['data' => $rows->map(fn ($k) => [...(array) $k, 'scopes' => H::parseJson($k->scopes, []),
             'status' => $k->revoked_at ? 'revoked' : ($k->expires_at && $k->expires_at < H::now() ? 'expired' : 'active')])->all(), 'available_scopes' => self::KEY_SCOPES]);
     }
@@ -43,7 +43,7 @@ class IntegrationsController
         foreach ($scopes as $s) H::requirePermission($ctx, $s);
         $days = isset($b['expires_in_days']) && $b['expires_in_days'] !== '' ? (int) H::num($b['expires_in_days'], 'expires_in_days') : null;
         if ($days !== null && ($days < 1 || $days > 730)) throw new ApiException(400, 'Срок действия: от 1 до 730 дней', 'bad_request');
-        if (DB::table('api_keys')->where('tenant_id', $ctx->tenantId)->whereNull('revoked_at')->count() >= 25) throw new ApiException(402, 'Достигнут лимит активных ключей (25)', 'quota_exceeded');
+        if (DB::table('api_keys')->where('tenant_id', $ctx->tenantId)->whereNull('parent_id')->whereNull('revoked_at')->count() >= 25) throw new ApiException(402, 'Достигнут лимит активных ключей (25)', 'quota_exceeded');
 
         $token = 'nxk_' . bin2hex(random_bytes(24));
         $id = H::newId('key');
@@ -61,6 +61,8 @@ class IntegrationsController
         $this->guard($ctx, true);
         $n = DB::table('api_keys')->where('id', $ctx->params['id'])->where('tenant_id', $ctx->tenantId)->whereNull('revoked_at')->update(['revoked_at' => H::now()]);
         if (!$n) throw new ApiException(404, 'Ключ не найден', 'not_found');
+        // OAuth2 access tokens minted from this key die with it.
+        DB::table('api_keys')->where('parent_id', $ctx->params['id'])->where('tenant_id', $ctx->tenantId)->whereNull('revoked_at')->update(['revoked_at' => H::now()]);
         H::audit($ctx, 'api_key.revoked', 'api_key', (string) $ctx->params['id']);
         return H::json(['ok' => true]);
     }

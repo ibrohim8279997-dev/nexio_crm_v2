@@ -2312,6 +2312,141 @@
       "lastAccessed": "2026-11-10T12:17:05.445Z",
       "accessCount": 0,
       "expiresAt": "2026-12-10T12:17:05.445Z"
+    },
+    "cmd-1794313113861": {
+      "key": "cmd-1794313113861",
+      "value": "{\"command\":\"grep -n \\\"api_keys\\\\|ApiKey\\\\|nxk_\\\\|Bearer\\\" -r app --include=*.php | head -20; grep -n \\\"leads\\\" routes/api_v1.php | head; grep -n \\\"function createLead\\\" -A40 app/Http/Controllers/Api/V1/CrmController.php | head -70; ls app/Console/Commands 2>/dev/null; sed -n 1,40p routes/api_v1.php\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T12:18:33.861Z",
+      "lastAccessed": "2026-11-10T12:18:33.861Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T12:18:33.861Z"
+    },
+    "cmd-1794313119140": {
+      "key": "cmd-1794313119140",
+      "value": "{\"command\":\"cd /c/Users/Ibrohim/nexio_crm_v2 && ls -a\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T12:18:39.140Z",
+      "lastAccessed": "2026-11-10T12:18:39.140Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T12:18:39.140Z"
+    },
+    "cmd-1794313436737": {
+      "key": "cmd-1794313436737",
+      "value": "{\"command\":\"cd /c/Users/Ibrohim/nexio_crm_v2/backend && php artisan test --filter=PlatformOpsTest 2>&1 | head -c 4000\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T12:23:56.737Z",
+      "lastAccessed": "2026-11-10T12:23:56.737Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T12:23:56.737Z"
+    },
+    "cmd-1794313476650": {
+      "key": "cmd-1794313476650",
+      "value": "{\"command\":\"php artisan test --filter=PlatformOpsTest 2>&1 | head -c 1500\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T12:24:36.650Z",
+      "lastAccessed": "2026-11-10T12:24:36.650Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T12:24:36.650Z"
+    },
+    "cmd-1794313489518": {
+      "key": "cmd-1794313489518",
+      "value": "{\"command\":\"php artisan nexio:openapi && php artisan nexio:openapi --check && php artisan nexio:backup; php artisan list nexio 2>&1 | grep nexio; git check-ignore storage/app/backups/x.gz && echo ignored; ls -la ../docs | grep -i \\\"openapi\\\\|postman\\\"\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T12:24:49.518Z",
+      "lastAccessed": "2026-11-10T12:24:49.518Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T12:24:49.518Z"
+    },
+    "cmd-1794313569608": {
+      "key": "cmd-1794313569608",
+      "value": "{\"command\":\"composer require predis/predis league/flysystem-aws-s3-v3 sentry/sentry-laravel laravel/horizon --dry-run --no-interaction --ignore-platform-req=ext-pcntl --ignore-platform-req=ext-posix 2>&1 | tail -25\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T12:26:09.608Z",
+      "lastAccessed": "2026-11-10T12:26:09.608Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T12:26:09.608Z"
+    },
+    "cmd-1794313859489": {
+      "key": "cmd-1794313859489",
+      "value": "{\"command\":\"composer require predis/predis league/flysystem-aws-s3-v3 sentry/sentry-laravel laravel/horizon --no-interaction --ignore-platform-req=ext-pcntl --ignore-platform-req=ext-posix 2>&1 | tail -12; git status --short composer.json composer.lock config bootstrap app/Providers; ls config\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T12:30:59.489Z",
+      "lastAccessed": "2026-11-10T12:30:59.489Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T12:30:59.489Z"
+    },
+    "cmd-1794313873883": {
+      "key": "cmd-1794313873883",
+      "value": "{\"command\":\"php artisan horizon:install 2>&1 | tail -5; cat bootstrap/providers.php; grep -n \\\"'redis'\\\" -A12 config/database.php | head -30; grep -n \\\"'s3'\\\" -A10 config/filesystems.php\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T12:31:13.883Z",
+      "lastAccessed": "2026-11-10T12:31:13.883Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T12:31:13.883Z"
+    },
+    "cmd-1794314044950": {
+      "key": "cmd-1794314044950",
+      "value": "{\"command\":\"php artisan test 2>&1 | grep -o '\\\"tests\\\":[0-9]*,\\\"passed\\\":[0-9]*\\\\|\\\"test\\\":\\\"[^\\\"]*\\\"\\\\|\\\"message\\\":\\\"[^\\\"]\\\\{0,160\\\\}' | head -30\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T12:34:04.950Z",
+      "lastAccessed": "2026-11-10T12:34:04.950Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T12:34:04.950Z"
+    },
+    "cmd-1794314072897": {
+      "key": "cmd-1794314072897",
+      "value": "{\"command\":\"php artisan test --filter=\\\"PlatformOpsTest|CrmExtrasTest|AiVoiceWebhookTest|IntegrationsTest\\\" 2>&1 | head -c 800; php artisan nexio:openapi --check\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T12:34:32.897Z",
+      "lastAccessed": "2026-11-10T12:34:32.897Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T12:34:32.897Z"
+    },
+    "cmd-1794314169853": {
+      "key": "cmd-1794314169853",
+      "value": "{\"command\":\"docker --version 2>&1 | head -1; cd /c/Users/Ibrohim/nexio_crm_v2 && npm run build 2>&1 | tail -4\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T12:36:09.853Z",
+      "lastAccessed": "2026-11-10T12:36:09.853Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T12:36:09.853Z"
+    },
+    "cmd-1794314180650": {
+      "key": "cmd-1794314180650",
+      "value": "{\"command\":\"cd \\\"/c/Users/Ibrohim/AppData/Local/Temp/claude/a5e33a921a1bd9fd/3b49979d-f85b-4536-8ed0-d25921ab8b34/scratchpad\\\" && grep -n \\\"'Yo'q'\\\\|\\\\\\\"Yo'q\\\\\\\"\\\" make_report.py | cut -c1-230\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T12:36:20.650Z",
+      "lastAccessed": "2026-11-10T12:36:20.650Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T12:36:20.650Z"
+    },
+    "cmd-1794314207546": {
+      "key": "cmd-1794314207546",
+      "value": "{\"command\":\"cd \\\"/c/Users/Ibrohim/AppData/Local/Temp/claude/a5e33a921a1bd9fd/3b49979d-f85b-4536-8ed0-d25921ab8b34/scratchpad\\\" && python -I - <<'PYEOF'\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T12:36:47.546Z",
+      "lastAccessed": "2026-11-10T12:36:47.546Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T12:36:47.546Z"
+    },
+    "cmd-1794314224637": {
+      "key": "cmd-1794314224637",
+      "value": "{\"command\":\"cd \\\"/c/Users/Ibrohim/AppData/Local/Temp/claude/a5e33a921a1bd9fd/3b49979d-f85b-4536-8ed0-d25921ab8b34/scratchpad\\\" && sed -i 's/220 ta PHPUnit/229 ta PHPUnit/g; s/PHPUnit 220 ta/PHPUnit 229 ta/g' make_report.py && python -I make_report.py /c/Users/Ibrohim/nexio_crm_v2/docs/Nexio_CRM_TZ_Solishtirma.pdf && cd /c/Users/Ibrohim/nexio_crm_v2 && git status --short | grep -v \\\"^ m\\\\|claude\\\\|swarm\\\"\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T12:37:04.637Z",
+      "lastAccessed": "2026-11-10T12:37:04.637Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T12:37:04.637Z"
+    },
+    "cmd-1794314235983": {
+      "key": "cmd-1794314235983",
+      "value": "{\"command\":\"git log --oneline -3 && git show --stat HEAD | head -20\",\"exitCode\":0,\"success\":true}",
+      "namespace": "commands",
+      "storedAt": "2026-11-10T12:37:15.983Z",
+      "lastAccessed": "2026-11-10T12:37:15.983Z",
+      "accessCount": 0,
+      "expiresAt": "2026-12-10T12:37:15.983Z"
     }
   },
   "version": "3.0.0"

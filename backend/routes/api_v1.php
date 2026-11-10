@@ -186,6 +186,10 @@ Route::prefix('v1')->group(function () use ($h) {
     Route::get('/api-keys', $h(IntegrationsController::class, 'listKeys'));
     Route::post('/api-keys', $h(IntegrationsController::class, 'createKey'));
     Route::delete('/api-keys/{id}', $h(IntegrationsController::class, 'revokeKey'));
+    Route::get('/lead-forms', $h(\App\Http\Controllers\Api\V1\LeadFormController::class, 'list'));
+    Route::post('/lead-forms', $h(\App\Http\Controllers\Api\V1\LeadFormController::class, 'create'));
+    Route::patch('/lead-forms/{id}', $h(\App\Http\Controllers\Api\V1\LeadFormController::class, 'update'));
+    Route::delete('/lead-forms/{id}', $h(\App\Http\Controllers\Api\V1\LeadFormController::class, 'delete'));
     Route::get('/webhooks', $h(IntegrationsController::class, 'listWebhooks'));
     Route::post('/webhooks', $h(IntegrationsController::class, 'createWebhook'));
     Route::post('/webhooks/deliveries/{id}/replay', $h(IntegrationsController::class, 'replay'));
@@ -279,6 +283,7 @@ Route::prefix('v1')->group(function () use ($h) {
 
     // ── Nexio Lab platform ─────────────────────────────────────────────────
     Route::get('/platform/overview', $h(PlatformController::class, 'overview'));
+    Route::get('/platform/health', $h(\App\Http\Controllers\Api\V1\PlatformHealthController::class, 'show'));
     Route::get('/platform/tenants', $h(PlatformController::class, 'tenants'));
     Route::get('/platform/tenants/{id}', $h(PlatformController::class, 'tenantDetail'));
     Route::post('/platform/tenants/{id}/status', $h(PlatformController::class, 'setTenantStatus'));

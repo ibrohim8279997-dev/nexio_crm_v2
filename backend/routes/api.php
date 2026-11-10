@@ -15,6 +15,10 @@ Route::get('/health', function () {
 Route::post('/webhooks/click', [ClickWebhookController::class, 'handle']);
 Route::post('/webhooks/payme', [\App\Http\Controllers\PaymeWebhookController::class, 'handle']);
 Route::post('/webhooks/ai-voice', [\App\Http\Controllers\AiVoiceWebhookController::class, 'handle']);
+Route::post('/oauth/token', [\App\Http\Controllers\OAuthController::class, 'token']);
+Route::get('/public/forms/{key}', [\App\Http\Controllers\Api\V1\LeadFormController::class, 'publicConfig']);
+Route::post('/public/forms/{key}/submit', [\App\Http\Controllers\Api\V1\LeadFormController::class, 'submit']);
+Route::options('/public/forms/{key}/submit', [\App\Http\Controllers\Api\V1\LeadFormController::class, 'preflight']);
 Route::post('/webhooks/telegram', [TelegramWebhookController::class, 'handle']);
 
 require __DIR__.'/api_v1.php';

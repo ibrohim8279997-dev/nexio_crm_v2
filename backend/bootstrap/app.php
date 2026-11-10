@@ -27,6 +27,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->redirectGuestsTo(fn () => null);
     })
     ->withExceptions(function (Exceptions $exceptions) {
+        // Error tracking: a no-op unless SENTRY_LARAVEL_DSN is set.
+        if (class_exists(\Sentry\Laravel\Integration::class)) {
+            \Sentry\Laravel\Integration::handles($exceptions);
+        }
+
         $exceptions->render(function (ApiException $e, $request) {
             $payload = ['code' => $e->errorCode, 'message' => $e->getMessage()];
             if ($e->details !== null) $payload['details'] = $e->details;

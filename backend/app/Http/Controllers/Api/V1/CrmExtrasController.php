@@ -240,11 +240,12 @@ class CrmExtrasController
 
         $id = H::newId('att');
         $path = "tenants/{$ctx->tenantId}/attachments/{$id}";   // built from ids only: the client filename never reaches the filesystem
-        Storage::disk('local')->putFileAs(dirname($path), $file, basename($path));
+        $disk = (string) config('filesystems.attachments_disk', 'local');   // 'local' or 's3' (ATTACHMENTS_DISK)
+        Storage::disk($disk)->putFileAs(dirname($path), $file, basename($path));
         $name = mb_substr(trim((string) preg_replace('/[\x00-\x1F\x7F\/\\\\]+/u', '_', $file->getClientOriginalName())), 0, 255) ?: "file.{$ext}";
         DB::table('attachments')->insert([
             'id' => $id, 'tenant_id' => $ctx->tenantId, 'entity_type' => $type, 'entity_id' => $eid, 'name' => $name,
-            'mime' => $file->getMimeType(), 'size' => $size, 'path' => $path,
+            'mime' => $file->getMimeType(), 'size' => $size, 'path' => $path, 'disk' => $disk,
             'uploaded_by' => $user['id'], 'uploaded_by_name' => $user['name'], 'created_at' => H::now(),
         ]);
         H::audit($ctx, 'attachment.uploaded', $type, $eid, ['name' => $name, 'size' => $size]);
@@ -255,8 +256,9 @@ class CrmExtrasController
     {
         $ctx->auth(); H::requireTenant($ctx);
         $a = DB::table('attachments')->where('id', $ctx->params['id'])->where('tenant_id', $ctx->tenantId)->first();
-        if (!$a || !Storage::disk('local')->exists($a->path)) throw new ApiException(404, 'Файл не найден', 'not_found');
-        return Storage::disk('local')->download($a->path, $a->name, ['Content-Type' => 'application/octet-stream', 'X-Content-Type-Options' => 'nosniff', 'Cache-Control' => 'private, no-store']);
+        $disk = (string) ($a->disk ?? 'local');
+        if (!$a || !Storage::disk($disk)->exists($a->path)) throw new ApiException(404, 'Файл не найден', 'not_found');
+        return Storage::disk($disk)->download($a->path, $a->name, ['Content-Type' => 'application/octet-stream', 'X-Content-Type-Options' => 'nosniff', 'Cache-Control' => 'private, no-store']);
     }
 
     public function deleteAttachment(Ctx $ctx)
@@ -265,7 +267,7 @@ class CrmExtrasController
         $a = DB::table('attachments')->where('id', $ctx->params['id'])->where('tenant_id', $ctx->tenantId)->first();
         if (!$a) throw new ApiException(404, 'Файл не найден', 'not_found');
         if ($a->uploaded_by !== $user['id']) H::requirePermission($ctx, self::ENTITIES[$a->entity_type][1] ?? 'crm.delete');
-        Storage::disk('local')->delete($a->path);
+        Storage::disk((string) ($a->disk ?? 'local'))->delete($a->path);
         DB::table('attachments')->where('id', $a->id)->delete();
         H::audit($ctx, 'attachment.deleted', $a->entity_type, $a->entity_id, ['name' => $a->name]);
         return H::json(['ok' => true]);

@@ -15,7 +15,9 @@ $origins = array_filter(array_map(
 
 return [
 
-    'paths' => ['api/*'],
+    // api/public/* (embeddable lead form) is deliberately absent: it answers CORS itself, per form,
+    // without credentials. The credentialed SPA policy below must not apply to it.
+    'paths' => ['api/v1/*', 'api/health', 'api/oauth/*', 'api/webhooks/*'],
 
     'allowed_methods' => ['*'],
 

@@ -84,6 +84,11 @@ return [
      * Voice provider callbacks (POST /api/webhooks/ai-voice). The provider signs
      * "{timestamp}.{raw body}" with HMAC-SHA256 using this secret. Empty = endpoint disabled.
      */
+    /* Health alerts: ALERT_WEBHOOK_URL (https) receives {"text": "..."} when a health check fails. */
+    'alerts' => [
+        'webhook_url' => env('ALERT_WEBHOOK_URL', ''),
+    ],
+
     'ai_voice' => [
         'webhook_secret' => env('AI_VOICE_WEBHOOK_SECRET', ''),
         'tolerance_seconds' => 300,

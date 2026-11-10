@@ -15,6 +15,9 @@ return [
 
     'default' => env('FILESYSTEM_DISK', 'local'),
 
+    /* Disk for NEW CRM attachments: 'local' (default) or 's3' (set AWS_* too). Existing files keep their own disk. */
+    'attachments_disk' => env('ATTACHMENTS_DISK', 'local'),
+
     /*
     |--------------------------------------------------------------------------
     | Filesystem Disks
