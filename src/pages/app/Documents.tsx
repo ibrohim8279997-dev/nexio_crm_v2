@@ -6,6 +6,7 @@ import { Field, Input, Select, Textarea } from '../../components/ui/form'
 import { Modal } from '../../components/ui/overlay'
 import { useApi, useApiMutation } from '../../lib/hooks'
 import { api, withoutBlankIds } from '../../lib/api'
+import { saveBlob } from '../../lib/native'
 import { label, num, shortDate } from '../../lib/format'
 import { useCan } from '../../lib/auth'
 
@@ -131,8 +132,7 @@ function ProposalModal({ open, onClose }: { open: boolean; onClose: () => void }
   const approve = useApiMutation(() => api.post('/api/v1/documents/' + documentId + '/status', { status: 'approved' }), { success: 'Proposal tasdiqlandi', invalidate: [['documents']], onDone: close })
   const download = () => {
     const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a'); a.href = url; a.download = (name || 'proposal') + '.md'; a.click(); URL.revokeObjectURL(url)
+    void saveBlob(blob, (name || 'proposal') + '.md')
   }
   return <Modal open={open} onClose={close} title="AI commercial proposal" description="Faqat CRM’dagi tasdiqlangan ma’lumotlardan draft yaratiladi. Yuborishdan oldin xodim tahrirlaydi va tasdiqlaydi." size="lg"
     footer={<><Button variant="secondary" size="sm" onClick={close}>Yopish</Button>{documentId && <><Button size="sm" variant="secondary" onClick={download}>Yuklab olish</Button><Button size="sm" loading={approve.isPending} onClick={() => approve.mutate()}>Tasdiqlash</Button></>}</>}>

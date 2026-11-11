@@ -5,7 +5,7 @@ import { DataTable } from '../../components/ui/table'
 import { Checkbox, Field, Input, Select } from '../../components/ui/form'
 import { ConfirmDialog } from '../../components/ui/overlay'
 import { useApi, useApiMutation } from '../../lib/hooks'
-import { api } from '../../lib/api'
+import { api, download } from '../../lib/api'
 import { dateTime, label, num } from '../../lib/format'
 import { useAuth, useCan } from '../../lib/auth'
 import { useToast } from '../../components/ui/toast'
@@ -194,9 +194,7 @@ export default function SettingsPage() {
               <div className="space-y-3">
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge tone="neutral"><History className="size-3" /> последние {audit.data?.data.length ?? 0} записей</Badge>
-                  <a href="/api/v1/export?entity=deals" download>
-                    <Button size="sm" variant="secondary" disabled={!can('export.data')}><Download className="size-3.5" /> Экспорт сделок (CSV)</Button>
-                  </a>
+                  <Button size="sm" variant="secondary" disabled={!can('export.data')} onClick={() => download('/api/v1/export?entity=deals', 'deals.csv')}><Download className="size-3.5" /> Экспорт сделок (CSV)</Button>
                 </div>
                 <DataTable rows={audit.data?.data ?? []} dense
                   columns={[

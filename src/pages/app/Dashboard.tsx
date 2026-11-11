@@ -8,6 +8,7 @@ import { Avatar, Badge, Button, Card, Grid, ProgressBar, QueryState, SectionCard
 import { BarsChart, DonutChart, TrendChart } from '../../components/charts'
 import { useApi, useApiMutation } from '../../lib/hooks'
 import { api } from '../../lib/api'
+import { openExternal } from '../../lib/native'
 import { useToast } from '../../components/ui/toast'
 import { compact, label, money, monthLabel, num, pct, relative, shortDate } from '../../lib/format'
 import { useAuth } from '../../lib/auth'
@@ -61,7 +62,7 @@ export default function Dashboard() {
       if (result.warning) toast.error('Telegram bot xabar olmayapti', result.warning)
       localStorage.setItem('nexio_telegram_prompt_seen', '1')
       setTelegramPrompt(false)
-      if (!window.open(result.url, '_blank')) window.location.assign(result.url)
+      void openExternal(result.url)
     },
   })
 

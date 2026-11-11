@@ -11,6 +11,7 @@ import { useAuth } from '../../lib/auth'
 import { Avatar, Badge, Button, IconButton } from '../ui/core'
 import { useApi, useApiMutation } from '../../lib/hooks'
 import { api } from '../../lib/api'
+import { openExternal } from '../../lib/native'
 import { useToast } from '../ui/toast'
 import { CommandPalette } from './CommandPalette'
 import { useI18n } from '../../lib/i18n'
@@ -333,7 +334,7 @@ export function PersistentNotificationsMenu() {
     onDone: (result) => {
       setTelegramWarning(result.warning)
       if (!result.url) { toast.error('Telegram bot sozlanmagan', result.warning ?? 'Administrator bot token va nomini kiritishi kerak.'); return }
-      if (!window.open(result.url, '_blank')) window.location.assign(result.url)
+      void openExternal(result.url)
     },
   })
   const unlinkTelegram = useApiMutation(() => api.post('/api/v1/notifications/telegram-unlink'), { invalidate: [['notifications']], success: 'Telegram uzildi' })

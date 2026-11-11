@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { api } from './api'
+import { unregisterPush } from './native'
 
 export interface AuthUser { id: string; email: string; name: string; avatar_color: string; is_platform_admin: number; platform_role?: string | null }
 export interface TenantRef {
@@ -48,6 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [refresh])
 
   const logout = useCallback(async () => {
+    await unregisterPush((token) => api.del('/api/v1/notifications/device-token', { token })).catch(() => undefined)
     await api.post('/api/v1/auth/logout')
     setState({ user: null, role: null, tenant: null, tenants: [], isPlatformAdmin: false })
   }, [])
