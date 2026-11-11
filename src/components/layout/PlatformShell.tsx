@@ -10,6 +10,7 @@ import { Avatar, Button, IconButton } from '../ui/core'
 import { ThemeToggle } from '../ui/ThemeToggle'
 import { useI18n } from '../../lib/i18n'
 import { NexioMark } from '../ui/NexioMark'
+import { PersistentNotificationsMenu } from './AppShell'
 
 const ICON = 'size-[18px]'
 const NAV = [
@@ -91,6 +92,7 @@ export function PlatformShell({ children }: { children: ReactNode }) {
           <p className="text-[13px] font-semibold text-ink">{t('platformPanel')}</p>
           <div className="ml-auto flex items-center gap-2">
             <ThemeToggle />
+            <PersistentNotificationsMenu />
             <span className="hidden items-center gap-1.5 rounded-full border border-violet-100 bg-violet-50 px-2.5 py-1 text-[11px] font-semibold text-violet-700 sm:inline-flex">
               <ShieldCheck className="size-3.5" /> {user.platform_role ?? t('platformSuperadmin')}
             </span>
