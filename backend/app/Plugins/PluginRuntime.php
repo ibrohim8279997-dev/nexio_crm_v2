@@ -312,6 +312,7 @@ class PluginRuntime
                 'operation' => $operation,
                 'error' => get_class($e),
             ], $installation->id);
+            (new \App\Services\NotificationDispatcher())->problem($ctx->tenantId, "Plagin xatosi: {$pluginId}", "Operatsiya: {$operation}");
 
             if ($e instanceof ApiException) {
                 throw $e;

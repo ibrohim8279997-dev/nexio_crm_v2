@@ -56,6 +56,15 @@ class TelegramBot
         if (!preg_match('/^\/start\s+([A-Za-z0-9_-]{16,80})$/', $text, $matches)) {
             if (str_starts_with($text, '/start')) {
                 $this->sender->telegram($chatId, 'Nexio CRM bildirishnomalarini olish uchun CRM ichidagi qo‘ng‘iroqcha menyusidan «Telegram’ni ulash» tugmasini bosing.');
+            } elseif ($text === '/help') {
+                $this->sender->telegram($chatId, "/limits — kompaniya limitlari\n/stats — qisqa hisobot\n/stop — bildirishnomalarni o‘chirish\nYoki savolingizni yozing: AI tahlil asosida javob beradi (faqat o‘qish).");
+            } elseif ($text !== '' && !str_starts_with($text, '/') || in_array($text, ['/limits', '/stats'], true)) {
+                $question = match ($text) {
+                    '/limits' => 'Kompaniya limitlari va ulardan foydalanish holatini qisqa ayting.',
+                    '/stats' => 'Asosiy ko‘rsatkichlar bo‘yicha qisqa hisobot bering.',
+                    default => $text,
+                };
+                $this->sender->telegram($chatId, (new TelegramAssistant())->reply($chatId, $question));
             }
             return;
         }
