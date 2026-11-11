@@ -141,4 +141,27 @@ class PlatformOpsTest extends PluginTestCase
         $this->assertNotEmpty(json_decode((string) file_get_contents($pm), true)['item']);
         @unlink($out); @unlink($pm);
     }
+
+    // ── operator-granted plans ──────────────────────────────────────────────────────
+    public function test_operator_can_grant_any_plan_without_payment(): void
+    {
+        DB::table('plans')->insert([
+            'id' => 'plan_vip', 'code' => 'vip', 'name' => 'VIP', 'price_monthly' => 400, 'price_yearly' => 4000, 'currency' => 'USD',
+            'seats' => 99, 'api_requests' => 1, 'ai_minutes' => 0, 'storage_gb' => 1, 'modules' => '["crm","ai_agents"]', 'is_public' => 0, 'position' => 9,
+        ]);
+        $this->defaultHeaders = [];
+        $this->actingAsAlpha()->postJson('/api/v1/platform/tenants/tnt_a/plan', ['plan' => 'vip'])->assertStatus(403);
+
+        $this->actingAsPlatform()->postJson('/api/v1/platform/tenants/tnt_a/plan', ['plan' => 'vip', 'note' => 'own company'])
+            ->assertOk()->assertJsonPath('complimentary', true);
+
+        $sub = DB::table('subscriptions')->where('tenant_id', 'tnt_a')->where('status', 'active')->first();
+        $this->assertSame('plan_vip', $sub->plan_id);
+        $this->assertEquals(0, $sub->amount);
+        $this->assertSame(0, DB::table('invoices')->where('tenant_id', 'tnt_a')->where('subscription_id', $sub->id)->count());
+        $this->assertSame(1, (int) DB::table('feature_flags')->where('tenant_id', 'tnt_a')->where('key', 'ai_agents')->value('enabled'));
+        $this->assertSame(1, DB::table('audit_logs')->where('tenant_id', 'tnt_a')->where('action', 'platform.tenant_plan_set')->count());
+
+        $this->actingAsPlatform()->postJson('/api/v1/platform/tenants/tnt_a/plan', ['plan' => 'nope'])->assertStatus(404);
+    }
 }

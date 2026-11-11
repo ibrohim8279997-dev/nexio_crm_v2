@@ -287,6 +287,7 @@ Route::prefix('v1')->group(function () use ($h) {
     Route::get('/platform/tenants', $h(PlatformController::class, 'tenants'));
     Route::get('/platform/tenants/{id}', $h(PlatformController::class, 'tenantDetail'));
     Route::post('/platform/tenants/{id}/status', $h(PlatformController::class, 'setTenantStatus'));
+    Route::post('/platform/tenants/{id}/plan', $h(PlatformController::class, 'setTenantPlan'));
     Route::get('/platform/plans', $h(PlatformController::class, 'plans'));
     Route::post('/platform/plans', $h(PlatformController::class, 'createPlan'));
     Route::patch('/platform/plans/{id}', $h(PlatformController::class, 'updatePlan'));

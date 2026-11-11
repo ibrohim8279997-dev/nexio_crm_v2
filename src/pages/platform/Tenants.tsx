@@ -4,17 +4,17 @@ import { Building2, Pause, Play, Search } from 'lucide-react'
 import { Badge, Button, Card, Grid, PageHeader, QueryState, SectionCard, StatCard, StatusPill } from '../../components/ui/core'
 import { DataTable } from '../../components/ui/table'
 import { Drawer } from '../../components/ui/overlay'
-import { SearchInput } from '../../components/ui/form'
+import { Checkbox, Field, Input, SearchInput, Select } from '../../components/ui/form'
 import { useApi, useApiMutation, withQuery } from '../../lib/hooks'
 import { api } from '../../lib/api'
 import { num, shortDate, dateTime, label } from '../../lib/format'
 import { useToast } from '../../components/ui/toast'
 
-interface Tenant { id: string; name: string; slug: string; status: string; currency: string; created_at: string; plan_name: string | null; subscription_status: string | null; period_end: string | null; users: number; industry?: string }
+interface Tenant { id: string; name: string; slug: string; status: string; currency: string; created_at: string; plan_name: string | null; subscription_status: string | null; period_end: string | null; complimentary?: number | null; users: number; industry?: string }
 interface Detail {
   tenant: Tenant & { legal_name?: string; country?: string; timezone?: string; locale?: string }
   members: { name: string; email: string; role: string; status: string; last_login_at: string | null }[]
-  subscriptions: { id: string; plan_name: string | null; status: string; amount: number; currency: string; interval: string; period_start: string; period_end: string; seats: number }[]
+  subscriptions: { id: string; plan_name: string | null; status: string; amount: number; currency: string; interval: string; period_start: string; period_end: string; seats: number; complimentary?: number }[]
   usage: { metric: string; quantity: number; limit_value: number; period: string }[]
   openTickets: number
   audit: { action: string; actor_name: string; created_at: string; meta: string }[]
@@ -35,6 +35,17 @@ export default function PlatformTenants() {
     invalidate: [['platform']],
     success: 'Статус компании обновлён',
     onDone: (r) => toast.info('Доступ сохранён', r.note),
+  })
+
+  const plansQ = useApi<{ data: { id: string; code: string; name: string; price_monthly: number; currency: string }[] }>(['platform', 'plans'], '/api/v1/platform/plans')
+  const [planRef, setPlanRef] = useState('')
+  const [free, setFree] = useState(true)
+  const [until, setUntil] = useState('')
+  const [note, setNote] = useState('')
+  const setPlan = useApiMutation(({ tid, payload }: { tid: string; payload: Record<string, unknown> }) => api.post(`/api/v1/platform/tenants/${tid}/plan`, payload), {
+    invalidate: [['platform']],
+    success: 'Тариф компании обновлён',
+    onDone: () => { setUntil(''); setNote('') },
   })
 
   const tenants = list.data?.data ?? []
@@ -71,7 +82,7 @@ export default function PlatformTenants() {
             columns={[
               { key: 'name', header: 'Компания', render: (r) => <Link to={`/platform/tenants/${r.id}`} className="font-medium text-ink hover:text-primary">{r.name}</Link> },
               { key: 'slug', header: 'Slug', render: (r) => <span className="font-mono text-[11px] text-muted">{r.slug}</span> },
-              { key: 'plan_name', header: 'Тариф', render: (r) => r.plan_name ?? '—' },
+              { key: 'plan_name', header: 'Тариф', render: (r) => <span className="inline-flex items-center gap-1.5">{r.plan_name ?? '—'}{r.complimentary ? <Badge tone="primary">бесплатно</Badge> : null}</span> },
               { key: 'subscription_status', header: 'Подписка', render: (r) => <StatusPill value={r.subscription_status ?? '—'} /> },
               { key: 'users', header: 'Польз.', align: 'right', render: (r) => r.users },
               { key: 'period_end', header: 'Оплачен до', render: (r) => shortDate(r.period_end) },
@@ -110,12 +121,31 @@ export default function PlatformTenants() {
                 ))}
               </dl>
 
+              <div className="space-y-3 rounded-xl border border-line p-3">
+                <h4 className="text-[12px] font-semibold text-ink">Назначить тариф</h4>
+                <Field label="Тариф">
+                  <Select value={planRef} onChange={(e) => setPlanRef(e.target.value)}>
+                    <option value="">Выберите тариф…</option>
+                    {(plansQ.data?.data ?? []).map((p) => <option key={p.id} value={p.id}>{p.name} — {p.currency} {num(p.price_monthly, 2)}/мес</option>)}
+                  </Select>
+                </Field>
+                <Checkbox checked={free} onChange={(e) => setFree(e.target.checked)} label="Без оплаты (бесплатно)" description="Счёт не выставляется, подписка не уходит в просрочку." />
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <Field label="Действует до" hint="Пусто — бессрочно (для бесплатных) или 1 период"><Input type="date" value={until} onChange={(e) => setUntil(e.target.value)} /></Field>
+                  <Field label="Заметка"><Input value={note} maxLength={200} onChange={(e) => setNote(e.target.value)} placeholder="Например: наша компания" /></Field>
+                </div>
+                <Button size="sm" disabled={!planRef} loading={setPlan.isPending}
+                  onClick={() => setPlan.mutate({ tid: detail.data!.tenant.id, payload: { plan: planRef, complimentary: free, period_end: until ? `${until} 23:59:59` : null, note: note || null } })}>
+                  Применить тариф
+                </Button>
+              </div>
+
               <div>
                 <h4 className="text-[12px] font-semibold text-ink">Подписки</h4>
                 <ul className="mt-2 divide-y divide-line rounded-xl border border-line">
                   {detail.data.subscriptions.map((s) => (
                     <li key={s.id} className="flex items-center justify-between gap-3 px-3 py-2.5 text-[12px]">
-                      <div><p className="font-medium text-ink">{s.plan_name ?? 'Без тарифа'}</p>
+                      <div><p className="font-medium text-ink">{s.plan_name ?? 'Без тарифа'}{s.complimentary ? <Badge tone="primary" className="ml-2">бесплатно</Badge> : null}</p>
                         <p className="text-[10px] text-muted">{shortDate(s.period_start)} — {shortDate(s.period_end)} · {s.seats} мест</p></div>
                       <div className="text-right"><p className="font-semibold text-ink">${num(s.amount, 2)}</p><StatusPill value={s.status} /></div>
                     </li>

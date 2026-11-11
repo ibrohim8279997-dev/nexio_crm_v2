@@ -16,7 +16,7 @@ class RenewSubscriptions extends Command
     {
         $notifications = new NotificationDispatcher();
         $reminders = DB::table('subscriptions as s')->join('plans as p', 'p.id', '=', 's.plan_id')
-            ->whereIn('s.status', ['active', 'trialing'])->whereBetween('s.period_end', [now(), now()->addDays(3)])
+            ->whereIn('s.status', ['active', 'trialing'])->where('s.complimentary', false)->whereBetween('s.period_end', [now(), now()->addDays(3)])
             ->get(['s.tenant_id', 's.period_end', 'p.name as plan_name']);
         foreach ($reminders as $subscription) {
             $members = DB::table('tenant_memberships as tm')->join('users as u', 'u.id', '=', 'tm.user_id')
@@ -32,7 +32,7 @@ class RenewSubscriptions extends Command
             }
         }
         $rows = DB::table('subscriptions as s')->join('plans as p', 'p.id', '=', 's.plan_id')
-            ->whereIn('s.status', ['active', 'past_due', 'grace'])->where('s.period_end', '<=', now())
+            ->whereIn('s.status', ['active', 'past_due', 'grace'])->where('s.complimentary', false)->where('s.period_end', '<=', now())
             ->select('s.*', 'p.name as plan_name')->get();
         foreach ($rows as $s) {
             try {
