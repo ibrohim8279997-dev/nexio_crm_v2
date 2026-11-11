@@ -60,4 +60,30 @@ class TelegramAlertsTest extends PluginTestCase
         $n->problem('tnt_a', 'Plagin xatosi: nexio.telephony', 'Operatsiya: call');
         $this->assertCount(1, $this->sentTo('7001'));
     }
+
+    public function test_poller_relays_updates_to_the_site_and_retries_when_it_is_down(): void
+    {
+        config(['telegram.bot_token' => '123:abc', 'telegram.webhook_secret' => 'right-secret', 'telegram.relay_url' => 'https://site.test/api/webhooks/telegram']);
+        $update = ['update_id' => 5, 'message' => ['chat' => ['id' => 1], 'text' => 'hi']];
+        Http::fake([
+            'api.telegram.org/*/getMe' => Http::response(['ok' => true, 'result' => ['username' => 'bot']]),
+            'api.telegram.org/*/getUpdates*' => Http::response(['ok' => true, 'result' => [$update]]),
+            'site.test/*' => Http::sequence()->push('', 502)->push(['ok' => true], 200),
+        ]);
+        $this->artisan('nexio:telegram:poll --once')->assertFailed();          // site down → not acknowledged
+        $this->artisan('nexio:telegram:poll --once')->assertSuccessful();      // site up → forwarded
+        Http::assertSent(fn ($r) => $r->url() === 'https://site.test/api/webhooks/telegram'
+            && $r->hasHeader('X-Telegram-Bot-Api-Secret-Token', 'right-secret') && $r['update_id'] === 5);
+    }
+
+    public function test_a_retried_update_is_handled_only_once(): void
+    {
+        Http::fake();
+        config(['telegram.bot_token' => '123:abc', 'telegram.webhook_secret' => 's3cret']);
+        $update = ['update_id' => 77, 'message' => ['chat' => ['id' => 5], 'text' => '/help']];
+        $h = ['X-Telegram-Bot-Api-Secret-Token' => 's3cret'];
+        $this->postJson('/api/webhooks/telegram', $update, $h)->assertOk();
+        $this->postJson('/api/webhooks/telegram', $update, $h)->assertOk();
+        $this->assertCount(1, $this->sentTo('5'));
+    }
 }

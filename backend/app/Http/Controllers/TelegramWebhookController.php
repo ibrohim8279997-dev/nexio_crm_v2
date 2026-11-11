@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Services\TelegramBot;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class TelegramWebhookController
@@ -21,8 +22,19 @@ class TelegramWebhookController
             return response()->json(['ok' => false], 403);
         }
 
+        // The relay (or Telegram) retries on timeouts; an update that was already handled must not run twice
+        // (a repeated /start would find its token rotated, a repeated AI question would be answered twice).
+        $updateId = $request->input('update_id');
+        $seenKey = is_int($updateId) ? "tg-update:{$updateId}" : null;
+        if ($seenKey && !Cache::add($seenKey, 1, 3600)) return response()->json(['ok' => true]);
+
         $message = $request->input('message');
-        if (is_array($message)) (new TelegramBot())->handleMessage($message);
+        try {
+            if (is_array($message)) (new TelegramBot())->handleMessage($message);
+        } catch (\Throwable $e) {
+            if ($seenKey) Cache::forget($seenKey);   // let the retry run
+            throw $e;
+        }
         return response()->json(['ok' => true]);
     }
 }

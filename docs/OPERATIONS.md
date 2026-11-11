@@ -69,20 +69,23 @@ Defaults stay `database` queue/cache and local files. To switch:
 
 ## Telegram bot (separate server)
 
-The bot is not part of `deploy.sh`. Notifications are sent by the site straight to the Telegram API; only **incoming** messages (`/start` linking, `/stats`, AI questions) need a listener. Run it on any server as a long-lived process:
+The bot is not part of `deploy.sh`. Notifications are sent by the site straight to the Telegram API; only **incoming** messages (`/start` linking, `/stats`, AI questions) need a listener. The bot server is a thin relay: it long-polls Telegram and forwards every update over HTTPS to the site's `POST /api/webhooks/telegram`, which holds all data and replies to the user itself. **The bot server needs no database and no access to the site's server.**
 
-1. Same codebase (`backend/`, `composer install`) with a `.env` that has the **same `APP_KEY`, the same production database** (the bot server must reach it over the network; SQLite on the web server will not work), `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME`, `FRONTEND_URL`, the AI settings, and `TELEGRAM_BOT_EXTERNAL=true` on **both** servers (so the site stops warning that the bot is not receiving).
-2. No webhook: `php artisan nexio:telegram:poll --drop-webhook` (needs only outbound HTTPS). Keep it running under systemd/supervisor, restart on exit:
+Site `.env`: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME`, `TELEGRAM_WEBHOOK_SECRET` (random `A-Za-z0-9_-`), `TELEGRAM_BOT_EXTERNAL=true`.
+
+Bot server `.env` (same `backend/` codebase, `composer install`; `CACHE_STORE=file`): `TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET` (same value), `TELEGRAM_RELAY_URL=https://<site>/api/webhooks/telegram`.
+
+Run once with `php artisan nexio:telegram:poll --drop-webhook`, then keep it alive under supervisor/systemd:
 
 ```ini
-[Program:nexio-telegram]
+[program:nexio-telegram]
 command=php /var/www/nexio/backend/artisan nexio:telegram:poll
 autostart=true
 autorestart=true
 user=www-data
 ```
 
-3. One poller per bot token (a second one gets HTTP 409). Do not set a webhook for the same bot.
+If the site is down or returns 5xx, the update is retried (the poller does not advance Telegram's offset); a 4xx (wrong secret/URL) stops the process with a clear message. One poller per bot token (a second gets HTTP 409); never set a webhook for the same bot.
 
 ## Integrations surface
 
