@@ -62,6 +62,8 @@ Route::prefix('v1')->group(function () use ($h) {
     Route::get('/dashboard', $h(DashboardController::class, 'summary'));
     Route::get('/notifications', $h(NotificationController::class, 'index'));
     Route::post('/notifications/read-all', $h(NotificationController::class, 'readAll'));
+    Route::post('/notifications/device-token', $h(NotificationController::class, 'registerDevice'));
+    Route::delete('/notifications/device-token', $h(NotificationController::class, 'unregisterDevice'));
     Route::post('/notifications/telegram-link', $h(NotificationController::class, 'telegramLink'));
     Route::post('/notifications/telegram-unlink', $h(NotificationController::class, 'telegramUnlink'));
     Route::post('/notifications/{id}/read', $h(NotificationController::class, 'read'));

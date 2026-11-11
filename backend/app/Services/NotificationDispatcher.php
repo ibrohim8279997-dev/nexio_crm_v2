@@ -44,6 +44,7 @@ class NotificationDispatcher
             'title' => $title, 'body' => $body, 'action_url' => $url, 'created_at' => H::now(),
         ]);
         $this->pushTelegram($userId, $title, $body, $url);
+        $this->pushDevices($userId, $title, $body, $url);
     }
 
     /**
@@ -144,6 +145,14 @@ class NotificationDispatcher
                 'text' => ['preview_url' => false, 'body' => $text],
             ]);
         return $response->successful();
+    }
+
+    /** Mobile push (FCM), sent like Telegram: after the response, never failing the CRM action. */
+    private function pushDevices(string $userId, string $title, ?string $body, ?string $url): void
+    {
+        if (!FcmPush::configured()) return;
+        $send = fn () => (new FcmPush())->sendToUser($userId, $title, $body, $url);
+        app()->runningInConsole() ? $send() : app()->terminating($send);
     }
 
     /** Sends after the HTTP response so a slow Telegram API never delays a CRM action. */

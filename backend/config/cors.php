@@ -10,6 +10,9 @@ $origins = array_filter(array_map(
     array_merge(
         [(string) env('FRONTEND_URL', '')],
         explode(',', (string) env('CORS_ALLOWED_ORIGINS', '')),
+        // Origins of the Capacitor mobile app (iOS capacitor://localhost, Android https://localhost). Those requests
+        // authenticate with the X-Nexio-Session header, never with a cross-site cookie.
+        explode(',', (string) env('MOBILE_APP_ORIGINS', 'capacitor://localhost,https://localhost')),
     ),
 ));
 

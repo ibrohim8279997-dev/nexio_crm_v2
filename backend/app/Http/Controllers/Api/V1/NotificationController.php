@@ -74,6 +74,30 @@ class NotificationController
         return H::json(['ok' => true]);
     }
 
+    /** Registers (or moves to this user) the FCM token of the mobile app on this device. */
+    public function registerDevice(Ctx $ctx)
+    {
+        $user = $ctx->auth();
+        $b = H::body($ctx);
+        $token = H::str($b['token'] ?? null, 'token', true, 512);
+        $platform = H::oneOf($b['platform'] ?? null, 'platform', ['android', 'ios']);
+        $now = H::now();
+        $values = ['user_id' => $user['id'], 'tenant_id' => $ctx->tenantId, 'platform' => $platform, 'updated_at' => $now];
+        DB::table('device_tokens')->where('token', $token)->exists()
+            ? DB::table('device_tokens')->where('token', $token)->update($values)
+            : DB::table('device_tokens')->insert($values + ['id' => H::newId('dev'), 'token' => $token, 'created_at' => $now]);
+        return H::json(['ok' => true]);
+    }
+
+    /** Called on logout so the next person using this device does not receive the previous user's notifications. */
+    public function unregisterDevice(Ctx $ctx)
+    {
+        $user = $ctx->auth();
+        $token = H::str(H::body($ctx)['token'] ?? null, 'token', true, 512);
+        DB::table('device_tokens')->where('token', $token)->where('user_id', $user['id'])->delete();
+        return H::json(['ok' => true]);
+    }
+
     private function botUsername(): string
     {
         if ((string) config('telegram.bot_token', '') === '') return '';

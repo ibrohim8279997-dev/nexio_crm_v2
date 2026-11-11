@@ -29,6 +29,12 @@ class AuthController
         return ApiContext::COOKIE . "={$id}; Path=/; HttpOnly; SameSite=Lax; Max-Age={$maxAge}" . ($secure ? '; Secure' : '');
     }
 
+    /** The native app cannot rely on cookies: it asks for the session id in the body (X-Nexio-Client: capacitor). */
+    private function nativeSession(Ctx $ctx, string $sid): array
+    {
+        return $ctx->request->header('X-Nexio-Client') === 'capacitor' ? ['session' => $sid] : [];
+    }
+
     private function clearCookie(): string
     {
         return ApiContext::COOKIE . '=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0';
@@ -153,7 +159,7 @@ class AuthController
         return H::json([
             'user' => ['id' => $userId, 'email' => $email, 'name' => $name, 'avatar_color' => $color, 'is_platform_admin' => 0],
             'tenantId' => $tenantId, 'role' => 'tenant_owner',
-        ], 201, ['Set-Cookie' => $this->sessionCookie($sid, H::SESSION_TTL, $ctx->request->isSecure())]);
+        ] + $this->nativeSession($ctx, $sid), 201, ['Set-Cookie' => $this->sessionCookie($sid, H::SESSION_TTL, $ctx->request->isSecure())]);
     }
 
     public function login(Ctx $ctx)
@@ -189,7 +195,7 @@ class AuthController
         return H::json([
             'user' => ['id' => $u->id, 'email' => $u->email, 'name' => $u->name, 'avatar_color' => $u->avatar_color, 'is_platform_admin' => (int) $u->is_platform_admin],
             'tenantId' => $m->tenant_id ?? null, 'role' => $m->role ?? null,
-        ], 200, ['Set-Cookie' => $this->sessionCookie($sid, H::SESSION_TTL, $ctx->request->isSecure())]);
+        ] + $this->nativeSession($ctx, $sid), 200, ['Set-Cookie' => $this->sessionCookie($sid, H::SESSION_TTL, $ctx->request->isSecure())]);
     }
 
     // ── MFA (TOTP) ───────────────────────────────────────────────────────────
@@ -508,6 +514,6 @@ class AuthController
         return H::json([
             'ok' => true, 'user' => ['id' => $user->id, 'email' => $user->email, 'name' => $user->name],
             'tenantId' => $inv->tenant_id, 'role' => $inv->role,
-        ], 200, ['Set-Cookie' => $this->sessionCookie($sid, H::SESSION_TTL, $ctx->request->isSecure())]);
+        ] + $this->nativeSession($ctx, $sid), 200, ['Set-Cookie' => $this->sessionCookie($sid, H::SESSION_TTL, $ctx->request->isSecure())]);
     }
 }

@@ -18,6 +18,7 @@ use Symfony\Component\HttpFoundation\Response;
 class ApiContext
 {
     public const COOKIE = 'nexio_session';
+    public const SESSION_HEADER = 'X-Nexio-Session';
 
     public function handle(Request $request, Closure $next): Response
     {
@@ -117,8 +118,10 @@ class ApiContext
 
     private function loadSession(Ctx $ctx, Request $request): void
     {
-        $sid = $request->cookie(self::COOKIE);
-        if (!$sid) return;
+        // Native apps (Capacitor) run on another origin where cross-site cookies are unreliable, so they present
+        // the same session id in a header. It is the same secret as the cookie and is checked identically below.
+        $sid = $request->cookie(self::COOKIE) ?: $request->header(self::SESSION_HEADER);
+        if (!is_string($sid) || $sid === '') return;
 
         $row = DB::selectOne(
             'SELECT s.id AS sid, s.tenant_id AS session_tenant, s.expires_at,
