@@ -113,7 +113,6 @@ if [[ "$NEED_BACKEND" == "1" ]]; then
     "$PHP" artisan optimize:clear
     "$PHP" artisan optimize
     "$PHP" artisan queue:restart
-    "$PHP" artisan nexio:telegram:webhook --ensure || true
 else
     skip "backend/ o'zgarmagan"
 fi

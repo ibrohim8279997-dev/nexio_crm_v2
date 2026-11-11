@@ -32,7 +32,7 @@ class TelegramBot
             $me = Http::connectTimeout(3)->timeout(5)->get("{$api}/getMe");
             if ($me->status() === 401) return ['token_valid' => false, 'username' => null, 'receiving' => false];
             $username = $me->json('result.username');
-            $receiving = Cache::has(self::POLL_HEARTBEAT)
+            $receiving = (bool) config('telegram.external') || Cache::has(self::POLL_HEARTBEAT)
                 || (string) Http::connectTimeout(3)->timeout(5)->get("{$api}/getWebhookInfo")->json('result.url') !== '';
             return ['token_valid' => $me->successful() ? true : null, 'username' => is_string($username) ? $username : null, 'receiving' => $receiving];
         } catch (ConnectionException) {

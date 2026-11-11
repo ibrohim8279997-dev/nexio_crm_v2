@@ -10,13 +10,13 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 
 /**
- * Receives bot messages without a public URL, for local development: Telegram cannot reach
+ * Receives bot messages without a public URL, for local development or a dedicated bot server: Telegram cannot reach
  * localhost, so a webhook would never deliver /start there. Telegram refuses polling (HTTP 409)
  * while a webhook is registered for the same bot, so use a separate test bot locally.
  */
 class TelegramPoll extends Command
 {
-    protected $signature = 'nexio:telegram:poll {--once : Fetch one batch and exit}';
+    protected $signature = 'nexio:telegram:poll {--once : Fetch one batch and exit} {--drop-webhook : Remove a registered webhook first (polling and webhooks are mutually exclusive)}';
     protected $description = 'Receive Telegram bot messages by polling (local development)';
 
     public function handle(): int
@@ -37,6 +37,10 @@ class TelegramPoll extends Command
         $this->warnIfUsernameDiffers($status['username']);
 
         $api = "https://api.telegram.org/bot{$token}";
+        if ($this->option('drop-webhook')) {
+            try { Http::timeout(10)->post("{$api}/deleteWebhook"); $this->line('Webhook o‘chirildi.'); }
+            catch (ConnectionException) { $this->warn('deleteWebhook bajarilmadi: Telegram bilan aloqa yo‘q.'); }
+        }
         $offset = 0;
         $firstRequest = true;
         $this->info('Telegram xabarlari kutilmoqda. To‘xtatish: Ctrl+C');
@@ -65,8 +69,13 @@ class TelegramPoll extends Command
             foreach ((array) $response->json('result', []) as $update) {
                 $offset = (int) $update['update_id'] + 1;
                 if (is_array($update['message'] ?? null)) {
-                    $bot->handleMessage($update['message']);
-                    $this->line('Xabar qayta ishlandi.');
+                    try {
+                        $bot->handleMessage($update['message']);
+                        $this->line('Xabar qayta ishlandi.');
+                    } catch (\Throwable $e) {
+                        // One bad message (or a DB blip) must not stop a long-running worker.
+                        \Illuminate\Support\Facades\Log::error('Telegram message failed', ['exception' => $e::class, 'error' => $e->getMessage()]);
+                    }
                 }
             }
         } while (!$once);

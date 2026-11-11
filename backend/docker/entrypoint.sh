@@ -5,5 +5,4 @@ cd /var/www/html
 php artisan config:cache
 php artisan route:cache
 if [ "${RUN_MIGRATIONS:-1}" = "1" ]; then php artisan migrate --force; fi
-php artisan nexio:telegram:webhook --ensure || true
 exec "$@"

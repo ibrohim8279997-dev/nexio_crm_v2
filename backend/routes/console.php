@@ -17,5 +17,3 @@ Schedule::call(fn () => \Illuminate\Support\Facades\Cache::put(\App\Services\Hea
 Schedule::command('nexio:backup')->dailyAt('02:00')->withoutOverlapping();
 Schedule::command('nexio:health:alert')->everyFiveMinutes()->withoutOverlapping();
 Schedule::command('nexio:limits:check')->hourly()->withoutOverlapping();
-// Self-heals the Telegram webhook in production (no-op elsewhere).
-Schedule::command('nexio:telegram:webhook --ensure')->hourly()->withoutOverlapping();

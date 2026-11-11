@@ -67,6 +67,23 @@ Defaults stay `database` queue/cache and local files. To switch:
 - `docker compose up --build` starts Postgres 16, Redis 7, the API (`backend/Dockerfile`: php-fpm + nginx + queue worker + scheduler under supervisord, migrates on start) and the SPA (`Dockerfile`: Vite build behind nginx, `/api` proxied). Put secrets in an untracked `.env.docker`. The Docker files are not exercised by the current production deploy (`deploy.sh` on CloudPanel).
 - `.github/workflows/ci.yml`: backend `php artisan test` + `nexio:openapi --check`, frontend build + Vitest, Playwright smoke, and image builds.
 
+## Telegram bot (separate server)
+
+The bot is not part of `deploy.sh`. Notifications are sent by the site straight to the Telegram API; only **incoming** messages (`/start` linking, `/stats`, AI questions) need a listener. Run it on any server as a long-lived process:
+
+1. Same codebase (`backend/`, `composer install`) with a `.env` that has the **same `APP_KEY`, the same production database** (the bot server must reach it over the network; SQLite on the web server will not work), `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME`, `FRONTEND_URL`, the AI settings, and `TELEGRAM_BOT_EXTERNAL=true` on **both** servers (so the site stops warning that the bot is not receiving).
+2. No webhook: `php artisan nexio:telegram:poll --drop-webhook` (needs only outbound HTTPS). Keep it running under systemd/supervisor, restart on exit:
+
+```ini
+[Program:nexio-telegram]
+command=php /var/www/nexio/backend/artisan nexio:telegram:poll
+autostart=true
+autorestart=true
+user=www-data
+```
+
+3. One poller per bot token (a second one gets HTTP 409). Do not set a webhook for the same bot.
+
 ## Integrations surface
 
 - **OpenAPI 3.1** `docs/openapi.json` and Postman collection `docs/nexio.postman_collection.json` are generated from the route table: `php artisan nexio:openapi` (CI fails when stale). Request/response bodies are described generically.
