@@ -17,7 +17,7 @@ class HealthChecks
 
     public static function run(): array
     {
-        $checks = [self::database(), self::scheduler(), self::queue(), self::webhooks(), self::disk(), self::backup()];
+        $checks = array_values(array_filter([self::database(), self::replica(), self::scheduler(), self::queue(), self::webhooks(), self::disk(), self::backup()]));
         $failed = array_values(array_filter($checks, fn ($c) => !$c['ok']));
         return [
             'status' => $failed ? 'degraded' : 'ok',
@@ -42,6 +42,18 @@ class HealthChecks
         } catch (\Throwable $e) {
             return self::c('database', false, 'ulanib bo‘lmadi');
         }
+    }
+
+    /** Standby database: alive, not running instead of the main one, copied within the last 15 minutes. Null when disabled. */
+    private static function replica(): ?array
+    {
+        if (!DbReplica::enabled()) return null;
+        $s = DbReplica::status();
+        if ($s['code'] !== 0) return self::c('replica', false, $s['message']);
+        $last = DbReplica::lastSync();
+        $age = $last ? time() - (int) $last['at'] : null;
+        if ($age === null || $age > 900) return self::c('replica', false, $age === null ? 'zaxiraga hali nusxa olinmagan' : "oxirgi nusxa {$age} soniya oldin");
+        return $last['errors'] ? self::c('replica', false, 'nusxalashda xatolar: ' . implode(', ', array_keys($last['errors']))) : self::c('replica', true, "oxirgi nusxa {$age} soniya oldin");
     }
 
     /** The scheduler stamps a heartbeat every minute; a stale stamp means cron is not running. */

@@ -50,7 +50,7 @@ class TelegramBot
 
         if ($text === '/stop') {
             try {
-                config('bots.role') === 'bot' ? (new BotsSync())->remoteUnbind($chatId) : TelegramLinks::unbind($chatId);
+                TelegramLinks::unbind($chatId);
                 $this->sender->telegram($chatId, 'Telegram bildirishnomalari o‘chirildi.');
             } catch (\Throwable) {
                 $this->sender->telegram($chatId, 'Xizmat vaqtincha ishlamayapti, keyinroq urinib ko‘ring.');
@@ -85,9 +85,7 @@ class TelegramBot
         }
 
         try {
-            $bound = config('bots.role') === 'bot'
-                ? (new BotsSync())->remoteBind($token, $chatId, $message['from']['username'] ?? null)
-                : TelegramLinks::bind($token, $chatId, $message['from']['username'] ?? null);
+            $bound = TelegramLinks::bind($token, $chatId, $message['from']['username'] ?? null);
         } catch (\Throwable) {
             $this->sender->telegram($chatId, 'Xizmat vaqtincha ishlamayapti, keyinroq urinib ko‘ring.');
             return;

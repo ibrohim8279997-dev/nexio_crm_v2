@@ -67,35 +67,29 @@ Defaults stay `database` queue/cache and local files. To switch:
 - `docker compose up --build` starts Postgres 16, Redis 7, the API (`backend/Dockerfile`: php-fpm + nginx + queue worker + scheduler under supervisord, migrates on start) and the SPA (`Dockerfile`: Vite build behind nginx, `/api` proxied). Put secrets in an untracked `.env.docker`. The Docker files are not exercised by the current production deploy (`deploy.sh` on CloudPanel).
 - `.github/workflows/ci.yml`: backend `php artisan test` + `nexio:openapi --check`, frontend build + Vitest, Playwright smoke, and image builds.
 
-## Telegram bot (separate server)
+## Standby database and Telegram bot (one server)
 
-The bot runs on its own server with its **own database that mirrors the site's** (`crmb.nexiolab.uz`). It answers Telegram messages from that copy; the site keeps sending notifications itself. Deploy it with `deploybot.sh` (never part of `deploy.sh`).
+### Standby database
+A second, independent database on the same server (own name/file, ideally its own DB user) that is kept identical to the main one. It is for **recovery from a dead, damaged or tampered main database**, not for load balancing.
 
-```
-Telegram ⇄ bot server (own DB, answers users) ◄── push "tables changed" ── site (source of truth)
-                         └── signed pull  GET https://crmb.nexiolab.uz/api/bots/tables[/{t}/rows] ──►
-                         └── /start, /stop are written on the site: POST /api/bots/telegram/link|unlink
-```
+`.env`: `REPLICA_ENABLED=true`, `REPLICA_DB_DATABASE=<other db name or sqlite file>` (+ `REPLICA_DB_HOST/PORT/USERNAME/PASSWORD` if they differ; `REPLICA_DB_CONNECTION` defaults to `DB_CONNECTION`). The standby must not be the main database (the app refuses to copy a database into itself). Create the empty database and its user once, then `./deploy.sh` creates the schema (`migrate --database=replica`) and does the first copy.
 
-- **Auth**: every request between the servers is signed (HMAC-SHA256 of timestamp, method, path+query, body with the shared `BOTS_SECRET`; ±5 min window, replays rejected, failed attempts rate-limited). Use HTTPS on both servers. The secret is never sent.
-- **What is copied**: every table except runtime ones (`sessions`, `cache*`, `jobs`, `job_batches`, `failed_jobs`, `migrations`, `password_reset_tokens`). The copy contains password hashes and encrypted secrets: protect the bot server and its database like the site's. Encrypted values stay unreadable without `APP_KEY`.
-- **Freshness**: the site pushes a notice with the changed table names right after a request/job finishes writing; the bot pulls those tables at once. Every 5 minutes the bot also reconciles (count + newest `updated_at`) and pulls any table that differs, so a lost notice only delays the mirror. Tables without `id` are replaced as a whole; others are upserted and pruned.
-- **Schema**: the bot's database must have the same migrations (`deploybot.sh` runs `migrate`). Columns missing locally are skipped; missing tables are logged.
+| What | Command |
+|---|---|
+| Copy changed tables (runs every 5 min by the scheduler) | `php artisan nexio:db:replicate` |
+| Row-by-row check of all tables (nightly 03:30, catches in-place edits) | `php artisan nexio:db:replicate --verify` |
+| Is the main / standby database alive? (exit 0 ok, 1 main down, 2 standby down, 4 both down, 5 running on standby) | `php artisan nexio:db:status` |
+| **Main DB is down or compromised → run the app on the standby** | `php artisan nexio:db:failover` (add `--force` if the main DB still answers) |
+| Main DB recreated/repaired → copy standby back into it | `php artisan nexio:db:restore --yes` (then) `php artisan nexio:db:failback` |
 
-Site `.env`: `BOTS_ROLE=site`, `BOTS_SECRET=<long random>`, `BOTS_PUSH_URL=https://<bot-server>/api/bots/notify`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME`, `TELEGRAM_BOT_EXTERNAL=true`.
+- `deploy.sh` runs `nexio:db:status` on **every** deploy: if the main database is down it stops before migrating and prints the failover command; otherwise it migrates the standby and copies to it.
+- `/api/v1/platform/health` and `nexio:health:alert` include a `replica` check (alive, last copy < 15 min, no copy errors, not failed over).
+- After `failover`/`failback` restart long-running processes (PHP-FPM, PM2, queue workers): `queue:restart` is issued automatically, `./deploybot.sh` restarts the bot. While failed over, copying is suspended so the (dead) main database can never overwrite the standby.
+- Data written after the last copy (≤ 5 min) is lost on failover. For a fully consistent history keep the nightly `nexio:backup` dumps as well.
+- **Same server = same blast radius.** The standby protects against a database crash, a bad migration or a corrupted/emptied database. It does **not** protect against loss, theft or full compromise of the server itself (an attacker with the server has both databases, and the standby has the same data). For that, point `REPLICA_DB_HOST` at a different host, or copy `storage/app/backups` off the server.
 
-Bot server `.env` (clone the repo, `backend/` only): `BOTS_ROLE=bot`, the **same** `BOTS_SECRET`, `BOTS_SITE_URL=https://crmb.nexiolab.uz`, the **same** `APP_KEY` (needed to decrypt the AI key stored in the database; otherwise set `AI_API_KEY`), `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME`, `FRONTEND_URL`, and its own `DB_*` (SQLite or MySQL). The bot server needs a web server (php-fpm + nginx, HTTPS) serving `backend/public` for `POST /api/bots/notify`, and cron `* * * * * php artisan schedule:run` (it only runs the 5-minute reconcile; billing, backups and alerts stay on the site).
-
-First run: `./deploybot.sh` (migrate + full sync), then keep the listener alive under supervisor/systemd:
-
-```ini
-[program:nexio-telegram]
-command=php /home/bot/nexio/backend/artisan nexio:telegram:poll --drop-webhook
-autostart=true
-autorestart=true
-```
-
-Manual tools: `php artisan nexio:bots:sync` (full), `--table=leads` (one table), `--reconcile` (only differences). One poller per bot token; never set a webhook for the same bot. A simpler stateless alternative (no mirror, site answers) is `TELEGRAM_RELAY_URL=https://<site>/api/webhooks/telegram` on the bot server with `BOTS_ROLE=off`.
+### Telegram bot
+The bot runs as its own process on the same server and uses the same database. It is started and restarted by `./deploybot.sh` (PM2 app `nexio-bot`, `php artisan nexio:telegram:poll`), never by `deploy.sh`. Run `./deploy.sh` first to update the code, then `./deploybot.sh`; `STOP=1 ./deploybot.sh` stops it. Needs `TELEGRAM_BOT_TOKEN` in `backend/.env`. One poller per bot token; never set a webhook for the same bot.
 
 ## Integrations surface
 

@@ -17,7 +17,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Standby database connection; switches the app onto it while failed over.
+        \App\Services\DbReplica::configure();
     }
 
     /**
@@ -25,7 +26,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        \App\Services\BotsPublisher::boot();
         foreach (['view', 'update', 'transition', 'convert'] as $ability) {
             Gate::define("quote.{$ability}", [QuotePolicy::class, $ability]);
         }
