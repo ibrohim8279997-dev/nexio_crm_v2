@@ -32,7 +32,7 @@ class TelegramBot
             $me = Http::connectTimeout(3)->timeout(5)->get("{$api}/getMe");
             if ($me->status() === 401) return ['token_valid' => false, 'username' => null, 'receiving' => false];
             $username = $me->json('result.username');
-            $receiving = Cache::has(self::POLL_HEARTBEAT)
+            $receiving = (bool) config('telegram.external') || Cache::has(self::POLL_HEARTBEAT)
                 || (string) Http::connectTimeout(3)->timeout(5)->get("{$api}/getWebhookInfo")->json('result.url') !== '';
             return ['token_valid' => $me->successful() ? true : null, 'username' => is_string($username) ? $username : null, 'receiving' => $receiving];
         } catch (ConnectionException) {
@@ -49,13 +49,26 @@ class TelegramBot
         $text = trim((string) $message['text']);
 
         if ($text === '/stop') {
-            DB::table('user_telegram_links')->where('chat_id', $chatId)->update(['chat_id' => null, 'username' => null, 'linked_at' => null]);
-            $this->sender->telegram($chatId, 'Telegram bildirishnomalari o‘chirildi.');
+            try {
+                TelegramLinks::unbind($chatId);
+                $this->sender->telegram($chatId, 'Telegram bildirishnomalari o‘chirildi.');
+            } catch (\Throwable) {
+                $this->sender->telegram($chatId, 'Xizmat vaqtincha ishlamayapti, keyinroq urinib ko‘ring.');
+            }
             return;
         }
         if (!preg_match('/^\/start\s+([A-Za-z0-9_-]{16,80})$/', $text, $matches)) {
             if (str_starts_with($text, '/start')) {
                 $this->sender->telegram($chatId, 'Nexio CRM bildirishnomalarini olish uchun CRM ichidagi qo‘ng‘iroqcha menyusidan «Telegram’ni ulash» tugmasini bosing.');
+            } elseif ($text === '/help') {
+                $this->sender->telegram($chatId, "/limits — kompaniya limitlari\n/stats — qisqa hisobot\n/stop — bildirishnomalarni o‘chirish\nYoki savolingizni yozing: AI tahlil asosida javob beradi (faqat o‘qish).");
+            } elseif ($text !== '' && !str_starts_with($text, '/') || in_array($text, ['/limits', '/stats'], true)) {
+                $question = match ($text) {
+                    '/limits' => 'Kompaniya limitlari va ulardan foydalanish holatini qisqa ayting.',
+                    '/stats' => 'Asosiy ko‘rsatkichlar bo‘yicha qisqa hisobot bering.',
+                    default => $text,
+                };
+                $this->sender->telegram($chatId, (new TelegramAssistant())->reply($chatId, $question));
             }
             return;
         }
@@ -71,17 +84,16 @@ class TelegramBot
             return;
         }
 
-        $link = DB::table('user_telegram_links')->where('link_token', $token)->first();
-        if (!$link) {
+        try {
+            $bound = TelegramLinks::bind($token, $chatId, $message['from']['username'] ?? null);
+        } catch (\Throwable) {
+            $this->sender->telegram($chatId, 'Xizmat vaqtincha ishlamayapti, keyinroq urinib ko‘ring.');
+            return;
+        }
+        if (!$bound) {
             $this->sender->telegram($chatId, 'Havola eskirgan. CRM ichidan «Telegram’ni ulash» tugmasini qayta bosing.');
             return;
         }
-        // chat_id is unique: one Telegram account follows one CRM user, the latest link wins.
-        // The token is rotated so a forwarded link cannot re-bind this account later.
-        DB::table('user_telegram_links')->where('chat_id', $chatId)->where('id', '<>', $link->id)->update(['chat_id' => null, 'username' => null, 'linked_at' => null]);
-        DB::table('user_telegram_links')->where('id', $link->id)->update([
-            'chat_id' => $chatId, 'username' => $message['from']['username'] ?? null, 'linked_at' => H::now(), 'link_token' => H::newToken(),
-        ]);
         $this->sender->telegram($chatId, 'Nexio CRM bilan Telegram bog‘landi. Vazifa, loyiha va boshqa bildirishnomalar shu yerga keladi. O‘chirish uchun: /stop');
     }
 }

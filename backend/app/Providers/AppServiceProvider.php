@@ -17,7 +17,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Standby database connection; switches the app onto it while failed over.
+        \App\Services\DbReplica::configure();
     }
 
     /**

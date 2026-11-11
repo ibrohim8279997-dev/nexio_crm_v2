@@ -319,7 +319,7 @@ function NotificationsMenu() {
   )
 }
 
-function PersistentNotificationsMenu() {
+export function PersistentNotificationsMenu() {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()

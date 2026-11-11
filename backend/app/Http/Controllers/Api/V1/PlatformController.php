@@ -108,7 +108,7 @@ class PlatformController
         $w = implode(' AND ', $where);
         $rows = DB::select(
             "SELECT t.*, p.name AS plan_name, p.code AS plan_code, p.price_monthly,
-                    s.status AS subscription_status, s.period_end,
+                    s.status AS subscription_status, s.period_end, s.complimentary,
                     (SELECT COUNT(*) FROM tenant_memberships m WHERE m.tenant_id=t.id AND m.status='active') AS users
                FROM tenants t LEFT JOIN subscriptions s ON s.tenant_id=t.id AND s.status IN ('active','trialing','grace','past_due')
                LEFT JOIN plans p ON p.id=s.plan_id
@@ -169,6 +169,61 @@ class PlatformController
             DB::update("UPDATE sessions SET expires_at = " . SqlDialect::now() . " WHERE tenant_id = ?", [$t]);
         }
         return H::json(['ok' => true, 'status' => $status, 'note' => 'Данные сохранены; доступ управляется статусом.']);
+    }
+
+    /**
+     * Operator-granted plan: moves a tenant onto any plan (built-in or custom) without an invoice or payment.
+     * Complimentary grants never expire into past_due and are skipped by the renewal job.
+     */
+    public function setTenantPlan(Ctx $ctx)
+    {
+        $user = $this->requirePlatformUser($ctx);
+        $t = $ctx->params['id'];
+        $b = H::body($ctx);
+        if (!DB::selectOne('SELECT id FROM tenants WHERE id = ?', [$t])) {
+            throw new ApiException(404, 'Компания не найдена', 'not_found');
+        }
+        $ref = H::str($b['plan'] ?? null, 'plan', true, 60);
+        $plan = DB::selectOne('SELECT * FROM plans WHERE id = ? OR code = ?', [$ref, $ref]);
+        if (!$plan) throw new ApiException(404, 'Тариф не найден', 'not_found');
+
+        $complimentary = !array_key_exists('complimentary', $b) || !empty($b['complimentary']);
+        $interval = ($b['interval'] ?? null) === 'year' ? 'year' : 'month';
+        $until = H::str($b['period_end'] ?? null, 'period_end', false, 40);
+        if ($until !== null) {
+            $ts = strtotime($until . ' UTC');
+            if ($ts === false || $ts <= time()) throw new ApiException(422, 'Дата окончания должна быть в будущем', 'invalid_period_end');
+            $periodEnd = gmdate('Y-m-d H:i:s', $ts);
+        } else {
+            // No date = open-ended for a complimentary grant; otherwise one regular billing period.
+            $periodEnd = gmdate('Y-m-d H:i:s', $complimentary ? strtotime('+100 years') : time() + ($interval === 'year' ? 365 : 30) * 86400);
+        }
+        $price = $complimentary ? 0 : ($interval === 'year' ? $plan->price_yearly : $plan->price_monthly);
+        $seats = H::num($b['seats'] ?? null, 'seats', false, 0) ?? $plan->seats;
+        $note = H::str($b['note'] ?? null, 'note', false, 200);
+        $prev = DB::selectOne(
+            "SELECT p.code FROM subscriptions s JOIN plans p ON p.id=s.plan_id WHERE s.tenant_id=? AND s.status IN ('active','trialing','grace','past_due') ORDER BY s.created_at DESC LIMIT 1",
+            [$t]
+        );
+
+        DB::transaction(function () use ($t, $plan, $price, $seats, $interval, $periodEnd, $complimentary, $note) {
+            DB::update("UPDATE subscriptions SET status='cancelled', cancelled_at=?, cancel_at_period_end=0 WHERE tenant_id=? AND status IN ('active','trialing','grace','past_due')", [H::now(), $t]);
+            DB::table('subscriptions')->insert([
+                'id' => H::newId('sub'), 'tenant_id' => $t, 'plan_id' => $plan->id, 'status' => 'active',
+                'seats' => $seats, 'amount' => $price, 'currency' => $plan->currency, 'interval' => $interval,
+                'period_start' => H::now(), 'period_end' => $periodEnd, 'created_at' => H::now(),
+                'complimentary' => $complimentary ? 1 : 0, 'grant_note' => $note,
+            ]);
+            DB::update("UPDATE tenants SET plan_id=?, status='active', updated_at=? WHERE id=?", [$plan->id, H::now(), $t]);
+        });
+        (new \App\Services\SubscriptionEntitlementService())->apply($t, $plan->code);
+        DB::table('audit_logs')->insert([
+            'id' => H::newId('aud'), 'tenant_id' => $t, 'actor_id' => $user['id'], 'actor_name' => $user['name'],
+            'action' => 'platform.tenant_plan_set', 'target' => 'tenant',
+            'meta' => json_encode(['from' => $prev->code ?? null, 'to' => $plan->code, 'complimentary' => $complimentary, 'period_end' => $periodEnd, 'note' => $note], JSON_UNESCAPED_UNICODE),
+            'created_at' => H::now(),
+        ]);
+        return H::json(['ok' => true, 'plan' => $plan->name, 'complimentary' => $complimentary, 'period_end' => $periodEnd]);
     }
 
     public function plans(Ctx $ctx)

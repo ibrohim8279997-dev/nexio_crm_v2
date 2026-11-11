@@ -8,6 +8,7 @@
 #   backend/composer.*           -> composer install
 #   backend/database/, plugins/  -> maintenance rejimi + migrate
 #   backend/**                   -> kesh qayta qurish + queue:restart
+#   har safar                    -> asosiy baza tirikmi (o'lik bo'lsa deploy to'xtaydi) + zaxira bazaga nusxa
 #   src/, package*.json, vite... -> frontend build + PM2 restart
 # Oxirgi muvaffaqiyatli deploy commit'i .last-deploy faylida saqlanadi, shuning uchun yarim
 # yo'lda to'xtagan deploy keyingi safar to'liq qaytadan bajariladi.
@@ -97,6 +98,18 @@ else
     skip "composer.json/lock o'zgarmagan"
 fi
 
+# Har deploy'da: asosiy baza tirikmi? O'lik bazaga migratsiya qilmaymiz; zaxira bor bo'lsa, o'tish buyrug'ini ko'rsatamiz.
+log "Baza: asosiy va zaxira baza holati"
+set +e; "$PHP" artisan nexio:db:status; DB_CODE=$?; set -e
+case "$DB_CODE" in
+    1) die "ASOSIY BAZA ISHLAMAYAPTI. Deploy to'xtatildi. Zaxiraga o'tish (bitta buyruq): cd backend && $PHP artisan nexio:db:failover" ;;
+    4) die "Ikkala baza ham javob bermayapti. Deploy to'xtatildi — DB serverni tekshiring." ;;
+    2) printf '\033[1;33m    DIQQAT: zaxira baza javob bermayapti (deploy davom etadi).\033[0m\n' ;;
+    5) printf '\033[1;33m    DIQQAT: ilova zaxira bazada ishlayapti (failover). Asosiy bazani tiklang: nexio:db:restore --yes && nexio:db:failback\033[0m\n' ;;
+esac
+REPLICA_ON=0
+{ [[ "$DB_CODE" == "0" || "$DB_CODE" == "2" ]] && grep -Eq "^REPLICA_ENABLED=(true|1)" .env 2>/dev/null; } && REPLICA_ON=1
+
 log "Backend: migratsiyalar"
 if [[ "$NEED_MIGRATE" == "1" ]]; then
     # Migratsiya paytida API'ni to'xtatamiz; xato bo'lsa ham qayta yoqiladi.
@@ -106,6 +119,14 @@ if [[ "$NEED_MIGRATE" == "1" ]]; then
 else
     # Yangi fayl bo'lmasa ham, qolib ketgan migratsiya bo'lsa bajariladi (bo'lmasa — hech narsa qilmaydi).
     "$PHP" artisan migrate --force
+fi
+
+log "Zaxira baza: sxema va nusxa"
+if [[ "$REPLICA_ON" == "1" && "$DB_CODE" == "0" ]]; then
+    "$PHP" artisan migrate --database=replica --force
+    "$PHP" artisan nexio:db:replicate || printf '\033[1;33m    DIQQAT: nusxalashda xato bor (nexio:db:status).\033[0m\n'
+else
+    skip "zaxira baza yoqilmagan yoki hozir mavjud emas"
 fi
 
 log "Backend: kesh"

@@ -16,3 +16,9 @@ Schedule::job(new \App\Jobs\ExpireStaleQuotes())->dailyAt('01:00');
 Schedule::call(fn () => \Illuminate\Support\Facades\Cache::put(\App\Services\HealthChecks::HEARTBEAT_KEY, time(), 900))->everyMinute();
 Schedule::command('nexio:backup')->dailyAt('02:00')->withoutOverlapping();
 Schedule::command('nexio:health:alert')->everyFiveMinutes()->withoutOverlapping();
+Schedule::command('nexio:limits:check')->hourly()->withoutOverlapping();
+// Standby database (REPLICA_ENABLED=true): near-live copy every 5 minutes, full row-by-row check nightly.
+if (config('replica.enabled')) {
+    Schedule::command('nexio:db:replicate')->everyFiveMinutes()->withoutOverlapping();
+    Schedule::command('nexio:db:replicate --verify')->dailyAt('03:30')->withoutOverlapping();
+}

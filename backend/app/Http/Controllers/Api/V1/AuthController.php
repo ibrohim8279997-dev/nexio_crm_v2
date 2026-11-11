@@ -146,6 +146,7 @@ class AuthController
             'created_at' => $ts, 'updated_at' => $ts,
         ]);
         $tenantId = $this->provisionTenant($company, $userId, $name);
+        (new \App\Services\PlatformAlerts())->notify('Yangi kompaniya', "{$company} — {$name} ({$email})", "/platform/tenants/{$tenantId}");
         $this->sendVerification($email, $verifyToken);
         $sid = $this->createSession($ctx, $userId, $tenantId);
 
@@ -502,6 +503,7 @@ class AuthController
         }
         DB::table('invitations')->where('id', $inv->id)->update(['status' => 'accepted']);
         (new NotificationDispatcher())->notifyAdmins($inv->tenant_id, 'info', 'Yangi xodim qo‘shildi', "{$user->name} ({$user->email}) taklifni qabul qildi.", '/app/team');
+        (new \App\Services\PlatformAlerts())->notify('Yangi foydalanuvchi', "{$user->name} ({$user->email}) taklif orqali qo‘shildi.", "/platform/tenants/{$inv->tenant_id}");
         $sid = $this->createSession($ctx, $user->id, $inv->tenant_id);
         return H::json([
             'ok' => true, 'user' => ['id' => $user->id, 'email' => $user->email, 'name' => $user->name],

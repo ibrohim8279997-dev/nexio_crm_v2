@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Support\H;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -80,6 +81,23 @@ class NotificationDispatcher
             $this->notifyAdmins($tenantId, $type, $title, (string) ($name ?? $pluginId), "/app/plugins/{$pluginId}");
         } catch (\Throwable $e) {
             Log::warning('Notification failed', ['tenant' => $tenantId, 'error' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Something broke for a tenant (plugin, telephony, ...): tell its admins and the platform operators.
+     * Repeats of the same problem are muted for an hour so a failing integration cannot flood Telegram.
+     */
+    public function problem(?string $tenantId, string $source, string $detail): void
+    {
+        try {
+            if (!Cache::add('problem:' . ($tenantId ?? 'platform') . ':' . sha1($source), 1, 3600)) return;
+            $title = "⚠️ {$source}";
+            $this->notifyAdmins($tenantId, 'error', $title, $detail, '/app/plugins');
+            $company = $tenantId ? DB::table('tenants')->where('id', $tenantId)->value('name') : null;
+            (new PlatformAlerts())->notify($title, trim(($company ? "{$company}: " : '') . $detail), $tenantId ? "/platform/tenants/{$tenantId}" : null, 'error');
+        } catch (\Throwable $e) {
+            Log::warning('Problem notification failed', ['error' => $e->getMessage()]);
         }
     }
 
