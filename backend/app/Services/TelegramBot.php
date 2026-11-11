@@ -49,8 +49,12 @@ class TelegramBot
         $text = trim((string) $message['text']);
 
         if ($text === '/stop') {
-            DB::table('user_telegram_links')->where('chat_id', $chatId)->update(['chat_id' => null, 'username' => null, 'linked_at' => null]);
-            $this->sender->telegram($chatId, 'Telegram bildirishnomalari o‘chirildi.');
+            try {
+                config('bots.role') === 'bot' ? (new BotsSync())->remoteUnbind($chatId) : TelegramLinks::unbind($chatId);
+                $this->sender->telegram($chatId, 'Telegram bildirishnomalari o‘chirildi.');
+            } catch (\Throwable) {
+                $this->sender->telegram($chatId, 'Xizmat vaqtincha ishlamayapti, keyinroq urinib ko‘ring.');
+            }
             return;
         }
         if (!preg_match('/^\/start\s+([A-Za-z0-9_-]{16,80})$/', $text, $matches)) {
@@ -80,17 +84,18 @@ class TelegramBot
             return;
         }
 
-        $link = DB::table('user_telegram_links')->where('link_token', $token)->first();
-        if (!$link) {
+        try {
+            $bound = config('bots.role') === 'bot'
+                ? (new BotsSync())->remoteBind($token, $chatId, $message['from']['username'] ?? null)
+                : TelegramLinks::bind($token, $chatId, $message['from']['username'] ?? null);
+        } catch (\Throwable) {
+            $this->sender->telegram($chatId, 'Xizmat vaqtincha ishlamayapti, keyinroq urinib ko‘ring.');
+            return;
+        }
+        if (!$bound) {
             $this->sender->telegram($chatId, 'Havola eskirgan. CRM ichidan «Telegram’ni ulash» tugmasini qayta bosing.');
             return;
         }
-        // chat_id is unique: one Telegram account follows one CRM user, the latest link wins.
-        // The token is rotated so a forwarded link cannot re-bind this account later.
-        DB::table('user_telegram_links')->where('chat_id', $chatId)->where('id', '<>', $link->id)->update(['chat_id' => null, 'username' => null, 'linked_at' => null]);
-        DB::table('user_telegram_links')->where('id', $link->id)->update([
-            'chat_id' => $chatId, 'username' => $message['from']['username'] ?? null, 'linked_at' => H::now(), 'link_token' => H::newToken(),
-        ]);
         $this->sender->telegram($chatId, 'Nexio CRM bilan Telegram bog‘landi. Vazifa, loyiha va boshqa bildirishnomalar shu yerga keladi. O‘chirish uchun: /stop');
     }
 }

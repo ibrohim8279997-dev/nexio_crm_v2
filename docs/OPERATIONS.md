@@ -69,23 +69,33 @@ Defaults stay `database` queue/cache and local files. To switch:
 
 ## Telegram bot (separate server)
 
-The bot is not part of `deploy.sh`. Notifications are sent by the site straight to the Telegram API; only **incoming** messages (`/start` linking, `/stats`, AI questions) need a listener. The bot server is a thin relay: it long-polls Telegram and forwards every update over HTTPS to the site's `POST /api/webhooks/telegram`, which holds all data and replies to the user itself. **The bot server needs no database and no access to the site's server.**
+The bot runs on its own server with its **own database that mirrors the site's** (`crmb.nexiolab.uz`). It answers Telegram messages from that copy; the site keeps sending notifications itself. Deploy it with `deploybot.sh` (never part of `deploy.sh`).
 
-Site `.env`: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME`, `TELEGRAM_WEBHOOK_SECRET` (random `A-Za-z0-9_-`), `TELEGRAM_BOT_EXTERNAL=true`.
+```
+Telegram ⇄ bot server (own DB, answers users) ◄── push "tables changed" ── site (source of truth)
+                         └── signed pull  GET https://crmb.nexiolab.uz/api/bots/tables[/{t}/rows] ──►
+                         └── /start, /stop are written on the site: POST /api/bots/telegram/link|unlink
+```
 
-Bot server `.env` (same `backend/` codebase, `composer install`; `CACHE_STORE=file`): `TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET` (same value), `TELEGRAM_RELAY_URL=https://<site>/api/webhooks/telegram`.
+- **Auth**: every request between the servers is signed (HMAC-SHA256 of timestamp, method, path+query, body with the shared `BOTS_SECRET`; ±5 min window, replays rejected, failed attempts rate-limited). Use HTTPS on both servers. The secret is never sent.
+- **What is copied**: every table except runtime ones (`sessions`, `cache*`, `jobs`, `job_batches`, `failed_jobs`, `migrations`, `password_reset_tokens`). The copy contains password hashes and encrypted secrets: protect the bot server and its database like the site's. Encrypted values stay unreadable without `APP_KEY`.
+- **Freshness**: the site pushes a notice with the changed table names right after a request/job finishes writing; the bot pulls those tables at once. Every 5 minutes the bot also reconciles (count + newest `updated_at`) and pulls any table that differs, so a lost notice only delays the mirror. Tables without `id` are replaced as a whole; others are upserted and pruned.
+- **Schema**: the bot's database must have the same migrations (`deploybot.sh` runs `migrate`). Columns missing locally are skipped; missing tables are logged.
 
-Run once with `php artisan nexio:telegram:poll --drop-webhook`, then keep it alive under supervisor/systemd:
+Site `.env`: `BOTS_ROLE=site`, `BOTS_SECRET=<long random>`, `BOTS_PUSH_URL=https://<bot-server>/api/bots/notify`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME`, `TELEGRAM_BOT_EXTERNAL=true`.
+
+Bot server `.env` (clone the repo, `backend/` only): `BOTS_ROLE=bot`, the **same** `BOTS_SECRET`, `BOTS_SITE_URL=https://crmb.nexiolab.uz`, the **same** `APP_KEY` (needed to decrypt the AI key stored in the database; otherwise set `AI_API_KEY`), `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME`, `FRONTEND_URL`, and its own `DB_*` (SQLite or MySQL). The bot server needs a web server (php-fpm + nginx, HTTPS) serving `backend/public` for `POST /api/bots/notify`, and cron `* * * * * php artisan schedule:run` (it only runs the 5-minute reconcile; billing, backups and alerts stay on the site).
+
+First run: `./deploybot.sh` (migrate + full sync), then keep the listener alive under supervisor/systemd:
 
 ```ini
 [program:nexio-telegram]
-command=php /var/www/nexio/backend/artisan nexio:telegram:poll
+command=php /home/bot/nexio/backend/artisan nexio:telegram:poll --drop-webhook
 autostart=true
 autorestart=true
-user=www-data
 ```
 
-If the site is down or returns 5xx, the update is retried (the poller does not advance Telegram's offset); a 4xx (wrong secret/URL) stops the process with a clear message. One poller per bot token (a second gets HTTP 409); never set a webhook for the same bot.
+Manual tools: `php artisan nexio:bots:sync` (full), `--table=leads` (one table), `--reconcile` (only differences). One poller per bot token; never set a webhook for the same bot. A simpler stateless alternative (no mirror, site answers) is `TELEGRAM_RELAY_URL=https://<site>/api/webhooks/telegram` on the bot server with `BOTS_ROLE=off`.
 
 ## Integrations surface
 
