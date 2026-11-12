@@ -26,7 +26,7 @@ const ICON = 'size-[18px]'
 
 function LanguageSwitcher() {
   const { locale, setLocale, t } = useI18n()
-  return <label className="inline-flex h-9 items-center rounded-xl border border-line bg-surface px-2 text-[11px] font-semibold text-muted">
+  return <label className="inline-flex h-9 touch:h-11 items-center rounded-xl border border-line bg-surface px-2 text-[11px] font-semibold text-muted">
     <span className="sr-only">{t('language')}</span>
     <select value={locale} onChange={(e) => setLocale(e.target.value as 'en' | 'ru' | 'uz')} className="cursor-pointer bg-transparent text-ink outline-none">
       <option value="uz">UZ</option><option value="ru">RU</option><option value="en">EN</option>
@@ -145,8 +145,8 @@ function Logo({ text, logoUrl: customLogo, name }: { text?: string | null; logoU
   )
 }
 
-function SidebarContent({ onNavigate, tenantName, logoText, logoUrl, showUpgrade }: {
-  onNavigate?: () => void; tenantName?: string; logoText?: string | null; logoUrl?: string | null; showUpgrade?: boolean
+function SidebarContent({ onNavigate, tenantName, logoText, logoUrl, showUpgrade, mobileControls }: {
+  onNavigate?: () => void; tenantName?: string; logoText?: string | null; logoUrl?: string | null; showUpgrade?: boolean; mobileControls?: boolean
 }) {
   const { role, isPlatformAdmin } = useAuth()
   const { t } = useI18n()
@@ -171,7 +171,7 @@ function SidebarContent({ onNavigate, tenantName, logoText, logoUrl, showUpgrade
                     end={it.to === '/app'}
                     onClick={onNavigate}
                     className={({ isActive }) => cn(
-                      'group flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-[13px] font-medium transition-colors',
+                      'group flex items-center gap-2.5 rounded-xl px-2.5 py-2 touch:py-2.5 text-[13px] font-medium transition-colors',
                       isActive ? 'bg-blue-50 text-primary-dark' : 'text-muted hover:bg-subtle hover:text-ink',
                     )}
                   >
@@ -225,6 +225,12 @@ function SidebarContent({ onNavigate, tenantName, logoText, logoUrl, showUpgrade
           </Link>
         </div>
       )}
+      {mobileControls && (
+        <div className="space-y-2 border-t border-line px-3 py-3 sm:hidden">
+          <CompanySwitcher fullWidth up />
+          <div className="flex items-center gap-2"><LanguageSwitcher /><ThemeToggle labeled /></div>
+        </div>
+      )}
       <div className="border-t border-line px-4 py-3">
         <p className="text-[10px] text-slate-400">{t('roleLabel')}: {role ?? '—'}</p>
       </div>
@@ -232,7 +238,7 @@ function SidebarContent({ onNavigate, tenantName, logoText, logoUrl, showUpgrade
   )
 }
 
-function CompanySwitcher() {
+function CompanySwitcher({ fullWidth, up }: { fullWidth?: boolean; up?: boolean }) {
   const { tenant, tenants, switchTenant } = useAuth()
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -243,17 +249,17 @@ function CompanySwitcher() {
     return () => document.removeEventListener('mousedown', onDoc)
   }, [])
   return (
-    <div className="relative" ref={ref}>
+    <div className={cn('relative', fullWidth && 'w-full')} ref={ref}>
       <button onClick={() => setOpen((v) => !v)} aria-haspopup="listbox" aria-expanded={open}
-        className="flex h-10 items-center gap-2 rounded-xl border border-line bg-surface px-3 text-[13px] font-medium text-ink hover:bg-subtle">
+        className={cn('flex h-10 touch:h-11 items-center gap-2 rounded-xl border border-line bg-surface px-3 text-[13px] font-medium text-ink hover:bg-subtle', fullWidth ? 'w-full' : 'px-2.5 md:px-3')}>
         <span className="inline-flex size-5 items-center justify-center rounded-md bg-primary text-[10px] font-bold text-white" style={{ background: tenant?.brand_color }}>
           {(tenant?.logo_text || tenant?.name || 'N').slice(0, 1)}
         </span>
-        <span className="max-w-[110px] truncate">{tenant?.name ?? 'Выберите компанию'}</span>
-        <ChevronDown className="size-3.5 text-muted" />
+        <span className={cn('truncate', fullWidth ? 'min-w-0 flex-1 text-left' : 'hidden max-w-[110px] md:inline')}>{tenant?.name ?? 'Выберите компанию'}</span>
+        <ChevronDown className="size-3.5 shrink-0 text-muted" />
       </button>
       {open && (
-        <div role="listbox" className="absolute right-0 z-50 mt-1.5 w-64 overflow-hidden rounded-card border border-line bg-surface py-1 shadow-[var(--shadow-pop)]">
+        <div role="listbox" className={cn('absolute z-50 max-h-[50dvh] overflow-y-auto rounded-card border border-line bg-surface py-1 shadow-[var(--shadow-pop)]', up ? 'bottom-full left-0 mb-1.5 w-full' : 'right-0 mt-1.5 w-64')}>
           {tenants.map((t) => (
             <button key={t.id} role="option" aria-selected={t.id === tenant?.id}
               onClick={async () => { setOpen(false); if (t.id !== tenant?.id) { try { await switchTenant(t.id); toast.success('Компания переключена', t.name) } catch (e) { toast.error('Не удалось переключить', e instanceof Error ? e.message : undefined) } } }}
@@ -294,7 +300,7 @@ function NotificationsMenu() {
     <div className="relative" ref={ref}>
       <IconButton onClick={() => setOpen((v) => !v)} title="Уведомления" className="relative">
         <Bell className="size-[18px]" />
-        {items.length > 0 && <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-danger ring-2 ring-white" />}
+        {items.length > 0 && <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-danger ring-2 ring-surface" />}
       </IconButton>
       {open && (
         <div className="absolute right-0 z-50 mt-1.5 w-80 overflow-hidden rounded-card border border-line bg-surface shadow-[var(--shadow-pop)]">
@@ -356,12 +362,12 @@ export function PersistentNotificationsMenu() {
         <Bell className="size-[18px]" />
         {unread > 0 && <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[10px] font-bold leading-none text-white ring-2 ring-surface">{unread > 99 ? '99+' : unread}</span>}
       </IconButton>
-      {open && <div className="absolute right-0 z-50 mt-1.5 w-80 overflow-hidden rounded-card border border-line bg-surface shadow-[var(--shadow-pop)]">
+      {open && <div className="fixed inset-x-3 top-[calc(3.5rem+var(--sat)+0.25rem)] z-50 overflow-hidden rounded-card border border-line bg-surface shadow-[var(--shadow-pop)] sm:absolute sm:inset-x-auto sm:right-0 sm:top-auto sm:mt-1.5 sm:w-80">
         <div className="flex items-center justify-between border-b border-line px-3.5 py-2.5">
           <p className="text-[13px] font-semibold text-ink">Уведомления</p>
           <button className="text-[11px] font-semibold text-primary hover:underline" onClick={() => readAll.mutate(undefined)}>Прочитать всё</button>
         </div>
-        <div className="max-h-80 overflow-y-auto">
+        <div className="max-h-[60dvh] overflow-y-auto sm:max-h-80">
           {items.length === 0 && <p className="px-3.5 py-6 text-center text-xs text-muted">Новых уведомлений нет</p>}
           {items.map((n) => <button key={n.id} onClick={() => openItem(n.id, !!n.read_at, n.action_url)} className={cn('flex w-full gap-2.5 border-b border-line/70 px-3.5 py-2.5 text-left last:border-0 hover:bg-subtle', !n.read_at && 'bg-blue-50/40')}>
             <span className={cn('mt-1 size-2 shrink-0 rounded-full', n.type === 'error' ? 'bg-danger' : n.type === 'warning' ? 'bg-warning' : 'bg-primary')} />
@@ -406,9 +412,9 @@ function ProfileMenu() {
   }, [])
   return (
     <div className="relative" ref={ref}>
-      <button onClick={() => setOpen((v) => !v)} aria-haspopup="menu" aria-expanded={open} className="flex items-center gap-2 rounded-xl border border-line bg-surface py-1 pl-1 pr-2 hover:bg-subtle">
+      <button onClick={() => setOpen((v) => !v)} aria-haspopup="menu" aria-expanded={open} className="flex items-center gap-2 rounded-xl border border-line bg-surface py-1 pl-1 pr-2 touch:min-h-11 hover:bg-subtle">
         <Avatar name={user?.name} color={user?.avatar_color} size={30} />
-        <span className="hidden text-[13px] font-medium text-ink sm:block">{user?.name}</span>
+        <span className="hidden text-[13px] font-medium text-ink xl:block">{user?.name}</span>
         <ChevronDown className="size-3.5 text-muted" />
       </button>
       {open && (
@@ -459,7 +465,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const showUpgrade = !isPlatformAdmin
 
   return (
-    <div className="flex min-h-screen bg-bg">
+    <div className="flex min-h-dvh bg-bg">
       <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-50 focus:rounded-lg focus:bg-surface focus:px-3 focus:py-2 focus:shadow">К основному содержимому</a>
 
       {/* Desktop sidebar */}
@@ -469,13 +475,15 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       {/* Mobile drawer */}
       {mobileNav && (
-        <div className="fixed inset-0 z-[80] lg:hidden">
-          <div className="absolute inset-0 bg-ink/40 backdrop-blur-[2px]" onClick={() => setMobileNav(false)} />
-          <div className="absolute inset-y-0 left-0 w-[272px] border-r border-line bg-surface">
-            <div className="flex justify-end p-2">
+        <div className="fixed inset-0 z-[80] lg:hidden" role="dialog" aria-modal="true" aria-label="Меню">
+          <div className="absolute inset-0 bg-scrim backdrop-blur-[2px]" onClick={() => setMobileNav(false)} />
+          <div className="absolute inset-y-0 left-0 flex w-[min(300px,86vw)] flex-col border-r border-line bg-surface pb-[var(--sab)] pl-[var(--sal)] pt-[var(--sat)]">
+            <div className="flex justify-end p-2 pb-0">
               <IconButton onClick={() => setMobileNav(false)} title="Закрыть меню"><X className="size-4" /></IconButton>
             </div>
-            <SidebarContent onNavigate={() => setMobileNav(false)} tenantName={tenant?.name} logoText={tenant?.logo_text} logoUrl={tenant?.logo_url} showUpgrade={showUpgrade} />
+            <div className="min-h-0 flex-1">
+              <SidebarContent onNavigate={() => setMobileNav(false)} tenantName={tenant?.name} logoText={tenant?.logo_text} logoUrl={tenant?.logo_url} mobileControls />
+            </div>
           </div>
         </div>
       )}
@@ -503,22 +511,22 @@ export function AppShell({ children }: { children: ReactNode }) {
 
             <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
               <IconButton className="sm:hidden" onClick={() => setPalette(true)} title="Поиск"><Search className="size-[18px]" /></IconButton>
-              <LanguageSwitcher />
-              <ThemeToggle />
-              <CompanySwitcher />
+              <div className="hidden sm:block"><LanguageSwitcher /></div>
+              <div className="hidden sm:block"><ThemeToggle /></div>
+              <div className="hidden sm:block"><CompanySwitcher /></div>
               <PersistentNotificationsMenu />
               <ProfileMenu />
             </div>
           </div>
         </header>
 
-        <main id="main" className="min-w-0 flex-1 px-3 py-4 pb-24 sm:px-4 sm:py-5 lg:pb-8">
+        <main id="main" className="min-w-0 flex-1 px-3 py-4 pb-[calc(5rem+var(--sab))] sm:px-4 sm:py-5 lg:pb-8">
           <EmailVerificationBanner />
           {children}
         </main>
 
         {/* Mobile bottom navigation — a real task switcher, not a scaled sidebar */}
-        <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface/95 backdrop-blur-md lg:hidden" aria-label="Быстрая навигация">
+        <nav className="mobile-tabbar fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface/95 pb-[var(--sab)] pl-[var(--sal)] pr-[var(--sar)] backdrop-blur-md lg:hidden" aria-label="Быстрая навигация">
           <ul className="grid grid-cols-5">
             {[
               { to: '/app', label: 'Обзор', icon: <LayoutDashboard className="size-5" /> },
@@ -529,7 +537,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             ].map((it) => (
               <li key={it.to}>
                 <NavLink to={it.to} end={it.to === '/app'}
-                  className={({ isActive }) => cn('flex flex-col items-center gap-0.5 py-2 text-[10px] font-medium', isActive ? 'text-primary' : 'text-muted')}>
+                  className={({ isActive }) => cn('flex min-h-14 flex-col items-center justify-center gap-0.5 py-1.5 text-[11px] font-medium', isActive ? 'text-primary' : 'text-muted')}>
                   {it.icon}<span>{it.label}</span>
                 </NavLink>
               </li>

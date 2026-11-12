@@ -8,6 +8,7 @@ import { dateTime } from '../../lib/format'
 import { useToast } from '../../components/ui/toast'
 import MfaCard from './MfaCard'
 import BiometricCard from './BiometricCard'
+import DeleteAccountCard from './DeleteAccountCard'
 
 interface Session { handle: string; ip: string | null; user_agent: string | null; created_at: string; expires_at: string; current: boolean }
 
@@ -48,6 +49,7 @@ export default function SecurityPanel() {
           <Button loading={change.isPending} disabled={!pw.current_password || pw.new_password.length < 8 || pw.new_password !== pw.repeat} onClick={() => change.mutate(undefined as never)}>Изменить пароль</Button>
         </div>
       </SectionCard>
+      <DeleteAccountCard />
     </div>
   )
 }

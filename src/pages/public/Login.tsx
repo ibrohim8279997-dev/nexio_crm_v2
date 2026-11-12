@@ -98,7 +98,7 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen lg:grid lg:grid-cols-[1.05fr_minmax(420px,0.95fr)]">
+    <div className="min-h-dvh lg:grid lg:grid-cols-[1.05fr_minmax(420px,0.95fr)]">
       {/* Marketing panel */}
       <section className="relative overflow-hidden bg-gradient-to-b from-blue-50 via-white to-blue-50 px-6 py-8 lg:px-12 lg:py-10">
         <div className="pointer-events-none absolute -left-24 -top-24 size-[420px] rounded-full bg-blue-100/60 blur-3xl" aria-hidden />

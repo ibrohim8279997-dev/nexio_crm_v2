@@ -1,80 +1,55 @@
 import { Link, useParams } from 'react-router-dom'
 import { Card } from '../../components/ui/core'
 import { NexioMark } from '../../components/ui/NexioMark'
+import { ThemeToggle } from '../../components/ui/ThemeToggle'
+import { useI18n } from '../../lib/i18n'
+import { EFFECTIVE_DATE, POLICY_VERSION, type Lang, type LocalizedDoc } from './legal/types'
+import { privacy } from './legal/privacy'
+import { cookies } from './legal/cookies'
+import { dpa } from './legal/dpa'
+import { acceptableUse, terms } from './legal/terms'
 
-type Section = { heading: string; paragraphs: string[] }
-type LegalDoc = { title: string; version: string; sections: Section[] }
-
-const EFFECTIVE_DATE = '13 октября 2026 г.'
-const CONTACT_EMAIL = 'ibrohim8279997@gmail.com'
-
-const DOCS: Record<string, LegalDoc> = {
-  privacy: {
-    title: 'Политика конфиденциальности', version: '1.0',
-    sections: [
-      { heading: '1. Кто обрабатывает данные', paragraphs: [`Оператор платформы Nexio CRM — Nexio Lab. По вопросам персональных данных, реализации прав и инцидентов безопасности напишите на ${CONTACT_EMAIL}. Для данных, которые компания-клиент загружает в CRM, такая компания является контролёром, а Nexio Lab — обработчиком по её поручению.`] },
-      { heading: '2. Какие данные мы обрабатываем', paragraphs: ['Данные аккаунта: имя, рабочий email, хеш пароля, роль, компания и настройки. Технические данные: IP-адрес, User-Agent, время входа, идентификатор сессии и журнал безопасности. CRM-данные: сведения о компаниях, контактах, сделках, задачах, заказах, документах и коммуникациях, которые пользователь вносит в систему.', 'При использовании AI и телефонии могут обрабатываться настройки агента, промпты, база знаний, номер телефона, основание согласия, результат звонка, резюме, транскрипт и запись — только если функция включена и имеется законное основание.'] },
-      { heading: '3. Цели и правовые основания', paragraphs: ['Мы используем данные для предоставления и защиты сервиса, аутентификации, изоляции арендаторов, поддержки, биллинга, предотвращения злоупотреблений и выполнения законных инструкций клиента. Основания: исполнение договора, согласие, законный интерес в безопасности сервиса и юридические обязанности.', 'Клиент самостоятельно определяет законное основание обработки данных своих работников и контрагентов, включая правила маркетинга, записи разговоров и автоматизированных коммуникаций.'] },
-      { heading: '4. AI-провайдеры и получатели', paragraphs: ['Если AI включён администратором, минимально необходимая часть запроса может передаваться выбранному AI-провайдеру. В бесплатном режиме может использоваться GroqCloud. Ключи доступа хранятся как секреты окружения и не возвращаются в интерфейс. Не помещайте в промпты специальные категории данных без законного основания.', 'Данные также могут обрабатываться инфраструктурными, email-, телефония- и платёжными поставщиками после их явного подключения. Актуальный список подключённых интеграций доступен администратору компании. Продажа персональных данных не производится.'] },
-      { heading: '5. Хранение и удаление', paragraphs: ['Активные данные хранятся пока действует аккаунт или договор. Сессии действуют не более 14 дней и удаляются при выходе или смене пароля. Запросы сброса пароля действуют 1 час. Журналы безопасности хранятся до 12 месяцев, если закон или расследование инцидента не требует большего срока.', 'После подтверждённого запроса данные удаляются или обезличиваются в течение 30 дней, кроме обязательных бухгалтерских записей, журналов безопасности и резервных копий. Резервные копии выводятся из ротации в течение 90 дней.'] },
-      { heading: '6. Права пользователя', paragraphs: [`Вы можете запросить доступ, исправление, экспорт, ограничение обработки, возражение, отзыв согласия и удаление данных. Направьте запрос на ${CONTACT_EMAIL}. Мы проверим личность и ответим в срок, установленный применимым законодательством. Отзыв согласия не влияет на законность предыдущей обработки.`] },
-      { heading: '7. Международная передача и безопасность', paragraphs: ['При использовании зарубежных облачных или AI-поставщиков данные могут передаваться в другие страны с применением договорных и технических мер защиты. Мы применяем tenant isolation, RBAC, HttpOnly/Secure cookies, журналирование, лимиты запросов и шифрование транспортного канала. Абсолютная безопасность не может быть гарантирована; о существенном инциденте затронутые стороны уведомляются без неоправданной задержки.'] },
-      { heading: '8. Изменения политики', paragraphs: ['Существенные изменения публикуются с новой версией и датой вступления в силу. Если изменение требует нового согласия, сервис запросит его отдельно.'] },
-    ],
-  },
-  cookies: {
-    title: 'Политика использования cookie', version: '1.0',
-    sections: [
-      { heading: '1. Обязательная cookie', paragraphs: ['Nexio CRM использует только обязательную сессионную cookie: в production — __Host-nexio_session, в локальной разработке — nexio_session_dev. Она нужна для безопасного входа и не используется для рекламы или межсайтового отслеживания.'] },
-      { heading: '2. Параметры защиты', paragraphs: ['Production-cookie имеет атрибуты Secure, HttpOnly, SameSite=Strict и Path=/. JavaScript не может её прочитать, она не передаётся по HTTP и не доступна другим доменам. Максимальный срок — 14 дней; при выходе cookie удаляется.'] },
-      { heading: '3. Аналитика и согласие', paragraphs: ['Сейчас сторонние рекламные и аналитические cookie не применяются, поэтому отдельный баннер согласия не показывается. Если такие технологии будут добавлены, они будут отключены по умолчанию до получения согласия, а эта политика будет обновлена.'] },
-      { heading: '4. Управление', paragraphs: ['Вы можете удалить cookie в настройках браузера. После блокировки обязательной cookie вход в CRM работать не будет.'] },
-    ],
-  },
-  terms: {
-    title: 'Условия использования', version: '1.0',
-    sections: [
-      { heading: '1. Сервис', paragraphs: ['Nexio CRM предоставляет изолированное рабочее пространство для управления отношениями с клиентами. Пользователь отвечает за законность загружаемых данных, настройку ролей и действия приглашённых сотрудников.'] },
-      { heading: '2. Допустимое использование', paragraphs: ['Запрещены несанкционированный доступ, массовые атаки, обход лимитов, вредоносный код, незаконный обзвон, спам и выдача AI за человека. Финансово значимые и нестандартные действия AI должны подтверждаться человеком.'] },
-      { heading: '3. Тарифы и sandbox', paragraphs: ['Функции, помеченные sandbox, не являются реальной оплатой, звонком или отправкой сообщения и не должны активировать платные права без подтверждения внешнего провайдера. Условия тарифа отображаются до подтверждения заказа.'] },
-      { heading: '4. Ответственность', paragraphs: ['Сервис предоставляется с разумными мерами доступности и безопасности. Nexio Lab не отвечает за незаконные данные клиента, неверные настройки, решения, принятые исключительно на основе AI, или сбои сторонних поставщиков в пределах, разрешённых законом.'] },
-    ],
-  },
-  dpa: {
-    title: 'Соглашение об обработке данных (DPA)', version: '1.0',
-    sections: [
-      { heading: '1. Роли сторон', paragraphs: ['Компания-клиент является контролёром CRM-данных, Nexio Lab — обработчиком. Nexio Lab обрабатывает данные только по документированным инструкциям клиента и для оказания сервиса.'] },
-      { heading: '2. Конфиденциальность и безопасность', paragraphs: ['Доступ предоставляется только уполномоченным лицам по принципу минимальных привилегий. Применяются изоляция арендаторов, управление сессиями, аудит, резервное копирование и процедура реагирования на инциденты.'] },
-      { heading: '3. Субобработчики и помощь', paragraphs: ['Nexio Lab обеспечивает договорные обязательства субобработчиков и помогает клиенту отвечать на запросы субъектов данных, проводить оценку рисков и исполнять требования по удалению, возврату и инцидентам.'] },
-    ],
-  },
-  'acceptable-use': {
-    title: 'Правила допустимого использования', version: '1.0',
-    sections: [
-      { heading: 'Запрещённые действия', paragraphs: ['Запрещены DDoS, подбор паролей, эксплуатация уязвимостей без письменного разрешения, загрузка вредоносного содержимого, обход tenant isolation, незаконный сбор данных, спам и звонки без согласия.'] },
-      { heading: 'AI и телефония', paragraphs: ['AI должен раскрывать свою природу, уважать отказ от коммуникаций и suppression list. Запись разговоров разрешена только при наличии законного основания и уведомления. Автономные платежи, возвраты и договорные обязательства запрещены без человеческого подтверждения.'] },
-    ],
-  },
+const DOCS: Record<string, LocalizedDoc> = { privacy, cookies, terms, dpa, 'acceptable-use': acceptableUse }
+const LANGS: Lang[] = ['uz', 'ru', 'en']
+const UI: Record<Lang, { version: string; since: string; ruOnly: string; placeholder: string }> = {
+  uz: { version: 'versiya', since: 'kuchga kirgan sana', ruOnly: "Bu hujjat hozircha faqat rus tilida mavjud.", placeholder: "Operatorning yuridik rekvizitlari ommaviy ishga tushirishdan oldin to'ldirilishi kerak." },
+  ru: { version: 'версия', since: 'действует с', ruOnly: '', placeholder: 'Юридические реквизиты оператора должны быть дополнены перед публичным production-запуском.' },
+  en: { version: 'version', since: 'effective', ruOnly: 'This document is currently available in Russian only.', placeholder: "The operator's legal details must be added before the public launch." },
 }
 
 export default function Legal() {
   const { slug } = useParams()
-  const doc = DOCS[slug ?? 'privacy'] ?? DOCS.privacy
+  const { locale, setLocale } = useI18n()
+  const lang: Lang = LANGS.includes(locale as Lang) ? (locale as Lang) : 'ru'
+  const entry = DOCS[slug ?? 'privacy'] ?? DOCS.privacy
+  const doc = entry[lang] ?? entry.ru
+  const fallback = !entry[lang]
+  const ui = UI[lang]
   return (
-    <div className="min-h-screen bg-bg">
-      <header className="border-b border-line bg-surface">
-        <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4">
+    <div className="min-h-dvh bg-bg">
+      <header className="border-b border-line bg-surface pt-[var(--sat)]">
+        <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3">
           <Link to="/" className="flex items-center gap-2"><NexioMark className="size-8" /><span className="text-[15px] font-bold text-ink">Nexio CRM</span></Link>
-          <nav className="flex flex-wrap justify-end gap-3 text-[12px] text-muted">{Object.entries(DOCS).map(([key, value]) => <Link key={key} to={`/legal/${key}`} className="hover:text-primary">{value.title.split(' ')[0]}</Link>)}</nav>
+          <div className="flex items-center gap-2">
+            <div className="inline-flex rounded-xl border border-line bg-surface p-0.5" role="group" aria-label="Language">
+              {LANGS.map((l) => <button key={l} type="button" onClick={() => setLocale(l)} aria-pressed={l === lang}
+                className={`h-8 touch:h-10 rounded-[10px] px-2.5 text-[12px] font-semibold uppercase ${l === lang ? 'bg-primary text-white' : 'text-muted hover:text-ink'}`}>{l}</button>)}
+            </div>
+            <ThemeToggle />
+          </div>
+          <nav className="flex w-full flex-wrap gap-x-4 gap-y-1 text-[12px] text-muted">
+            {Object.entries(DOCS).map(([key, value]) => <Link key={key} to={`/legal/${key}`} className={`py-1 hover:text-primary ${(slug ?? 'privacy') === key ? 'font-semibold text-ink' : ''}`}>{(value[lang] ?? value.ru).title.replace(/\s*\(.*\)$/, '')}</Link>)}
+          </nav>
         </div>
       </header>
-      <main className="mx-auto max-w-3xl px-4 py-10">
-        <h1 className="text-[26px] font-extrabold tracking-tight text-ink">{doc.title}</h1>
-        <p className="mt-1 text-[12px] text-muted">Nexio Lab · версия {doc.version} · действует с {EFFECTIVE_DATE}</p>
-        <Card className="mt-6 space-y-7 p-6">
+      <main className="mx-auto max-w-3xl px-4 py-8 sm:py-10">
+        <h1 className="text-[22px] font-extrabold tracking-tight text-ink sm:text-[26px]">{doc.title}</h1>
+        <p className="mt-1 text-[12px] text-muted">Nexio Lab · {ui.version} {POLICY_VERSION} · {ui.since} {EFFECTIVE_DATE[lang]}</p>
+        {fallback && <p role="note" className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-[12px] text-amber-900">{ui.ruOnly}</p>}
+        <Card className="mt-6 space-y-7 p-5 sm:p-6">
           {doc.sections.map((section) => <section key={section.heading}><h2 className="text-[15px] font-bold text-ink">{section.heading}</h2><div className="mt-2 space-y-3">{section.paragraphs.map((paragraph) => <p key={paragraph} className="text-[13px] leading-relaxed text-muted">{paragraph}</p>)}</div></section>)}
         </Card>
-        <p className="mt-4 text-[11px] text-slate-400">Юридические реквизиты оператора должны быть дополнены перед публичным production-запуском.</p>
+        <p className="mt-4 text-[11px] text-slate-400">{ui.placeholder}</p>
       </main>
     </div>
   )

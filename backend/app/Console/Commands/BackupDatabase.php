@@ -7,7 +7,7 @@ use Illuminate\Console\Command;
 
 class BackupDatabase extends Command
 {
-    protected $signature = 'nexio:backup {--keep=14 : how many backups to retain}';
+    protected $signature = 'nexio:backup {--keep=90 : how many daily backups to retain (90 = the 90 days promised in the privacy policy)}';
     protected $description = 'Dump the database to storage/app/backups (gzip) and prune old dumps';
 
     public function handle(): int

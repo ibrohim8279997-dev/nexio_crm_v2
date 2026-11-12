@@ -24,7 +24,7 @@ export function Modal({ open, onClose, title, description, children, footer, siz
   if (!open) return null
   const width = { sm: 'max-w-sm', md: 'max-w-lg', lg: 'max-w-2xl', xl: 'max-w-4xl' }[size]
   return (
-    <div className="fixed inset-0 z-[90] flex items-end justify-center overflow-y-auto bg-ink/45 p-0 backdrop-blur-[2px] sm:items-center sm:p-4" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose() }}>
+    <div className="fixed inset-0 z-[90] flex items-end justify-center overflow-y-auto bg-scrim p-0 backdrop-blur-[2px] sm:items-center sm:p-4" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose() }}>
       <div ref={ref} role="dialog" aria-modal="true" aria-label={typeof title === 'string' ? title : undefined}
         className={cn('animate-in w-full rounded-t-2xl border border-line bg-surface shadow-[var(--shadow-pop)] sm:rounded-card', width)}>
         <div className="flex items-start justify-between gap-3 border-b border-line px-4 py-3.5 sm:px-5">
@@ -34,8 +34,9 @@ export function Modal({ open, onClose, title, description, children, footer, siz
           </div>
           <IconButton onClick={onClose} title="Закрыть"><X className="size-4" /></IconButton>
         </div>
-        <div className="max-h-[70vh] overflow-y-auto px-4 py-4 sm:px-5">{children}</div>
-        {footer && <div className="flex flex-wrap items-center justify-end gap-2 border-t border-line px-4 py-3 sm:px-5">{footer}</div>}
+        <div className="max-h-[70dvh] overflow-y-auto px-4 py-4 sm:px-5">{children}</div>
+        {footer && <div className="flex flex-wrap items-center justify-end gap-2 border-t border-line px-4 py-3 pb-[calc(0.75rem+var(--sab))] sm:px-5 sm:pb-3">{footer}</div>}
+        {!footer && <div className="h-[var(--sab)] sm:hidden" aria-hidden />}
       </div>
     </div>
   )
@@ -52,8 +53,8 @@ export function Drawer({ open, onClose, title, description, children, footer, wi
   }, [open, onClose])
   if (!open) return null
   return (
-    <div className="fixed inset-0 z-[90] flex justify-end bg-ink/40 backdrop-blur-[2px]" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose() }}>
-      <aside role="dialog" aria-modal="true" className={cn('flex h-full w-full flex-col border-l border-line bg-surface shadow-[var(--shadow-pop)]', width)}>
+    <div className="fixed inset-0 z-[90] flex justify-end bg-scrim backdrop-blur-[2px]" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose() }}>
+      <aside role="dialog" aria-modal="true" className={cn('flex h-full w-full flex-col pt-[var(--sat)] border-l border-line bg-surface shadow-[var(--shadow-pop)]', width)}>
         <header className="flex items-start justify-between gap-3 border-b border-line px-5 py-4">
           <div className="min-w-0">
             <h2 className="text-[15px] font-semibold text-ink">{title}</h2>
@@ -62,7 +63,7 @@ export function Drawer({ open, onClose, title, description, children, footer, wi
           <IconButton onClick={onClose} title="Закрыть"><X className="size-4" /></IconButton>
         </header>
         <div className="flex-1 overflow-y-auto px-5 py-4">{children}</div>
-        {footer && <footer className="flex flex-wrap items-center justify-end gap-2 border-t border-line px-5 py-3">{footer}</footer>}
+        {footer && <footer className="flex flex-wrap items-center justify-end gap-2 border-t border-line px-5 py-3 pb-[calc(0.75rem+var(--sab))]">{footer}</footer>}
       </aside>
     </div>
   )

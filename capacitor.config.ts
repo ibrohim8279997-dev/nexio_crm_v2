@@ -21,7 +21,8 @@ const config: CapacitorConfig = {
       showSpinner: false,
     },
     StatusBar: { overlaysWebView: false },
-    Keyboard: { resize: 'body', resizeOnFullScreen: true },
+    // resizeOnFullScreen is omitted on purpose: with edge-to-edge (SystemBars insetsHandling 'css') Capacitor 8 warns it misbehaves.
+    Keyboard: { resize: 'body' },
     FirebaseMessaging: { presentationOptions: ['badge', 'sound', 'alert'] },
   },
 }

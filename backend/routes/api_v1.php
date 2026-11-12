@@ -38,6 +38,7 @@ Route::prefix('v1')->group(function () use ($h) {
     Route::post('/auth/register', $h(AuthController::class, 'register'));
     Route::post('/auth/login', $h(AuthController::class, 'login'));
     Route::post('/auth/logout', $h(AuthController::class, 'logout'));
+    Route::post('/auth/delete-account', $h(AuthController::class, 'deleteAccount'))->middleware('throttle:5,60');
     Route::get('/auth/me', $h(AuthController::class, 'me'));
     Route::post('/auth/switch-tenant', $h(AuthController::class, 'switchTenant'));
     Route::get('/auth/sessions', $h(AuthController::class, 'listSessions'));

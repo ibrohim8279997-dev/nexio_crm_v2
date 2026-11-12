@@ -13,6 +13,9 @@ use Illuminate\Support\Facades\RateLimiter;
 
 class AuthController
 {
+    /** Version of the Terms + Privacy Policy shown at sign-up. Bump it together with src/pages/public/legal/ when the texts change. */
+    public const POLICY_VERSION = '2.0';
+
     private const DEFAULT_STAGES = [
         ['new', 'Новый лид', 10, 'open', '#94A3B8'],
         ['qualified', 'Квалификация', 25, 'open', '#5AA0FA'],
@@ -131,6 +134,9 @@ class AuthController
         $email = strtolower(trim(H::str($b['email'] ?? null, 'email', true, 190)));
         $password = H::str($b['password'] ?? null, 'password', true, 200);
         $company = H::str($b['company'] ?? null, 'company', true, 160);
+        if (empty($b['accepted_terms']) || empty($b['accepted_privacy'])) {
+            throw new ApiException(400, 'Необходимо принять Условия использования и Политику конфиденциальности', 'consent_required');
+        }
         if (!preg_match('/^[^@\s]+@[^@\s]+\.[^@\s]+$/', $email)) {
             throw new ApiException(400, 'Некорректный email', 'bad_request');
         }
@@ -150,6 +156,11 @@ class AuthController
             'name' => $name, 'avatar_color' => $color, 'is_platform_admin' => 0,
             'email_verify_token' => $verifyToken,
             'created_at' => $ts, 'updated_at' => $ts,
+        ]);
+        DB::table('policy_acceptances')->insert([
+            'id' => H::newId('pac'), 'user_id' => $userId, 'policy_version' => self::POLICY_VERSION,
+            'terms_accepted' => 1, 'privacy_accepted' => 1, 'ip' => $ctx->request->ip(),
+            'user_agent' => mb_substr((string) $ctx->request->header('User-Agent'), 0, 250), 'accepted_at' => $ts,
         ]);
         $tenantId = $this->provisionTenant($company, $userId, $name);
         (new \App\Services\PlatformAlerts())->notify('Yangi kompaniya', "{$company} — {$name} ({$email})", "/platform/tenants/{$tenantId}");
@@ -184,7 +195,7 @@ class AuthController
         if (!empty($u->mfa_enabled)) $this->requireSecondFactor($u, isset($b['code']) ? (string) $b['code'] : '');
         $m = DB::selectOne("SELECT tenant_id, role FROM tenant_memberships WHERE user_id = ? AND status = 'active' ORDER BY created_at LIMIT 1", [$u->id]);
         $sid = $this->createSession($ctx, $u->id, $m->tenant_id ?? null);
-        DB::table('users')->where('id', $u->id)->update(['last_login_at' => H::now()]);
+        DB::table('users')->where('id', $u->id)->update(['last_login_at' => H::now(), 'deletion_requested_at' => null]); // signing in cancels a pending deletion
         if ($m) {
             DB::table('audit_logs')->insert([
                 'id' => H::newId('aud'), 'tenant_id' => $m->tenant_id, 'actor_id' => $u->id,
@@ -364,6 +375,34 @@ class AuthController
         $token = H::newToken();
         DB::table('users')->where('id', $user['id'])->update(['email_verify_token' => $token]);
         return H::json(['ok' => true, 'sent' => $this->sendVerification((string) $row->email, $token)]);
+    }
+
+    /**
+     * In-app account deletion (App Store 5.1.1(v)). The personal account is anonymised after a 30-day grace period
+     * (`nexio:accounts:purge`); signing in again within that time cancels the request. CRM records belong to the company
+     * (the controller), so they are not removed here.
+     */
+    public function deleteAccount(Ctx $ctx)
+    {
+        $user = $ctx->auth();
+        $b = H::body($ctx);
+        $row = DB::table('users')->where('id', $user['id'])->first(['password_hash', 'is_platform_admin']);
+        if (!$row || !H::verifyPassword((string) ($b['password'] ?? ''), (string) $row->password_hash)) {
+            throw new ApiException(401, 'Неверный пароль', 'unauthorized');
+        }
+        if (!empty($row->is_platform_admin)) throw new ApiException(403, 'Аккаунт администратора платформы нельзя удалить из приложения', 'forbidden');
+        // An owner who still has colleagues must hand the workspace over first, otherwise they would be left without an owner.
+        $blocking = DB::selectOne(
+            "SELECT 1 FROM tenant_memberships o WHERE o.user_id = ? AND o.role = 'tenant_owner' AND o.status = 'active'
+               AND EXISTS (SELECT 1 FROM tenant_memberships x WHERE x.tenant_id = o.tenant_id AND x.user_id <> o.user_id AND x.status = 'active' AND x.role <> 'client_portal_user')",
+            [$user['id']]
+        );
+        if ($blocking) throw new ApiException(409, 'Сначала передайте роль владельца другому сотруднику или удалите остальных участников', 'conflict');
+        DB::table('users')->where('id', $user['id'])->update(['deletion_requested_at' => H::now(), 'updated_at' => H::now()]);
+        DB::table('sessions')->where('user_id', $user['id'])->delete();
+        DB::table('device_tokens')->where('user_id', $user['id'])->delete();
+        H::audit($ctx, 'account.deletion_requested', 'user', $user['id'], null);
+        return H::json(['ok' => true, 'purge_after_days' => 30], 200, ['Set-Cookie' => $this->clearCookie()]);
     }
 
     public function logout(Ctx $ctx)

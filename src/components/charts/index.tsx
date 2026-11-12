@@ -1,14 +1,22 @@
 import { Area, AreaChart, Bar, BarChart, Cell, Legend, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { cn } from '../../lib/cn'
+import { useTheme } from '../../lib/theme'
 
-const AXIS = { fontSize: 11, fill: '#64748B' }
-const GRID = '#E2E8F0'
-
-const tipStyle = {
-  contentStyle: { borderRadius: 12, border: '1px solid #E2E8F0', boxShadow: '0 12px 40px -12px rgba(15,23,42,.22)', fontSize: 12, padding: '8px 10px' },
-  labelStyle: { color: '#0F172A', fontWeight: 600, marginBottom: 4 },
-  itemStyle: { color: '#64748B' },
-} as const
+/** Recharts draws with inline colours, so the chart palette follows the theme here instead of through CSS. */
+function useChartTheme() {
+  const dark = useTheme().theme === 'dark'
+  const line = dark ? '#26344A' : '#E2E8F0'
+  return {
+    axis: { fontSize: 11, fill: dark ? '#94A3B8' : '#64748B' },
+    grid: line,
+    cursor: dark ? '#17233A' : '#F1F5F9',
+    tip: {
+      contentStyle: { borderRadius: 12, border: `1px solid ${line}`, background: dark ? '#111827' : '#FFFFFF', boxShadow: dark ? '0 12px 40px -12px rgba(0,0,0,.6)' : '0 12px 40px -12px rgba(15,23,42,.22)', fontSize: 12, padding: '8px 10px' },
+      labelStyle: { color: dark ? '#E5EDF8' : '#0F172A', fontWeight: 600, marginBottom: 4 },
+      itemStyle: { color: dark ? '#94A3B8' : '#64748B' },
+    },
+  } as const
+}
 
 function compactTick(v: number) {
   const abs = Math.abs(v)
@@ -25,6 +33,7 @@ export function TrendChart({ data, keys, height = 240, formatter }: {
   height?: number
   formatter?: (v: number) => string
 }) {
+  const c = useChartTheme()
   return (
     <div style={{ height }} className="w-full">
       <ResponsiveContainer width="100%" height="100%">
@@ -37,9 +46,9 @@ export function TrendChart({ data, keys, height = 240, formatter }: {
               </linearGradient>
             ))}
           </defs>
-          <XAxis dataKey="label" tick={AXIS} axisLine={false} tickLine={false} />
-          <YAxis tick={AXIS} axisLine={false} tickLine={false} tickFormatter={compactTick} width={54} />
-          <Tooltip {...tipStyle} formatter={(v: number, n: string) => [formatter ? formatter(v) : compactTick(v), n]} />
+          <XAxis dataKey="label" tick={c.axis} axisLine={false} tickLine={false} />
+          <YAxis tick={c.axis} axisLine={false} tickLine={false} tickFormatter={compactTick} width={54} />
+          <Tooltip {...c.tip} formatter={(v: number, n: string) => [formatter ? formatter(v) : compactTick(v), n]} />
           <Legend wrapperStyle={{ fontSize: 11, paddingTop: 6 }} />
           {keys.map((k) => (
             <Area key={k.key} type="monotone" dataKey={k.key} name={k.name} stroke={k.color} strokeWidth={2} fill={`url(#g-${k.key})`} dot={false} activeDot={{ r: 4 }} />
@@ -57,13 +66,14 @@ export function BarsChart({ data, keys, height = 240, horizontal, formatter }: {
   horizontal?: boolean
   formatter?: (v: number) => string
 }) {
+  const c = useChartTheme()
   return (
     <div style={{ height }} className="w-full">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} layout={horizontal ? 'vertical' : 'horizontal'} margin={{ top: 8, right: 12, left: horizontal ? 8 : -18, bottom: 0 }}>
-          <XAxis {...(horizontal ? { type: 'number' as const, tickFormatter: compactTick } : { dataKey: 'label' })} tick={AXIS} axisLine={false} tickLine={false} />
-          <YAxis {...(horizontal ? { type: 'category' as const, dataKey: 'label', width: 118 } : { tickFormatter: compactTick, width: 54 })} tick={AXIS} axisLine={false} tickLine={false} />
-          <Tooltip {...tipStyle} formatter={(v: number, n: string) => [formatter ? formatter(v) : compactTick(v), n]} cursor={{ fill: '#F1F5F9' }} />
+          <XAxis {...(horizontal ? { type: 'number' as const, tickFormatter: compactTick } : { dataKey: 'label' })} tick={c.axis} axisLine={false} tickLine={false} />
+          <YAxis {...(horizontal ? { type: 'category' as const, dataKey: 'label', width: 118 } : { tickFormatter: compactTick, width: 54 })} tick={c.axis} axisLine={false} tickLine={false} />
+          <Tooltip {...c.tip} formatter={(v: number, n: string) => [formatter ? formatter(v) : compactTick(v), n]} cursor={{ fill: c.cursor }} />
           <Bar dataKey={keys[0].key} name={keys[0].name} fill={keys[0].color} radius={horizontal ? [0, 8, 8, 0] : [8, 8, 0, 0]} maxBarSize={38} />
         </BarChart>
       </ResponsiveContainer>
@@ -77,13 +87,14 @@ export function MultiBars({ data, keys, height = 240, formatter }: {
   height?: number
   formatter?: (v: number) => string
 }) {
+  const c = useChartTheme()
   return (
     <div style={{ height }} className="w-full">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 8, right: 8, left: -18, bottom: 0 }}>
-          <XAxis dataKey="label" tick={AXIS} axisLine={false} tickLine={false} />
-          <YAxis tick={AXIS} axisLine={false} tickLine={false} tickFormatter={compactTick} width={54} />
-          <Tooltip {...tipStyle} formatter={(v: number, n: string) => [formatter ? formatter(v) : compactTick(v), n]} cursor={{ fill: '#F1F5F9' }} />
+          <XAxis dataKey="label" tick={c.axis} axisLine={false} tickLine={false} />
+          <YAxis tick={c.axis} axisLine={false} tickLine={false} tickFormatter={compactTick} width={54} />
+          <Tooltip {...c.tip} formatter={(v: number, n: string) => [formatter ? formatter(v) : compactTick(v), n]} cursor={{ fill: c.cursor }} />
           <Legend wrapperStyle={{ fontSize: 11, paddingTop: 6 }} />
           {keys.map((k) => <Bar key={k.key} dataKey={k.key} name={k.name} fill={k.color} radius={[6, 6, 0, 0]} maxBarSize={26} />)}
         </BarChart>
@@ -98,6 +109,7 @@ export function DonutChart({ data, height = 220, centerLabel, centerValue }: {
   centerLabel?: string
   centerValue?: string
 }) {
+  const c = useChartTheme()
   return (
     <div className="relative w-full" style={{ height }}>
       <ResponsiveContainer width="100%" height="100%">
@@ -105,7 +117,7 @@ export function DonutChart({ data, height = 220, centerLabel, centerValue }: {
           <Pie data={data} dataKey="value" nameKey="label" innerRadius="62%" outerRadius="88%" paddingAngle={2} strokeWidth={0}>
             {data.map((d, i) => <Cell key={i} fill={d.color} />)}
           </Pie>
-          <Tooltip {...tipStyle} />
+          <Tooltip {...c.tip} />
         </PieChart>
       </ResponsiveContainer>
       {(centerLabel || centerValue) && (
@@ -123,13 +135,14 @@ export function LineTrend({ data, keys, height = 200 }: {
   keys: { key: string; name: string; color: string }[]
   height?: number
 }) {
+  const c = useChartTheme()
   return (
     <div style={{ height }} className="w-full">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data} margin={{ top: 8, right: 8, left: -18, bottom: 0 }}>
-          <XAxis dataKey="label" tick={AXIS} axisLine={false} tickLine={false} />
-          <YAxis tick={AXIS} axisLine={false} tickLine={false} width={40} />
-          <Tooltip {...tipStyle} />
+          <XAxis dataKey="label" tick={c.axis} axisLine={false} tickLine={false} />
+          <YAxis tick={c.axis} axisLine={false} tickLine={false} width={40} />
+          <Tooltip {...c.tip} />
           {keys.map((k) => <Line key={k.key} type="monotone" dataKey={k.key} name={k.name} stroke={k.color} strokeWidth={2} dot={false} />)}
         </LineChart>
       </ResponsiveContainer>
@@ -172,5 +185,3 @@ export function Legend2({ items, className }: { items: { label: string; color: s
     </ul>
   )
 }
-
-export { GRID }

@@ -21,7 +21,7 @@ export default function ChooseWorkspace() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center bg-bg px-5 py-10">
+    <div className="flex min-h-dvh flex-col items-center bg-bg px-5 py-10">
       <BrandMark />
       <h1 className="mt-8 text-[24px] font-bold tracking-tight text-ink">Выберите рабочее пространство</h1>
       <p className="mt-2 max-w-md text-center text-[13px] text-muted">{user?.email} состоит в нескольких компаниях. Данные компаний полностью изолированы друг от друга.</p>

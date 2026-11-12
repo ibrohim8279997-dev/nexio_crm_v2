@@ -68,7 +68,7 @@ export default function Portal() {
 
   if (denied) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-bg p-4">
+      <div className="flex min-h-dvh items-center justify-center bg-bg p-4">
         <Card className="max-w-md p-6 text-center">
           <span className="mx-auto flex size-11 items-center justify-center rounded-xl bg-amber-50 text-warning"><LifeBuoy className="size-5" /></span>
           <h1 className="mt-3 text-[16px] font-bold text-ink">Портал доступен заказчикам</h1>
@@ -91,7 +91,7 @@ export default function Portal() {
   const d = q.data
 
   return (
-    <div className="min-h-screen bg-bg">
+    <div className="min-h-dvh bg-bg">
       <header className="sticky top-0 z-40 border-b border-line bg-surface/90 backdrop-blur-md">
         <div className="mx-auto flex h-14 max-w-[1400px] items-center gap-3 px-3 sm:px-5">
           <span className="inline-flex size-8 items-center justify-center rounded-lg bg-primary text-white"><Building2 className="size-4" /></span>

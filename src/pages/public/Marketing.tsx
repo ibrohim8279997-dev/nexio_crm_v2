@@ -127,7 +127,7 @@ export default function Marketing({ page }: { page: 'pricing' | 'features' | 'se
       : 'Практические механизмы защиты, а не декларации. Мы не заявляем абсолютную неуязвимость.'
 
   return (
-    <div className="min-h-screen bg-bg">
+    <div className="min-h-dvh bg-bg">
       <PublicHeader />
       <main className="mx-auto max-w-6xl px-4 py-10">
         <PageHeader title={title} subtitle={subtitle} />

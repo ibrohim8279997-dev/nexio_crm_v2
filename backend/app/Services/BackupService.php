@@ -27,7 +27,7 @@ class BackupService
     }
 
     /** @return array{file:string,bytes:int,driver:string} */
-    public static function run(int $keep = 14): array
+    public static function run(int $keep = 90): array
     {
         $conn = (string) config('database.default');
         $cfg = (array) config("database.connections.{$conn}");

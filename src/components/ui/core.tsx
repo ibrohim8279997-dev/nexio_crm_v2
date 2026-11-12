@@ -14,9 +14,9 @@ const VARIANTS: Record<Variant, string> = {
   ai: 'bg-ai text-white hover:brightness-95 shadow-sm',
 }
 const SIZES: Record<Size, string> = {
-  sm: 'h-8 px-3 text-[13px] gap-1.5 rounded-[10px]',
-  md: 'h-10 px-4 text-sm gap-2 rounded-xl',
-  lg: 'h-11 px-5 text-sm gap-2 rounded-xl',
+  sm: 'h-8 touch:h-10 px-3 text-[13px] gap-1.5 rounded-[10px]',
+  md: 'h-10 touch:h-11 px-4 text-sm gap-2 rounded-xl',
+  lg: 'h-11 touch:h-12 px-5 text-sm gap-2 rounded-xl',
 }
 
 export function Button({ variant = 'primary', size = 'md', loading, className, children, ...rest }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant; size?: Size; loading?: boolean }) {
@@ -38,7 +38,7 @@ export function Button({ variant = 'primary', size = 'md', loading, className, c
 export function IconButton({ className, title, children, ...rest }: ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <button {...rest} title={title} aria-label={title}
-      className={cn('inline-flex size-9 items-center justify-center rounded-xl text-muted transition-colors hover:bg-subtle hover:text-ink disabled:opacity-50', className)}>
+      className={cn('inline-flex size-9 touch:size-11 items-center justify-center rounded-xl text-muted transition-colors hover:bg-subtle hover:text-ink disabled:opacity-50', className)}>
       {children}
     </button>
   )
@@ -55,12 +55,12 @@ export function SectionCard({ title, subtitle, action, children, className, body
   return (
     <Card className={cn('overflow-hidden', className)}>
       {(title || action) && (
-        <div className="flex items-start justify-between gap-3 border-b border-line px-4 py-3 sm:px-5">
+        <div className="flex flex-col gap-3 border-b border-line px-4 py-3 sm:flex-row sm:items-start sm:justify-between sm:px-5">
           <div className="min-w-0">
             {title && <h2 className="truncate text-[15px] font-semibold text-ink">{title}</h2>}
             {subtitle && <p className="mt-0.5 text-xs text-muted">{subtitle}</p>}
           </div>
-          {action && <div className="shrink-0">{action}</div>}
+          {action && <div className="min-w-0 sm:shrink-0">{action}</div>}
         </div>
       )}
       <div className={cn(padded && 'p-4 sm:p-5', bodyClassName)}>{children}</div>
@@ -218,10 +218,10 @@ export function Tabs<T extends string>({ tabs, value, onChange, className }: { t
     <div className={cn('no-scrollbar flex gap-1 overflow-x-auto rounded-xl bg-slate-100/70 p-1', className)} role="tablist">
       {tabs.map((t) => (
         <button key={t.value} role="tab" aria-selected={value === t.value} onClick={() => onChange(t.value)}
-          className={cn('inline-flex shrink-0 items-center gap-1.5 rounded-[10px] px-3 py-1.5 text-[13px] font-medium transition-colors',
+          className={cn('inline-flex shrink-0 items-center gap-1.5 rounded-[10px] px-3 py-1.5 touch:py-2 text-[13px] font-medium transition-colors',
             value === t.value ? 'bg-surface text-ink shadow-sm' : 'text-muted hover:text-ink')}>
           {t.label}
-          {t.count !== undefined && <span className={cn('rounded-full px-1.5 text-[10px] font-semibold', value === t.value ? 'bg-blue-50 text-primary' : 'bg-white/70 text-muted')}>{t.count}</span>}
+          {t.count !== undefined && <span className={cn('rounded-full px-1.5 text-[10px] font-semibold', value === t.value ? 'bg-blue-50 text-primary' : 'bg-surface/70 text-muted')}>{t.count}</span>}
         </button>
       ))}
     </div>

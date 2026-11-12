@@ -28,8 +28,8 @@ export function PublicHeader() {
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
         <Link to="/" className="flex items-center gap-2.5">
           <NexioMark className="size-11" />
-          <span>
-            <span className="block text-[16px] font-extrabold leading-tight tracking-tight text-ink">Nexio CRM</span>
+          <span className={user ? 'max-sm:hidden' : undefined}>
+            <span className="block whitespace-nowrap text-[16px] font-extrabold leading-tight tracking-tight text-ink">Nexio CRM</span>
             <span className="block text-[10px] font-semibold uppercase tracking-wider text-muted">Nexio Lab</span>
           </span>
         </Link>
@@ -39,8 +39,7 @@ export function PublicHeader() {
           ))}
         </nav>
         <div className="flex items-center gap-2">
-          <LanguageSwitcher />
-          <ThemeToggle />
+          <div className="hidden items-center gap-2 sm:flex"><LanguageSwitcher /><ThemeToggle /></div>
           {user ? (
             <Link to={role === 'client_portal_user' ? '/portal' : '/app'}><Button size="sm">{role === 'client_portal_user' ? 'Mijoz portalini ochish' : t('workspace')} <ArrowRight className="size-3.5" /></Button></Link>
           ) : (
@@ -49,11 +48,12 @@ export function PublicHeader() {
               <Link to="/register"><Button size="sm">{t('startFree')}</Button></Link>
             </>
           )}
-          <button className="md:hidden" onClick={() => setOpen((v) => !v)} aria-label="Меню">{open ? <X className="size-5" /> : <Menu className="size-5" />}</button>
+          <button className="inline-flex size-10 items-center justify-center rounded-xl text-muted hover:bg-subtle md:hidden" onClick={() => setOpen((v) => !v)} aria-label="Меню" aria-expanded={open}>{open ? <X className="size-5" /> : <Menu className="size-5" />}</button>
         </div>
       </div>
       {open && (
         <nav className="border-t border-line bg-surface px-4 py-2 md:hidden">
+          <div className="flex items-center gap-2 py-2 sm:hidden"><LanguageSwitcher /><ThemeToggle labeled /></div>
           {[['/features', 'Возможности'], ['/pricing', 'Тарифы'], ['/security', 'Безопасность'], ['/login', 'Войти']].map(([to, l]) => (
             <Link key={to} to={to} onClick={() => setOpen(false)} className="block rounded-lg px-2 py-2.5 text-[13px] font-medium text-muted hover:bg-subtle">{l}</Link>
           ))}
@@ -109,7 +109,7 @@ export default function Landing() {
   const { user } = useAuth()
   const { t } = useI18n()
   return (
-    <div className="min-h-screen bg-bg">
+    <div className="min-h-dvh bg-bg">
       <PublicHeader />
 
       {/* Hero */}

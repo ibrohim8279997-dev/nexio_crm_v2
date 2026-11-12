@@ -33,7 +33,7 @@ export default function InvitePage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-blue-50 via-bg to-bg px-4 py-10">
+    <div className="flex min-h-dvh items-center justify-center bg-gradient-to-b from-blue-50 via-bg to-bg px-4 py-10">
       <div className="w-full max-w-md">
         <div className="flex justify-center"><BrandMark /></div>
         <Card className="mt-6 p-6">

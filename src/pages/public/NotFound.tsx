@@ -5,7 +5,7 @@ import { useAuth } from '../../lib/auth'
 export default function NotFound() {
   const { user } = useAuth()
   return (
-    <div className="flex min-h-screen items-center justify-center bg-bg px-4">
+    <div className="flex min-h-dvh items-center justify-center bg-bg px-4">
       <Card className="w-full max-w-md p-8 text-center">
         <p className="text-[11px] font-semibold uppercase tracking-widest text-primary">404</p>
         <h1 className="mt-2 text-xl font-bold text-ink">Страница не найдена</h1>

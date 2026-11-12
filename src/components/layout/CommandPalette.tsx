@@ -74,7 +74,7 @@ export function CommandPalette({ open, onClose, initialQuery = '' }: { open: boo
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-[95] flex items-start justify-center bg-ink/45 p-3 pt-[12vh] backdrop-blur-[2px]" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose() }}>
+    <div className="fixed inset-0 z-[95] flex items-start justify-center bg-scrim p-3 pt-[12dvh] backdrop-blur-[2px]" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose() }}>
       <div role="dialog" aria-modal="true" aria-label="Глобальный поиск" className="animate-in w-full max-w-xl overflow-hidden rounded-card border border-line bg-surface shadow-[var(--shadow-pop)]">
         <div className="flex items-center gap-2.5 border-b border-line px-4">
           <Search className="size-4 shrink-0 text-muted" />
@@ -84,7 +84,7 @@ export function CommandPalette({ open, onClose, initialQuery = '' }: { open: boo
           {isFetching && <span className="text-[10px] text-muted">поиск…</span>}
           <kbd className="rounded-md border border-line px-1.5 py-0.5 text-[10px] text-muted">esc</kbd>
         </div>
-        <div className="max-h-[52vh] overflow-y-auto py-1.5">
+        <div className="max-h-[52dvh] overflow-y-auto py-1.5">
           {results.length > 0 && (
             <>
               <p className="px-4 py-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">Записи</p>

@@ -32,7 +32,7 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 via-bg to-bg px-4 py-8">
+    <div className="min-h-dvh bg-gradient-to-b from-blue-50 via-bg to-bg px-4 py-8">
       <div className="mx-auto max-w-lg">
         <div className="flex justify-center"><BrandMark /></div>
         <h1 className="mt-6 text-center text-[24px] font-bold tracking-tight text-ink">Создайте рабочее пространство</h1>

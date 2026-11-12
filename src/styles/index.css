@@ -3,8 +3,10 @@
 /*
   Nexio CRM design system.
   Canonical tokens from the approved design blueprint v2.0 — white/blue, light-first.
-  Do not substitute glassmorphism / neon / dark variants for these.
+  The dark theme (html[data-theme='dark']) re-maps the same tokens and the Tailwind palette steps used by the app;
+  it is not a separate design. No glassmorphism / neon.
 */
+@custom-variant touch (@media (pointer: coarse));
 @theme {
   --color-bg: #f8fafc;
   --color-surface: #ffffff;
@@ -19,6 +21,7 @@
   --color-warning: #f59e0b;
   --color-danger: #ef4444;
   --color-ai: #8b5cf6;
+  --color-scrim: rgb(15 23 42 / .45);
 
   --font-sans: "Inter Variable", Inter, "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
 
@@ -54,9 +57,24 @@
   --nx-font-sans: var(--font-sans);
 }
 
+/*
+  Safe areas. env() covers iOS and Android WebView 140+; Capacitor's SystemBars plugin injects --safe-area-inset-* for older
+  Android WebViews (targetSdk 36 is edge-to-edge, so without this the status/gesture bars would cover the header and tab bar).
+*/
+:root {
+  --sat: max(env(safe-area-inset-top, 0px), var(--safe-area-inset-top, 0px));
+  --sar: max(env(safe-area-inset-right, 0px), var(--safe-area-inset-right, 0px));
+  --sab: max(env(safe-area-inset-bottom, 0px), var(--safe-area-inset-bottom, 0px));
+  --sal: max(env(safe-area-inset-left, 0px), var(--safe-area-inset-left, 0px));
+}
+
 html {
   -webkit-text-size-adjust: 100%;
+  background: var(--color-bg);
 }
+
+/* Dark theme: native controls (inputs, selects, date pickers, scrollbars) follow the theme. */
+html[data-theme='dark'] { color-scheme: dark; }
 
 html:not([data-theme='dark']) .text-slate-400 {
   color: #64748b;
@@ -64,6 +82,8 @@ html:not([data-theme='dark']) .text-slate-400 {
 
 body {
   margin: 0;
+  padding-left: var(--sal);
+  padding-right: var(--sar);
   background: var(--color-bg);
   color: var(--color-ink);
   font-family: var(--font-sans);
@@ -72,6 +92,11 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/*
+  Dark theme. Tailwind v4 utilities read the palette through CSS variables, so re-mapping the steps the app uses covers every
+  utility, including opacity variants (bg-blue-50/60), hover: and gradient stops. Dark-on-pastel text steps become light, pastel
+  surfaces become deep tints. slate-700+ is left alone: it is only used on panels that are dark in both themes.
+*/
 html[data-theme='dark'] {
   --color-bg: #0b1220;
   --color-surface: #111827;
@@ -80,60 +105,31 @@ html[data-theme='dark'] {
   --color-muted: #94a3b8;
   --color-line: #26344a;
   --color-primary-soft: #17366d;
+  --color-primary-dark: #3b82f6;
+  --color-scrim: rgb(2 6 15 / .66);
   --shadow-card: 0 1px 2px rgba(0, 0, 0, .24), 0 8px 24px -12px rgba(0, 0, 0, .4);
+  --shadow-pop: 0 12px 40px -12px rgba(0, 0, 0, .6);
+
+  --color-slate-50: #141d30;  --color-slate-100: #1a2540; --color-slate-200: #26344a; --color-slate-300: #3a4a66;
+  --color-slate-400: #8392aa; --color-slate-500: #94a3b8; --color-slate-600: #b6c2d4;
+  --color-blue-50: #12244a;   --color-blue-100: #1a3566;  --color-blue-700: #93c5fd;  --color-blue-800: #bfdbfe;
+  --color-sky-50: #0c2536;    --color-sky-100: #0e3550;   --color-sky-800: #7dd3fc;
+  --color-violet-50: #221a45; --color-violet-100: #33265f; --color-violet-700: #c4b5fd; --color-violet-800: #ddd6fe;
+  --color-amber-50: #2b2110;  --color-amber-100: #4a3813; --color-amber-200: #5f4716;
+  --color-amber-700: #fbbf24; --color-amber-800: #fcd34d; --color-amber-900: #fde68a;
+  --color-red-50: #2d1517;    --color-red-100: #4b1d20;   --color-red-700: #fca5a5;
+  --color-emerald-50: #0f2a22; --color-emerald-100: #14442f; --color-emerald-200: #1b5a40;
+  --color-emerald-600: #34d399; --color-emerald-700: #6ee7b7; --color-emerald-800: #a7f3d0; --color-emerald-900: #d1fae5;
 }
 
-html[data-theme='dark'] .bg-white,
-html[data-theme='dark'] .bg-slate-50,
-html[data-theme='dark'] .bg-blue-50,
-html[data-theme='dark'] .bg-violet-50 { background-color: var(--color-surface) !important; }
-html[data-theme='dark'] .text-slate-400,
-html[data-theme='dark'] .text-slate-500 { color: var(--color-muted) !important; }
-html[data-theme='dark'] .border-blue-100,
-html[data-theme='dark'] .border-violet-100,
-html[data-theme='dark'] .border-amber-100,
-html[data-theme='dark'] .border-amber-200,
-html[data-theme='dark'] .border-red-100,
-html[data-theme='dark'] .border-emerald-100,
-html[data-theme='dark'] .border-sky-100,
-html[data-theme='dark'] .border-slate-200,
-html[data-theme='dark'] .border-slate-300 { border-color: var(--color-line) !important; }
-
-/* Dark theme: native controls (inputs, selects, date pickers, scrollbars) follow the theme. */
-html[data-theme='dark'] { color-scheme: dark; }
-
-/* Dark theme: tinted status surfaces become translucent tints instead of bright pastel blocks. */
-html[data-theme='dark'] .bg-amber-50 { background-color: rgba(245, 158, 11, .12) !important; }
-html[data-theme='dark'] .bg-red-50,
-html[data-theme='dark'] .hover\:bg-red-50:hover { background-color: rgba(239, 68, 68, .14) !important; }
-html[data-theme='dark'] .bg-emerald-50 { background-color: rgba(16, 185, 129, .14) !important; }
-html[data-theme='dark'] .bg-slate-100,
-html[data-theme='dark'] .bg-blue-100,
-html[data-theme='dark'] .hover\:bg-blue-50:hover,
-html[data-theme='dark'] .disabled\:bg-slate-50:disabled { background-color: var(--color-subtle) !important; }
-
-/* Dark theme: dark-on-pastel text colours are re-mapped to light, readable ones. */
-html[data-theme='dark'] .text-amber-700,
-html[data-theme='dark'] .text-amber-800,
-html[data-theme='dark'] .text-amber-900 { color: #fcd34d !important; }
-html[data-theme='dark'] .text-red-700 { color: #fca5a5 !important; }
-html[data-theme='dark'] .text-emerald-600,
-html[data-theme='dark'] .text-emerald-700,
-html[data-theme='dark'] .text-emerald-800,
-html[data-theme='dark'] .text-emerald-900 { color: #6ee7b7 !important; }
-html[data-theme='dark'] .text-violet-700,
-html[data-theme='dark'] .text-violet-800 { color: #c4b5fd !important; }
-html[data-theme='dark'] .text-blue-700,
-html[data-theme='dark'] .text-blue-800 { color: #93c5fd !important; }
-html[data-theme='dark'] .text-sky-800 { color: #7dd3fc !important; }
-html[data-theme='dark'] .text-slate-600 { color: #b6c2d4 !important; }
-
-/* Dark theme: light gradient washes (CTA banners, upgrade cards) become deep-blue washes. */
-html[data-theme='dark'] .from-blue-50,
-html[data-theme='dark'] .from-violet-50 { --tw-gradient-from: #12254d !important; }
-html[data-theme='dark'] .via-white { --tw-gradient-via: var(--color-surface) !important; }
-html[data-theme='dark'] .to-white,
-html[data-theme='dark'] .to-blue-50 { --tw-gradient-to: var(--color-surface) !important; }
+/* White is not re-mapped through the palette (text-white on coloured buttons must stay white), so surfaces are handled here. */
+html[data-theme='dark'] .bg-white { background-color: var(--color-surface); }
+html[data-theme='dark'] .via-white { --tw-gradient-via: var(--color-surface); }
+html[data-theme='dark'] .to-white { --tw-gradient-to: var(--color-surface); }
+/* Brand blue on a dark surface needs to be lighter to stay readable (links, active nav, ghost buttons). */
+html[data-theme='dark'] .text-primary,
+html[data-theme='dark'] .text-primary-dark,
+html[data-theme='dark'] .hover\:text-primary:hover { color: #7db4fb; }
 
 html[data-theme='dark'] * { scrollbar-color: #334155 transparent; }
 html[data-theme='dark'] *::-webkit-scrollbar-thumb { background: #334155; }
@@ -196,15 +192,22 @@ html[data-theme='dark'] .skeleton { background: linear-gradient(90deg, #17233a 0
 
 @media print { .no-print { display: none !important; } }
 
+/* Touch devices (phones, tablets): iOS zooms into inputs below 16px, and taps must not wait for double-tap-zoom detection. */
+@media (pointer: coarse) {
+  input:not([type='checkbox']):not([type='radio']):not([type='range']), select, textarea { font-size: max(16px, 1em); }
+}
+a, button, [role='button'], input, select, textarea, label, summary { touch-action: manipulation; }
+
+/* Hide the bottom tab bar while the on-screen keyboard is up (it would sit on top of the keyboard and cover the field). */
+body:has(input:focus, textarea:focus, select:focus) .mobile-tabbar { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+}
+
 /* Mobile app (Capacitor): keep content out of notches, the home indicator and the status bar. `native` is set on <html>. */
-html.native body {
-  padding-left: env(safe-area-inset-left);
-  padding-right: env(safe-area-inset-right);
-  padding-bottom: env(safe-area-inset-bottom);
-}
-html.native header.sticky {
-  padding-top: env(safe-area-inset-top);
-  height: calc(3.5rem + env(safe-area-inset-top));
-}
+html.native body { padding-top: var(--sat); padding-bottom: var(--sab); }
+/* Sticky bars paint under the status bar instead of leaving a gap above them. */
+html.native header.sticky { margin-top: calc(-1 * var(--sat)); padding-top: var(--sat); height: auto; min-height: calc(3.5rem + var(--sat)); }
+html.native aside.sticky { margin-top: calc(-1 * var(--sat)); padding-top: var(--sat); height: 100dvh; }
 html.native { -webkit-tap-highlight-color: transparent; overscroll-behavior: none; }
-html.native input, html.native textarea, html.native select { font-size: max(16px, 1em); } /* iOS zooms into smaller fields */

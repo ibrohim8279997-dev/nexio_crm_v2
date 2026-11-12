@@ -56,7 +56,7 @@ export function PlatformShell({ children }: { children: ReactNode }) {
   if (!user) return null
 
   return (
-    <div className="flex min-h-screen bg-bg">
+    <div className="flex min-h-dvh bg-bg">
       <aside className="sticky top-0 hidden h-screen w-[264px] shrink-0 flex-col border-r border-line bg-surface lg:flex">
         <div className="px-4 py-4">
           <div className="flex items-center gap-2.5">
@@ -75,8 +75,8 @@ export function PlatformShell({ children }: { children: ReactNode }) {
 
       {open && (
         <div className="fixed inset-0 z-[80] lg:hidden">
-          <div className="absolute inset-0 bg-ink/40" onClick={() => setOpen(false)} />
-          <div className="absolute inset-y-0 left-0 flex w-[280px] flex-col border-r border-line bg-surface">
+          <div className="absolute inset-0 bg-scrim" onClick={() => setOpen(false)} />
+          <div className="absolute inset-y-0 left-0 flex w-[min(300px,86vw)] flex-col border-r border-line bg-surface pb-[var(--sab)] pl-[var(--sal)] pt-[var(--sat)]">
             <div className="flex items-center justify-between p-3">
               <span className="flex items-center gap-2 font-bold text-ink"><NexioMark className="size-8" /> Nexio Platform</span>
               <IconButton onClick={() => setOpen(false)} title={t('close')}><X className="size-4" /></IconButton>
@@ -100,7 +100,7 @@ export function PlatformShell({ children }: { children: ReactNode }) {
             <IconButton title={t('logout')} onClick={async () => { await logout(); navigate('/login') }}><LogOut className="size-4" /></IconButton>
           </div>
         </header>
-        <main className="min-w-0 flex-1 px-3 py-4 sm:px-4 sm:py-5">{children}</main>
+        <main className="min-w-0 flex-1 px-3 py-4 pb-[calc(1rem+var(--sab))] sm:px-4 sm:py-5">{children}</main>
       </div>
     </div>
   )
