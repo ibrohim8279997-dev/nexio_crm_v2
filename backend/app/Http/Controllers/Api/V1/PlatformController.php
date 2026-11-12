@@ -22,7 +22,7 @@ class PlatformController
         $rows = DB::select(
             "SELECT t.id, t.name, t.slug, t.status, t.created_at, t.currency, p.name AS plan_name, p.code AS plan_code,
                     p.price_monthly, s.status AS subscription_status, s.period_end, s.interval,
-                    (SELECT COUNT(*) FROM tenant_memberships m WHERE m.tenant_id = t.id AND m.status='active') AS users,
+                    (SELECT COUNT(*) FROM tenant_memberships m WHERE m.tenant_id = t.id AND m.status='active' AND m.role <> 'client_portal_user') AS users,
                     (SELECT COALESCE(SUM(o.amount),0) FROM orders o WHERE o.tenant_id = t.id AND o.status='fulfilled') AS gmv,
                     (SELECT COUNT(*) FROM ai_calls c WHERE c.tenant_id = t.id) AS ai_calls,
                     (SELECT COALESCE(SUM(c.cost),0) FROM ai_calls c WHERE c.tenant_id = t.id) AS ai_cost,
@@ -109,7 +109,8 @@ class PlatformController
         $rows = DB::select(
             "SELECT t.*, p.name AS plan_name, p.code AS plan_code, p.price_monthly,
                     s.status AS subscription_status, s.period_end, s.complimentary,
-                    (SELECT COUNT(*) FROM tenant_memberships m WHERE m.tenant_id=t.id AND m.status='active') AS users
+                    (SELECT COUNT(*) FROM tenant_memberships m WHERE m.tenant_id=t.id AND m.status='active' AND m.role <> 'client_portal_user') AS users,
+                    (SELECT COUNT(*) FROM tenant_memberships m WHERE m.tenant_id=t.id AND m.status='active' AND m.role = 'client_portal_user') AS portal_users
                FROM tenants t LEFT JOIN subscriptions s ON s.tenant_id=t.id AND s.status IN ('active','trialing','grace','past_due')
                LEFT JOIN plans p ON p.id=s.plan_id
               WHERE {$w} ORDER BY t.created_at DESC LIMIT ? OFFSET ?",

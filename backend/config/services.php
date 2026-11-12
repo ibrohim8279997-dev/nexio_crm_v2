@@ -46,4 +46,7 @@ return [
         'phone_number_id' => env('WHATSAPP_PHONE_NUMBER_ID', ''),
     ],
 
+    // Firebase Cloud Messaging service-account JSON (server-side push to the mobile apps).
+    'fcm' => ['credentials' => env('FCM_CREDENTIALS_PATH')],
+
 ];

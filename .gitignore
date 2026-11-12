@@ -25,3 +25,26 @@ dist.bak
 # Playwright
 test-results/
 playwright-report/
+
+# Mobile apps (Capacitor): signing material and Firebase config are supplied locally, never committed
+*.jks
+*.keystore
+keystore.properties
+key.properties
+*.p8
+*.p12
+*.mobileprovision
+*.cer
+google-services.json
+GoogleService-Info.plist
+android/local.properties
+android/.gradle/
+android/app/build/
+android/build/
+android/app/src/main/assets/public/
+android/app/src/main/assets/capacitor.config.json
+android/app/src/main/assets/capacitor.plugins.json
+ios/App/App/public/
+ios/App/App/capacitor.config.json
+ios/App/DerivedData/
+ios/App/build/

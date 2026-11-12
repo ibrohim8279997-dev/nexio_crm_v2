@@ -9,6 +9,8 @@ import { I18nProvider, useI18n } from './lib/i18n'
 import { ThemeProvider } from './lib/theme'
 import { ToastProvider } from './components/ui/toast'
 import { App } from './App'
+import { NativeBridge } from './components/native/NativeBridge'
+import { initNative } from './lib/native'
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false, staleTime: 20_000 } },
@@ -28,16 +30,17 @@ function TenantLocaleSync() {
   return null
 }
 
-createRoot(document.getElementById('root')!).render(
+// In the mobile app the stored session must be loaded before the first request (`/auth/me`).
+void initNative().finally(() => createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <ToastProvider>
           <AuthProvider>
-            <I18nProvider><TenantLocaleSync /><ThemeProvider><App /></ThemeProvider></I18nProvider>
+            <I18nProvider><TenantLocaleSync /><ThemeProvider><NativeBridge /><App /></ThemeProvider></I18nProvider>
           </AuthProvider>
         </ToastProvider>
       </BrowserRouter>
     </QueryClientProvider>
   </StrictMode>,
-)
+))

@@ -72,11 +72,12 @@ class WorkspaceController
         return H::json([
             'plan' => $plan->name,
             'limits' => [
-                'seats' => ['used' => $count('tenant_memberships', fn ($q) => $q->where('status', 'active')), 'limit' => (int) $plan->seats, 'unit' => ''],
+                'seats' => ['used' => \App\Support\Seats::staff($t), 'limit' => (int) $plan->seats, 'unit' => ''],
                 'storage' => ['used' => round($storageBytes / 1024 ** 3, 3), 'limit' => (float) $plan->storage_gb, 'unit' => 'ГБ'],
                 'ai_minutes' => ['used' => round($aiSeconds / 60, 1), 'limit' => (int) $plan->ai_minutes, 'unit' => 'мин'],
                 'api_requests' => ['used' => $api, 'limit' => (int) $plan->api_requests, 'unit' => ''],
             ],
+            'portal_users' => \App\Support\Seats::portal($t),   // client-portal accounts: not part of the seat limit
             'records' => [
                 'contacts' => $count('contacts'), 'organizations' => $count('organizations'), 'leads' => $count('leads'),
                 'deals' => $count('deals'), 'orders' => $count('orders'), 'projects' => $count('projects'), 'tasks' => $count('tasks'), 'files' => $count('attachments'),

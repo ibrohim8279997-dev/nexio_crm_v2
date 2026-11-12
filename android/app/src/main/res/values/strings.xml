@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Nexio CRM</string>
+    <string name="title_activity_main">Nexio CRM</string>
+    <string name="package_name">crm.nexiolab.uz</string>
+    <string name="custom_url_scheme">crm.nexiolab.uz</string>
+</resources>

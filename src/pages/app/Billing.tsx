@@ -15,7 +15,7 @@ interface BillingResponse {
   paymentProvider: string; paymentMethods: Method[]; addons: Addon[]
   subscription: { plan_name: string; plan_code: string; status: string; seats: number; amount: number; currency: string; interval: string; period_start: string; period_end: string; modules: string[] } | null
   invoices: Invoice[]
-  usage: { seats: { used: number; limit: number }; api: { quantity: number; limit_value: number }; ai_minutes: { quantity: number; limit_value: number }; storage: { quantity: number; limit_value: number } }
+  usage: { seats: { used: number; limit: number }; portal_users?: { used: number }; api: { quantity: number; limit_value: number }; ai_minutes: { quantity: number; limit_value: number }; storage: { quantity: number; limit_value: number } }
   totals: { unpaid: number; unpaidInvoices: number; paidYtd: number }
 }
 
@@ -70,7 +70,7 @@ export default function Billing() {
           </SectionCard>
           <div className="space-y-5">
             <SectionCard title="Sarf" subtitle="Limitlar server tomonidan tekshiriladi.">
-              {usage && <div className="space-y-4">{([['Joylar', usage.seats], ['API', usage.api], ['AI daqiqalar', usage.ai_minutes], ['Storage', usage.storage]] as Array<[string, { used?: number; quantity?: number; limit?: number; limit_value?: number }]>).map(([label, v]) => { const used = v.used ?? v.quantity ?? 0; const limit = v.limit ?? v.limit_value ?? 1; const pct = used / Math.max(1, limit) * 100; return <div key={label}><div className="flex justify-between text-xs"><span>{label}</span><span>{num(used)} / {num(limit)}</span></div><ProgressBar className="mt-1" value={pct} tone={pct > 90 ? 'warning' : 'success'} /></div> })}</div>}
+              {usage && <div className="space-y-4">{([['Joylar', usage.seats], ['API', usage.api], ['AI daqiqalar', usage.ai_minutes], ['Storage', usage.storage]] as Array<[string, { used?: number; quantity?: number; limit?: number; limit_value?: number }]>).map(([label, v]) => { const used = v.used ?? v.quantity ?? 0; const limit = v.limit ?? v.limit_value ?? 1; const pct = used / Math.max(1, limit) * 100; return <div key={label}><div className="flex justify-between text-xs"><span>{label}</span><span>{num(used)} / {num(limit)}</span></div><ProgressBar className="mt-1" value={pct} tone={pct > 90 ? 'warning' : 'success'} /></div> })}<p className="text-[11px] text-muted">Клиенты портала: {num(usage.portal_users?.used ?? 0)} · не входят в лимит мест</p></div>}
             </SectionCard>
             <SectionCard title="Qo‘shimcha modullar" subtitle="Marketplace orqali sotib olingan plaginlar"
               action={<Link to="/app/marketplace" className="text-[12px] font-semibold text-primary hover:underline">Marketplace →</Link>}>

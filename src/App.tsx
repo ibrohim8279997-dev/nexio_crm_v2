@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
+import { isNative } from './lib/native'
 import { AppShell } from './components/layout/AppShell'
 import { PlatformShell } from './components/layout/PlatformShell'
 import { RequireAuth, RequirePlatform, RequirePortal } from './components/layout/Protected'
@@ -102,7 +103,7 @@ export function App() {
     <Suspense fallback={<RouteSkeleton />}>
       <Routes>
         {/* Public */}
-        <Route path="/" element={<Landing />} />
+        <Route path="/" element={isNative() ? <Navigate to="/login" replace /> : <Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/reset-password" element={<ResetPassword />} />

@@ -7,6 +7,7 @@ import { api } from '../../lib/api'
 import { dateTime } from '../../lib/format'
 import { useToast } from '../../components/ui/toast'
 import MfaCard from './MfaCard'
+import BiometricCard from './BiometricCard'
 
 interface Session { handle: string; ip: string | null; user_agent: string | null; created_at: string; expires_at: string; current: boolean }
 
@@ -26,6 +27,7 @@ export default function SecurityPanel() {
   return (
     <div className="space-y-5">
       <MfaCard />
+      <BiometricCard />
       <SectionCard title="Активные сессии" subtitle="Устройства, с которых выполнен вход в ваш аккаунт"
         action={rows.length > 1 && <Button size="sm" variant="secondary" loading={revokeOthers.isPending} onClick={() => revokeOthers.mutate(undefined as never)}><LogOut className="size-4" /> Завершить остальные</Button>}>
         <ul className="divide-y divide-line">{rows.map((s) => (

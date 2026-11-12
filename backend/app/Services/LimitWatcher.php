@@ -20,7 +20,7 @@ final class LimitWatcher
         if (!$plan) return [];
         $monthStart = gmdate('Y-m-01 00:00:00');
         return [
-            'seats' => ['used' => (float) DB::table('tenant_memberships')->where('tenant_id', $tenantId)->where('status', 'active')->count(), 'limit' => (float) $plan->seats],
+            'seats' => ['used' => (float) \App\Support\Seats::staff($tenantId), 'limit' => (float) $plan->seats],
             'storage' => ['used' => round((int) DB::table('attachments')->where('tenant_id', $tenantId)->sum('size') / 1024 ** 3, 3), 'limit' => (float) $plan->storage_gb],
             'ai_minutes' => ['used' => round((int) DB::table('ai_calls')->where('tenant_id', $tenantId)->where('created_at', '>=', $monthStart)->sum('duration_sec') / 60, 1), 'limit' => (float) $plan->ai_minutes],
             'api_requests' => ['used' => (float) DB::table('usage_records')->where('tenant_id', $tenantId)->where('metric', 'api_requests')->where('period', gmdate('Y-m'))->sum('quantity'), 'limit' => (float) $plan->api_requests],
