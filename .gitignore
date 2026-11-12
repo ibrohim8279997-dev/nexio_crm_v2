@@ -48,3 +48,4 @@ ios/App/App/public/
 ios/App/App/capacitor.config.json
 ios/App/DerivedData/
 ios/App/build/
+.claude-flow/policy/state.lock
