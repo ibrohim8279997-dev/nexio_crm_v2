@@ -80,7 +80,7 @@ class BillingController
         $yearStart = gmdate('Y-01-01 00:00:00');
         $nextYearStart = gmdate('Y-01-01 00:00:00', strtotime('+1 year'));
         $paidYtd = DB::selectOne("SELECT COALESCE(SUM(total),0) AS v FROM invoices WHERE tenant_id = ? AND status='paid' AND issued_at >= ? AND issued_at < ?", [$t, $yearStart, $nextYearStart]);
-        $seatUsage = DB::selectOne("SELECT COUNT(*) AS c FROM tenant_memberships WHERE tenant_id = ? AND status='active'", [$t]);
+        $seatUsage = (object) ['c' => \App\Support\Seats::staff($t)];
 
         $latestUsage = function (string $metric) use ($usage) {
             foreach ($usage as $u) { if ($u->metric === $metric) return $u; }
@@ -101,6 +101,7 @@ class BillingController
             'payments' => $payments,
             'usage' => [
                 'seats' => ['used' => (int) ($seatUsage->c ?? 0), 'limit' => $sub->plan_seats ?? 5],
+                'portal_users' => ['used' => \App\Support\Seats::portal($t)],   // no limit
                 'api' => $latestUsage('api_requests') ?? ['quantity' => 0, 'limit_value' => $sub->api_requests ?? 0],
                 'ai_minutes' => $latestUsage('ai_minutes') ?? ['quantity' => 0, 'limit_value' => $sub->ai_minutes ?? 0],
                 'storage' => $latestUsage('storage_gb') ?? ['quantity' => 0, 'limit_value' => $sub->storage_gb ?? 0],

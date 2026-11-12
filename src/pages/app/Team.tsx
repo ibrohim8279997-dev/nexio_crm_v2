@@ -17,7 +17,7 @@ interface Member {
 }
 interface TeamResponse {
   data: Member[]; invites: { id: string; email: string; role: string; status: string; expires_at: string }[]
-  roles: string[]; seats: { used: number; limit_value: number }
+  roles: string[]; seats: { used: number; limit_value: number }; portal_users?: number
 }
 
 export const ROLE_LABELS: Record<string, string> = {
@@ -62,6 +62,8 @@ export default function Team() {
   const revoke = useApiMutation((id: string) => api.post(`/api/v1/team/invites/${id}/revoke`), { invalidate: [['team']], success: 'Приглашение отозвано' })
 
   const seats = team.data?.seats
+  // Client-portal accounts are customers, not staff: they are listed but never counted against the plan's seats.
+  const staffCount = (team.data?.data ?? []).filter((m) => m.role !== 'client_portal_user').length
 
   const columns: Column<Member>[] = [
     { key: 'name', header: 'Сотрудник', render: (m) => (
@@ -111,7 +113,7 @@ export default function Team() {
       />
 
       <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
-        <StatCard label="Сотрудников" value={num(team.data?.data.length)} hint={seats ? `${seats.used}/${seats.limit_value} мест тарифа` : undefined} icon={<Users className="size-4" />} />
+        <StatCard label="Сотрудников" value={num(staffCount)} hint={seats ? `${seats.used}/${seats.limit_value} мест тарифа · клиентов портала: ${team.data?.portal_users ?? 0}` : undefined} icon={<Users className="size-4" />} />
         <StatCard label="Активных" value={num((team.data?.data ?? []).filter((m) => m.member_status === 'active').length)} hint="с доступом" icon={<ShieldCheck className="size-4" />} tone="success" />
         <StatCard label="Приглашений" value={num(team.data?.invites.filter((i) => i.status === 'pending').length)} hint="ожидают принятия" icon={<Mail className="size-4" />} tone="warning" />
         <StatCard label="Открытая нагрузка" value={num((team.data?.data ?? []).reduce((a, m) => a + m.open_tasks, 0))} hint="задач у команды" icon={<Users className="size-4" />} tone="ai" />
@@ -132,7 +134,7 @@ export default function Team() {
 
       <SectionCard padded={false}>
         <div className="border-b border-line px-4 py-3">
-          <Tabs tabs={[{ value: 'members', label: 'Сотрудники', count: team.data?.data.length }, { value: 'invites', label: 'Приглашения', count: team.data?.invites.length }, { value: 'permissions', label: 'Матрица прав' }]} value={tab} onChange={setTab} />
+          <Tabs tabs={[{ value: 'members', label: 'Сотрудники и клиенты портала', count: team.data?.data.length }, { value: 'invites', label: 'Приглашения', count: team.data?.invites.length }, { value: 'permissions', label: 'Матрица прав' }]} value={tab} onChange={setTab} />
         </div>
 
         {tab === 'members' && (

@@ -10,7 +10,7 @@ import { api } from '../../lib/api'
 import { num, shortDate, dateTime, label } from '../../lib/format'
 import { useToast } from '../../components/ui/toast'
 
-interface Tenant { id: string; name: string; slug: string; status: string; currency: string; created_at: string; plan_name: string | null; subscription_status: string | null; period_end: string | null; complimentary?: number | null; users: number; industry?: string }
+interface Tenant { id: string; name: string; slug: string; status: string; currency: string; created_at: string; plan_name: string | null; subscription_status: string | null; period_end: string | null; complimentary?: number | null; users: number; portal_users?: number; industry?: string }
 interface Detail {
   tenant: Tenant & { legal_name?: string; country?: string; timezone?: string; locale?: string }
   members: { name: string; email: string; role: string; status: string; last_login_at: string | null }[]
@@ -84,7 +84,7 @@ export default function PlatformTenants() {
               { key: 'slug', header: 'Slug', render: (r) => <span className="font-mono text-[11px] text-muted">{r.slug}</span> },
               { key: 'plan_name', header: 'Тариф', render: (r) => <span className="inline-flex items-center gap-1.5">{r.plan_name ?? '—'}{r.complimentary ? <Badge tone="primary">бесплатно</Badge> : null}</span> },
               { key: 'subscription_status', header: 'Подписка', render: (r) => <StatusPill value={r.subscription_status ?? '—'} /> },
-              { key: 'users', header: 'Польз.', align: 'right', render: (r) => r.users },
+              { key: 'users', header: 'Польз.', align: 'right', render: (r) => <>{r.users}{r.portal_users ? <span className="text-[10px] text-muted"> +{r.portal_users} кл.</span> : null}</> },
               { key: 'period_end', header: 'Оплачен до', render: (r) => shortDate(r.period_end) },
               { key: 'created_at', header: 'Создана', render: (r) => shortDate(r.created_at) },
               { key: 'status', header: 'Статус', render: (r) => <StatusPill value={r.status} /> },

@@ -5,6 +5,7 @@ use App\Support\ApiException;
 use App\Support\Ctx;
 use App\Support\H;
 use App\Support\Rbac;
+use App\Support\Seats;
 use Illuminate\Support\Facades\DB;
 use App\Services\NotificationDispatcher;
 
@@ -31,13 +32,15 @@ class TeamController
         );
         $invites = DB::select("SELECT id, email, role, status, expires_at, created_at FROM invitations WHERE tenant_id = ? AND role != 'password_reset' ORDER BY created_at DESC", [$t]);
         $seats = DB::selectOne(
-            "SELECT p.seats AS limit_value, (SELECT COUNT(*) FROM tenant_memberships WHERE tenant_id = ? AND status='active') AS used
+            "SELECT p.seats AS limit_value, (SELECT COUNT(*) FROM tenant_memberships WHERE tenant_id = ? AND status='active' AND role <> 'client_portal_user') AS used
                FROM subscriptions s JOIN plans p ON p.id = s.plan_id WHERE s.tenant_id = ? ORDER BY s.created_at DESC LIMIT 1",
             [$t, $t]
         );
         return H::json([
             'data' => $rows, 'invites' => $invites, 'roles' => Rbac::ROLES,
-            'seats' => $seats ?? ['used' => count($rows), 'limit_value' => 5],
+            'seats' => $seats ?? ['used' => count(array_filter($rows, fn ($r) => $r->role !== Seats::PORTAL_ROLE)), 'limit_value' => 5],
+            // Customers with portal access: shown separately, no limit, never counted against the plan's seats.
+            'portal_users' => Seats::portal($t),
         ]);
     }
 
@@ -79,11 +82,11 @@ class TeamController
             throw new ApiException(400, 'Только владелец компании может назначить роль владельца', 'bad_request');
         }
         $sub = DB::selectOne(
-            "SELECT p.seats AS limit_value, (SELECT COUNT(*) FROM tenant_memberships WHERE tenant_id = ? AND status='active') AS used
+            "SELECT p.seats AS limit_value, (SELECT COUNT(*) FROM tenant_memberships WHERE tenant_id = ? AND status='active' AND role <> 'client_portal_user') AS used
                FROM subscriptions s JOIN plans p ON p.id = s.plan_id WHERE s.tenant_id = ? ORDER BY s.created_at DESC LIMIT 1",
             [$t, $t]
         );
-        if ($sub && $sub->used >= $sub->limit_value) {
+        if ($role !== Seats::PORTAL_ROLE && $sub && $sub->used >= $sub->limit_value) {
             throw new ApiException(402, "Достигнут лимит мест тарифа ({$sub->used}/{$sub->limit_value}). Повысьте тариф, чтобы добавить сотрудников.", 'quota_exceeded', (array) $sub);
         }
         $existingUser = DB::selectOne('SELECT id FROM users WHERE email = ?', [$email]);
