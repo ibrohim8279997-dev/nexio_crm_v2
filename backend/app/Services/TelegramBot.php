@@ -43,9 +43,14 @@ class TelegramBot
 
     public function handleMessage(array $message): void
     {
-        if (!isset($message['chat']['id'], $message['text'])) return;
-
+        if (!isset($message['chat']['id'])) return;
         $chatId = (string) $message['chat']['id'];
+
+        // Voice notes and photos go to the AI (speech-to-text / vision) for linked users.
+        if (TelegramMediaHandler::isVoice($message)) { (new TelegramMediaHandler($this->sender))->voice($chatId, $message); return; }
+        if (TelegramMediaHandler::isImage($message)) { (new TelegramMediaHandler($this->sender))->image($chatId, $message); return; }
+        if (!isset($message['text'])) return;
+
         $text = trim((string) $message['text']);
 
         if ($text === '/stop') {
@@ -60,8 +65,10 @@ class TelegramBot
         if (!preg_match('/^\/start\s+([A-Za-z0-9_-]{16,80})$/', $text, $matches)) {
             if (str_starts_with($text, '/start')) {
                 $this->sender->telegram($chatId, 'Nexio CRM bildirishnomalarini olish uchun CRM ichidagi qo‘ng‘iroqcha menyusidan «Telegram’ni ulash» tugmasini bosing.');
+            } elseif (preg_match('/^\/(?:image|img)(?:\s+(.+))?$/su', $text, $m)) {
+                (new TelegramMediaHandler($this->sender))->generate($chatId, $m[1] ?? '');
             } elseif ($text === '/help') {
-                $this->sender->telegram($chatId, "/limits — kompaniya limitlari\n/stats — qisqa hisobot\n/stop — bildirishnomalarni o‘chirish\nYoki savolingizni yozing: AI tahlil asosida javob beradi (faqat o‘qish).");
+                $this->sender->telegram($chatId, "/limits — kompaniya limitlari\n/stats — qisqa hisobot\n/image <tavsif> — rasm yaratish\n/stop — bildirishnomalarni o‘chirish\nYoki savol yozing, ovozli xabar yoki rasm yuboring: AI tahlil qiladi (faqat o‘qish).");
             } elseif ($text !== '' && !str_starts_with($text, '/') || in_array($text, ['/limits', '/stats'], true)) {
                 $question = match ($text) {
                     '/limits' => 'Kompaniya limitlari va ulardan foydalanish holatini qisqa ayting.',
