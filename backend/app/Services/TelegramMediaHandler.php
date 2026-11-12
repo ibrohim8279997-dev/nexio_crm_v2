@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\Speech;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 
@@ -15,7 +16,6 @@ final class TelegramMediaHandler
     private const MAX_AUDIO_BYTES = 5 * 1024 * 1024;
     private const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
     private const IMAGES_PER_HOUR = 5;
-    private const SPEAK_CHARS = 900;
 
     public function __construct(
         private NotificationDispatcher $sender,
@@ -75,9 +75,11 @@ final class TelegramMediaHandler
         if (!config('ai.voice_replies') || AiQuota::deny($who['tenant'])) return;
         try {
             $this->media->action($chatId, 'record_voice');
-            $clip = mb_substr($text, 0, self::SPEAK_CHARS);
-            $wav = $this->ai->speak($clip);
-            AiQuota::record($who['tenant'], AiQuota::forChars(mb_strlen($clip)));
+            // Orpheus accepts 200 characters per request: speak the first few sentences (the full answer is in the text message).
+            $chunks = Speech::chunks($text);
+            if (!$chunks) return;
+            $wav = Speech::mergeWav(array_map(fn ($c) => $this->ai->speak($c), $chunks));
+            AiQuota::record($who['tenant'], AiQuota::forChars(array_sum(array_map('mb_strlen', $chunks))));
             $ogg = $this->media->wavToOpus($wav);
             $ogg ? $this->media->sendVoice($chatId, $ogg) : $this->media->sendDocument($chatId, $wav, 'reply.wav');   // no ffmpeg: send the WAV as a file
         } catch (\Throwable $e) {

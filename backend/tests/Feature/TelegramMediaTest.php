@@ -2,6 +2,7 @@
 namespace Tests\Feature;
 
 use App\Services\TelegramBot;
+use App\Support\Speech;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 
@@ -108,5 +109,42 @@ class TelegramMediaTest extends PluginTestCase
         Http::assertSent(fn ($r) => str_ends_with($r->url(), '/images/generations') && $r['prompt'] === 'a laptop on a desk');
         $this->assertSame(1, $this->sentTo('sendPhoto'));
         $this->assertGreaterThanOrEqual(2000, $this->used());
+    }
+
+    private function wav(string $pcm): string
+    {
+        return 'RIFF' . pack('V', 36 + strlen($pcm)) . 'WAVEfmt ' . pack('V', 16) . pack('vvVVvv', 1, 1, 24000, 48000, 2, 16) . 'data' . pack('V', strlen($pcm)) . $pcm;
+    }
+
+    public function test_speech_is_split_into_200_character_requests_and_merged(): void
+    {
+        $sentence = 'This sentence is about forty characters.';
+        $chunks = Speech::chunks(str_repeat($sentence . ' ', 40));   // ~1650 characters
+        $this->assertCount(Speech::MAX_CHUNKS, $chunks);
+        foreach ($chunks as $c) $this->assertLessThanOrEqual(200, mb_strlen($c));
+        $this->assertSame(['Short.'], Speech::chunks('**Short.**'));
+
+        $merged = Speech::mergeWav([$this->wav('aaaa'), $this->wav('bbbb')]);
+        $this->assertSame(44 + 8, strlen($merged));
+        $this->assertSame('aaaabbbb', substr($merged, 44));
+        $this->assertSame(8, unpack('V', substr($merged, 40, 4))[1]);
+    }
+
+    public function test_long_english_answer_is_spoken_in_several_valid_requests(): void
+    {
+        $this->fake();
+        Http::fake([
+            'api.groq.com/openai/v1/audio/speech' => Http::response($this->wav('1234')),
+            'api.groq.com/openai/v1/chat/completions' => Http::response(['choices' => [['message' => ['content' => str_repeat('You have three new leads this month. ', 15)]]], 'model' => 'm', 'usage' => ['total_tokens' => 50]]),
+            'api.groq.com/openai/v1/audio/transcriptions' => Http::response(['text' => 'report', 'language' => 'english', 'duration' => 3.0]),
+            'api.telegram.org/*/getFile*' => Http::response(['ok' => true, 'result' => ['file_path' => 'v/1.oga', 'file_size' => 10]]),
+            'api.telegram.org/file/*' => Http::response('OGG'),
+            'api.telegram.org/*' => Http::response(['ok' => true]),
+        ]);
+        (new TelegramBot())->handleMessage(['chat' => ['id' => 7001], 'voice' => ['file_id' => 'f1', 'duration' => 3]]);
+        $speech = Http::recorded()->filter(fn ($p) => str_ends_with($p[0]->url(), '/audio/speech'));
+        $this->assertGreaterThan(1, $speech->count());
+        $this->assertLessThanOrEqual(Speech::MAX_CHUNKS, $speech->count());
+        foreach ($speech as $p) $this->assertLessThanOrEqual(200, mb_strlen((string) $p[0]['input']));
     }
 }
