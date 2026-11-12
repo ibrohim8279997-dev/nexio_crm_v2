@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\V1\AiController;
 use App\Http\Controllers\Api\V1\AiExtrasController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\BillingController;
+use App\Http\Controllers\Api\V1\CardsController;
 use App\Http\Controllers\Api\V1\CommercialController;
 use App\Http\Controllers\Api\V1\CrmController;
 use App\Http\Controllers\Api\V1\CrmExtrasController;
@@ -248,6 +249,14 @@ Route::prefix('v1')->group(function () use ($h) {
     Route::post('/billing/cancel', $h(BillingController::class, 'cancel'));
     Route::post('/billing/resume', $h(BillingController::class, 'resume'));
     Route::post('/billing/invoices/{id}/pay', $h(BillingController::class, 'payInvoice'));
+    // saved cards (Click tokens), pay-now for an overdue subscription, status for the in-app banner
+    Route::get('/billing/status', $h(CardsController::class, 'status'));
+    Route::get('/billing/cards', $h(CardsController::class, 'list'));
+    Route::post('/billing/cards/request', $h(CardsController::class, 'request'))->middleware('throttle:10,60');
+    Route::post('/billing/cards/verify', $h(CardsController::class, 'verify'))->middleware('throttle:20,60');
+    Route::post('/billing/cards/{id}/primary', $h(CardsController::class, 'makePrimary'));
+    Route::delete('/billing/cards/{id}', $h(CardsController::class, 'remove'));
+    Route::post('/billing/pay-now', $h(CardsController::class, 'payNow'))->middleware('throttle:10,60');
     Route::get('/finance', $h(BillingController::class, 'finance'));
 
     // ── Nexio AI ───────────────────────────────────────────────────────────

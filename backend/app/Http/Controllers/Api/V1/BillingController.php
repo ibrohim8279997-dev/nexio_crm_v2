@@ -8,6 +8,10 @@ use App\Support\SqlDialect;
 use Illuminate\Support\Facades\DB;
 use App\Services\CbuExchangeRateService;
 use App\Services\SubscriptionEntitlementService;
+use App\Services\CardBillingService;
+use App\Services\ClickCardService;
+use App\Services\InvoiceSettlement;
+use App\Support\BillingPeriod;
 
 /**
  * Nexio Billing + Finance. Plan changes are computed server-side with proration;
@@ -155,6 +159,7 @@ class BillingController
         }
         $total = round(($price + $proration) * 100) / 100;
         $provider = $this->resolveProvider($b);
+        if ($provider === 'card') return $this->changePlanByCard($ctx, $plan, $current, $interval, (float) $price);
         $clickQuote = null;
         if ($provider !== 'sandbox') {
             $this->assertProviderConfigured($provider);
@@ -204,6 +209,66 @@ class BillingController
             'provider' => config('payments.provider', 'sandbox'),
             'note' => config('payments.provider', 'sandbox') === 'sandbox' ? 'Payment provider sozlanmagan.' : 'Payment provider konfiguratsiyasi mavjud.',
         ]);
+    }
+
+    /**
+     * Plan change paid from the saved cards. An upgrade (or a first plan) is charged now for the rest of the calendar month,
+     * minus the unused part of a paid current period. A downgrade keeps the current plan until the next 1st.
+     */
+    private function changePlanByCard(Ctx $ctx, object $plan, ?object $current, string $interval, float $price)
+    {
+        $t = $ctx->tenantId;
+        $billing = new CardBillingService();
+        if (!(new ClickCardService())->configured()) throw new ApiException(503, 'Karta orqali to‘lov hali sozlanmagan', 'payment_not_configured');
+        if (!$billing->cards($t)) throw new ApiException(422, 'Avval to‘lov kartasini qo‘shing', 'card_required');
+
+        $livePaid = $current && $current->status === 'active' && !$current->complimentary && (float) $current->amount > 0
+            && $current->period_end && strtotime($current->period_end . ' UTC') > time();
+
+        if ($livePaid && $current->cancel_at_period_end == 0 && $price < (float) $current->amount && $current->currency === $plan->currency) {
+            DB::table('subscriptions')->where('id', $current->id)->update(['pending_plan_code' => $plan->code, 'pending_interval' => $interval]);
+            H::audit($ctx, 'billing.plan_downgrade_scheduled', 'subscription', $current->id, ['to' => $plan->code, 'interval' => $interval]);
+            return H::json(['ok' => true, 'scheduled' => true, 'effective_at' => $current->period_end, 'plan' => $plan->name,
+                'note' => $plan->name . ' tarifi ' . gmdate('d.m.Y', strtotime($current->period_end . ' UTC')) . ' dan boshlanadi. Shu kungacha joriy tarif ishlaydi.']);
+        }
+
+        $fraction = $interval === 'year' ? 1.0 : BillingPeriod::monthFractionLeft();
+        $credit = 0.0;
+        if ($livePaid && $current->currency === $plan->currency) {
+            $span = max(1, strtotime($current->period_end . ' UTC') - strtotime($current->period_start . ' UTC'));
+            $credit = (float) $current->amount * min(1, max(0, (strtotime($current->period_end . ' UTC') - time()) / $span));
+        }
+        $total = max(0.0, round($price * $fraction - $credit, 2));
+        $lines = [['label' => $plan->name . ' · ' . ($interval === 'year' ? 'yillik' : 'oylik') . ' obuna' . ($interval === 'month' ? ' (oy oxirigacha)' : ''), 'qty' => 1, 'amount' => round($price * $fraction, 2)]];
+        if ($credit > 0) $lines[] = ['label' => 'Joriy tarifning ishlatilmagan qismi', 'qty' => 1, 'amount' => -round($credit, 2)];
+        $lines[] = ['kind' => 'subscription_plan', 'plan_code' => $plan->code, 'interval' => $interval];
+
+        $invoiceId = H::newId('inv');
+        $number = 'INV-' . gmdate('Y') . '-' . strtoupper(substr(H::newId('n'), -5));
+        DB::table('invoices')->insert([
+            'id' => $invoiceId, 'tenant_id' => $t, 'number' => $number, 'amount' => $price, 'tax' => 0, 'total' => $total,
+            'currency' => $plan->currency, 'status' => 'open', 'line_items' => json_encode($lines, JSON_UNESCAPED_UNICODE),
+            'issued_at' => H::now(), 'due_at' => H::now(), 'created_at' => H::now(),
+        ]);
+        $invoice = DB::table('invoices')->where('id', $invoiceId)->first();
+
+        if ($total <= 0) {
+            (new InvoiceSettlement())->settle($invoice, 'internal', 'zero:' . $invoiceId, 0);
+            $r = ['ok' => true, 'outcome' => ClickCardService::PAID, 'error' => null];
+        } else {
+            $r = $billing->chargeInvoice($invoice);
+        }
+        if (!$r['ok']) {
+            if ($r['outcome'] === ClickCardService::UNKNOWN) {
+                throw new ApiException(409, 'To‘lov natijasi noma’lum. Qayta urinmang, holat tekshirilgach tarif faollashadi.', 'charge_pending_review');
+            }
+            DB::table('invoices')->where('id', $invoiceId)->update(['status' => 'void']);
+            throw new ApiException(422, 'Kartadan yechib bo‘lmadi: ' . ($r['error'] ?: 'karta rad etildi'), 'charge_failed');
+        }
+        $this->applyEntitlements($t, $plan->code);
+        H::audit($ctx, 'billing.plan_changed', 'subscription', $t, ['from' => $current->current_code ?? null, 'to' => $plan->code, 'interval' => $interval, 'charged' => $total, 'provider' => 'card']);
+        return H::json(['ok' => true, 'charged' => $total, 'currency' => $plan->currency, 'invoiceId' => $invoiceId, 'invoiceNumber' => $number, 'plan' => $plan->name,
+            'note' => $plan->name . ' tarifi faollashdi. Keyingi to‘lov ' . gmdate('d.m.Y', strtotime(BillingPeriod::nextBoundary($interval) . ' UTC') + 5 * 3600) . ' da.'], 201);
     }
 
     public function cancel(Ctx $ctx)
@@ -342,6 +407,7 @@ class BillingController
             'click' => !array_filter(['merchant_id', 'service_id', 'secret_key', 'return_url'], fn ($k) => empty(config("payments.click.{$k}"))),
             'payme' => !array_filter(['merchant_id', 'key', 'return_url'], fn ($k) => empty(config("payments.payme.{$k}"))),
             'sandbox' => config('payments.provider', 'sandbox') === 'sandbox',
+            'card' => (new ClickCardService())->configured(),
             default => false,
         };
     }
@@ -355,16 +421,17 @@ class BillingController
     private function paymentMethods(): array
     {
         $default = config('payments.provider', 'sandbox');
-        $rows = [['code' => 'click', 'name' => 'Click'], ['code' => 'payme', 'name' => 'Payme']];
+        $rows = [['code' => 'card', 'name' => 'Karta (har oy 1-sanada avtomatik)'], ['code' => 'click', 'name' => 'Click'], ['code' => 'payme', 'name' => 'Payme']];
         if ($default === 'sandbox') $rows[] = ['code' => 'sandbox', 'name' => 'Sandbox (тест, без списания)'];
-        return array_map(fn ($r) => [...$r, 'configured' => $this->providerConfigured($r['code']), 'default' => $r['code'] === $default], $rows);
+        $cardReady = $this->providerConfigured('card');
+        return array_map(fn ($r) => [...$r, 'configured' => $this->providerConfigured($r['code']), 'default' => $cardReady ? $r['code'] === 'card' : $r['code'] === $default], $rows);
     }
 
     private function resolveProvider(array $body): string
     {
         $default = (string) config('payments.provider', 'sandbox');
         $requested = isset($body['provider']) ? (string) $body['provider'] : $default;
-        if (!in_array($requested, ['sandbox', 'click', 'payme'], true)) throw new ApiException(422, 'Неизвестный способ оплаты', 'bad_request');
+        if (!in_array($requested, ['sandbox', 'click', 'payme', 'card'], true)) throw new ApiException(422, 'Неизвестный способ оплаты', 'bad_request');
         if ($requested === 'sandbox' && $default !== 'sandbox') throw new ApiException(422, 'Тестовая оплата недоступна', 'bad_request');
         return $requested;
     }

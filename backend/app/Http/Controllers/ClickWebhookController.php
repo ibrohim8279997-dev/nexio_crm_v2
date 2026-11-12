@@ -60,6 +60,10 @@ class ClickWebhookController
         });
         if (!$wasPaid) {
             foreach ($items as $item) {
+                if (($item['kind'] ?? null) === 'subscription_renewal' && !empty($item['sub_id'])) {
+                    (new \App\Services\InvoiceSettlement())->renewSubscription((string) $invoice->tenant_id, (string) $item['sub_id'], (string) $invoice->id);
+                    break;
+                }
                 if (($item['kind'] ?? null) === 'subscription_plan' && !empty($item['plan_code'])) {
                     $this->activateSubscription((string) $invoice->tenant_id, (string) $item['plan_code'], (string) ($item['interval'] ?? 'month'), (string) $invoice->id);
                     break;
@@ -90,7 +94,7 @@ class ClickWebhookController
                 'id' => H::newId('sub'), 'tenant_id' => $tenantId, 'plan_id' => $plan->id,
                 'status' => 'active', 'seats' => $plan->seats, 'amount' => $interval === 'year' ? $plan->price_yearly : $plan->price_monthly,
                 'currency' => $plan->currency, 'interval' => $interval, 'period_start' => H::now(),
-                'period_end' => gmdate('Y-m-d H:i:s', time() + ($interval === 'year' ? 365 : 30) * 86400), 'created_at' => H::now(),
+                'period_end' => \App\Support\BillingPeriod::nextBoundary($interval), 'created_at' => H::now(),
             ]);
             DB::table('tenants')->where('id', $tenantId)->update(['plan_id' => $plan->id, 'status' => 'active', 'updated_at' => H::now()]);
             (new SubscriptionEntitlementService())->apply($tenantId, $plan->code);

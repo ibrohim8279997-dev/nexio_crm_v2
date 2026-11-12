@@ -129,9 +129,9 @@ export default function PlatformTenants() {
                     {(plansQ.data?.data ?? []).map((p) => <option key={p.id} value={p.id}>{p.name} — {p.currency} {num(p.price_monthly, 2)}/мес</option>)}
                   </Select>
                 </Field>
-                <Checkbox checked={free} onChange={(e) => setFree(e.target.checked)} label="Без оплаты (бесплатно)" description="Счёт не выставляется, подписка не уходит в просрочку." />
+                <Checkbox checked={free} onChange={(e) => setFree(e.target.checked)} label="Без оплаты (бесплатно)" description="Оплата не списывается. С датой «Действует до»: за 3 дня компании уходит предупреждение, а после даты списывается оплата за текущий месяц с карты." />
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <Field label="Действует до" hint="Пусто — бессрочно (для бесплатных) или 1 период"><Input type="date" value={until} onChange={(e) => setUntil(e.target.value)} /></Field>
+                  <Field label="Действует до" hint="Пусто — бессрочно (оплата не списывается никогда) или 1 период"><Input type="date" value={until} onChange={(e) => setUntil(e.target.value)} /></Field>
                   <Field label="Заметка"><Input value={note} maxLength={200} onChange={(e) => setNote(e.target.value)} placeholder="Например: наша компания" /></Field>
                 </div>
                 <Button size="sm" disabled={!planRef} loading={setPlan.isPending}

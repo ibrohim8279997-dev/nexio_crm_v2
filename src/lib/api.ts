@@ -33,6 +33,10 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
   try { data = text ? JSON.parse(text) : null } catch { data = text }
   if (res.ok) captureSession(path, data)
   if (!res.ok) {
+    // Unpaid subscription past the grace window: the API only lets the billing page through, so send the user there.
+    if (res.status === 402 && data?.error?.code === 'payment_required' && !window.location.pathname.startsWith('/app/billing')) {
+      window.location.assign('/app/billing')
+    }
     const plainText = typeof data === 'string' && data && !data.trimStart().startsWith('<')
     const msg = data?.error?.message ?? (plainText ? data : `Не удалось выполнить запрос (код ${res.status})`)
     throw new ApiError(res.status, msg, data?.error?.code ?? 'error', data?.error?.details)

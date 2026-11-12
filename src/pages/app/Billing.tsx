@@ -6,6 +6,7 @@ import { useApi, useApiMutation } from '../../lib/hooks'
 import { api } from '../../lib/api'
 import { num, shortDate } from '../../lib/format'
 import { useCan } from '../../lib/auth'
+import PaymentCards from './PaymentCards'
 
 interface Plan { id: string; code: string; name: string; tagline: string; price_monthly: number; price_yearly: number; currency: string; seats: number; api_requests: number; ai_minutes: number; storage_gb: number; modules: string[]; features: { label: string; included: boolean }[] }
 interface Invoice { id: string; number: string; total: number; currency: string; status: string; issued_at: string; paid_at: string | null; line_items: { label?: string; amount?: number; kind?: string }[]; click_amount_uzs?: number; exchange_rate?: number; exchange_rate_date?: string }
@@ -13,7 +14,7 @@ interface Method { code: string; name: string; configured: boolean; default: boo
 interface Addon { id: string; plugin_id: string; plugin_name: string | null; amount: number; currency: string; status: string; created_at: string }
 interface BillingResponse {
   paymentProvider: string; paymentMethods: Method[]; addons: Addon[]
-  subscription: { plan_name: string; plan_code: string; status: string; seats: number; amount: number; currency: string; interval: string; period_start: string; period_end: string; modules: string[] } | null
+  subscription: { pending_plan_code?: string | null; plan_name: string; plan_code: string; status: string; seats: number; amount: number; currency: string; interval: string; period_start: string; period_end: string; modules: string[] } | null
   invoices: Invoice[]
   usage: { seats: { used: number; limit: number }; portal_users?: { used: number }; api: { quantity: number; limit_value: number }; ai_minutes: { quantity: number; limit_value: number }; storage: { quantity: number; limit_value: number } }
   totals: { unpaid: number; unpaidInvoices: number; paidYtd: number }
@@ -30,7 +31,7 @@ export default function Billing() {
   const provider = chosen ?? methods.find((m) => m.default && m.configured)?.code ?? methods.find((m) => m.configured)?.code ?? undefined
   const providerName = methods.find((m) => m.code === provider)?.name ?? 'to‘lov tizimi'
 
-  const changePlan = useApiMutation(({ plan, interval }: { plan: string; interval: string }) => api.post<{ payment_url?: string }>('/api/v1/billing/plan', { plan, interval, provider }), { invalidate: [['billing'], ['auth']], success: 'Tarif invoice yaratildi' })
+  const changePlan = useApiMutation(({ plan, interval }: { plan: string; interval: string }) => api.post<{ payment_url?: string; note?: string }>('/api/v1/billing/plan', { plan, interval, provider }), { invalidate: [['billing'], ['auth']], success: provider === 'card' ? 'Tarif o‘zgartirildi' : 'Tarif invoice yaratildi' })
   const pay = useApiMutation((id: string) => api.post<{ payment_url?: string }>(`/api/v1/billing/invoices/${id}/pay`, { provider }), { invalidate: [['billing']], success: 'Invoice tayyorlandi' })
   const sub = billing.data?.subscription
   const usage = billing.data?.usage
@@ -42,10 +43,12 @@ export default function Billing() {
       {sub && <>
         <Grid cols={4}>
           <StatCard label="Joriy tarif" value={sub.plan_name} hint={`${sub.interval === 'year' ? 'yillik' : 'oylik'} to‘lov`} icon={<CreditCard className="size-4" />} />
-          <StatCard label="Narx" value={money(sub.amount, sub.currency)} hint={`${sub.seats} ta joy`} icon={<CreditCard className="size-4" />} tone="primary" />
+          <StatCard label="Narx" value={money(sub.amount, sub.currency)} hint={`${sub.seats} ta joy · keyingi to‘lov ${shortDate(sub.period_end)}${sub.pending_plan_code ? ` · keyin «${sub.pending_plan_code}» tarifiga o‘tadi` : ''}`} icon={<CreditCard className="size-4" />} tone="primary" />
           <StatCard label="To‘langan" value={money(billing.data?.totals.paidYtd, sub.currency)} hint="Tasdiqlangan invoice" icon={<Check className="size-4" />} tone="success" />
           <StatCard label="Kutilmoqda" value={money(billing.data?.totals.unpaid, sub.currency)} hint={`${billing.data?.totals.unpaidInvoices ?? 0} ta invoice`} icon={<AlertTriangle className="size-4" />} tone="warning" />
         </Grid>
+
+        <PaymentCards />
 
         <SectionCard title="To‘lov usuli" subtitle="Tanlangan usul tarif va invoice to‘lovlarida ishlatiladi. USD summa CBU kursi bilan UZSga aylantiriladi.">
           <div className="flex flex-wrap gap-3" role="radiogroup" aria-label="To‘lov usuli">

@@ -14,6 +14,7 @@ import { api } from '../../lib/api'
 import { openExternal } from '../../lib/native'
 import { useToast } from '../ui/toast'
 import { CommandPalette } from './CommandPalette'
+import { BillingBanner } from './BillingBanner'
 import { useI18n } from '../../lib/i18n'
 import logoUrl from '../../assets/nexio-lab-mark.png'
 import { ThemeToggle } from '../ui/ThemeToggle'
@@ -522,6 +523,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
         <main id="main" className="min-w-0 flex-1 px-3 py-4 pb-[calc(5rem+var(--sab))] sm:px-4 sm:py-5 lg:pb-8">
           <EmailVerificationBanner />
+          <BillingBanner />
           {children}
         </main>
 

@@ -50,6 +50,8 @@ class ApiContext
         app()->instance(Ctx::class, $ctx);
         if (!$this->loadApiKey($ctx, $request)) $this->loadSession($ctx, $request);
 
+        $this->enforceBillingLock($ctx, $request);
+
         // A client-portal session is confined to the portal surface. Enforced before routing
         // so no internal endpoint can leak supplier data to a customer account.
         if ($ctx->role === 'client_portal_user') {
@@ -64,6 +66,22 @@ class ApiContext
             if (!$response->headers->has($name)) $response->headers->set($name, $value);
         }
         return $response;
+    }
+
+    /**
+     * A company whose subscription went unpaid past the grace window is locked out (its data is kept).
+     * Billing, auth and the profile stay reachable so the company can add a card and pay to get back in.
+     * Platform operators are never locked.
+     */
+    private function enforceBillingLock(Ctx $ctx, Request $request): void
+    {
+        if (!$ctx->tenantId || !empty($ctx->user['is_platform_admin'])) return;
+        $path = $request->path();
+        if (str_starts_with($path, 'api/v1/billing') || str_starts_with($path, 'api/v1/auth')) return;
+        $blocked = DB::table('subscriptions')->where('tenant_id', $ctx->tenantId)->orderByDesc('created_at')->value('blocked_at');
+        if ($blocked) {
+            throw new ApiException(402, 'Доступ приостановлен из-за неоплаты. Добавьте карту в разделе «Billing», данные сохранены.', 'payment_required');
+        }
     }
 
     /**

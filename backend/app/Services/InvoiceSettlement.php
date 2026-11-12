@@ -1,6 +1,7 @@
 <?php
 namespace App\Services;
 
+use App\Support\BillingPeriod;
 use App\Support\H;
 use Illuminate\Support\Facades\DB;
 
@@ -29,6 +30,10 @@ class InvoiceSettlement
         if (!$settled) return false;
 
         foreach (is_array($items) ? $items : [] as $item) {
+            if (($item['kind'] ?? null) === 'subscription_renewal' && !empty($item['sub_id'])) {
+                $this->renewSubscription((string) $invoice->tenant_id, (string) $item['sub_id'], (string) $invoice->id);
+                break;
+            }
             if (($item['kind'] ?? null) === 'subscription_plan' && !empty($item['plan_code'])) {
                 $this->activateSubscription((string) $invoice->tenant_id, (string) $item['plan_code'], (string) ($item['interval'] ?? 'month'), (string) $invoice->id);
                 break;
@@ -58,11 +63,45 @@ class InvoiceSettlement
                 'id' => H::newId('sub'), 'tenant_id' => $tenantId, 'plan_id' => $plan->id,
                 'status' => 'active', 'seats' => $plan->seats, 'amount' => $interval === 'year' ? $plan->price_yearly : $plan->price_monthly,
                 'currency' => $plan->currency, 'interval' => $interval, 'period_start' => H::now(),
-                'period_end' => gmdate('Y-m-d H:i:s', time() + ($interval === 'year' ? 365 : 30) * 86400), 'created_at' => H::now(),
+                'period_end' => BillingPeriod::nextBoundary($interval), 'created_at' => H::now(),
             ]);
             DB::table('tenants')->where('id', $tenantId)->update(['plan_id' => $plan->id, 'status' => 'active', 'updated_at' => H::now()]);
             (new SubscriptionEntitlementService())->apply($tenantId, $plan->code);
             DB::table('billing_events')->insert(['id' => H::newId('bev'), 'tenant_id' => $tenantId, 'kind' => 'subscription.activated', 'detail' => $invoiceId . ':' . $plan->code, 'created_at' => H::now()]);
+        });
+    }
+
+    /**
+     * A paid renewal keeps the same subscription row: the period moves to the next 1st, the free/overdue/locked
+     * state is cleared and a scheduled downgrade is applied. Access is restored here when the tenant was locked.
+     */
+    public function renewSubscription(string $tenantId, string $subId, string $invoiceId): void
+    {
+        $sub = DB::table('subscriptions')->where('id', $subId)->where('tenant_id', $tenantId)->first();
+        if (!$sub) return;
+        DB::transaction(function () use ($sub, $tenantId, $invoiceId) {
+            $planId = $sub->plan_id;
+            $interval = $sub->interval === 'year' ? 'year' : 'month';
+            if (!empty($sub->pending_plan_code)) {
+                $pending = DB::table('plans')->where('code', $sub->pending_plan_code)->first();
+                if ($pending) { $planId = $pending->id; $interval = $sub->pending_interval === 'year' ? 'year' : 'month'; }
+            }
+            $plan = DB::table('plans')->where('id', $planId)->first();
+            $price = $plan ? ($interval === 'year' ? $plan->price_yearly : $plan->price_monthly) : $sub->amount;
+            $previousEnd = strtotime($sub->period_end . ' UTC') ?: time();
+            DB::table('subscriptions')->where('id', $sub->id)->update([
+                'plan_id' => $planId, 'status' => 'active', 'complimentary' => 0, 'grant_note' => null,
+                'amount' => $price, 'interval' => $interval,
+                'seats' => $plan ? $plan->seats : $sub->seats,
+                'period_start' => gmdate('Y-m-d H:i:s', min($previousEnd, time())),
+                'period_end' => BillingPeriod::nextBoundary($interval),
+                'grace_until' => null, 'blocked_at' => null, 'data_retain_until' => null,
+                'last_dunning_at' => null, 'pending_plan_code' => null, 'pending_interval' => null,
+                'lgota_notified_at' => null, 'charge_state' => null,
+            ]);
+            DB::table('tenants')->where('id', $tenantId)->update(['plan_id' => $planId, 'status' => 'active', 'updated_at' => H::now()]);
+            if ($plan) (new SubscriptionEntitlementService())->apply($tenantId, $plan->code);
+            DB::table('billing_events')->insert(['id' => H::newId('bev'), 'tenant_id' => $tenantId, 'kind' => 'subscription.renewed', 'detail' => $invoiceId, 'created_at' => H::now()]);
         });
     }
 }

@@ -14,7 +14,7 @@ export const privacy: LocalizedDoc = {
         "Texnik: IP-manzil, brauzer/qurilma turi (User-Agent), kirish vaqti, sessiya identifikatori, xavfsizlik jurnali (audit), push-bildirishnoma tokeni (mobil ilovada), rozilik tarixi (siyosat versiyasi, vaqt, IP).",
         "CRM ma'lumotlari: kompaniya kiritadigan kontaktlar, bitimlar, buyurtmalar, vazifalar, hujjatlar, yozishmalar. Ularning qonuniyligi uchun kompaniya javobgar.",
         "AI va telefoniya (faqat yoqilganda): agent sozlamalari, so'rovlar, bilimlar bazasi, telefon raqami, rozilik asosi, qo'ng'iroq natijasi, xulosa, transkript va (kompaniya yoqsa) yozuv.",
-        "To'lov: to'lov holati va summasi. Karta ma'lumotlari bizga o'tmaydi — ular to'lov provayderida (Click, Payme) qayta ishlanadi.",
+        "To'lov: to'lov holati va summasi. Avtomatik to'lov uchun karta qo'shsangiz, karta raqami va amal qilish muddati bir martalik SMS-tasdiqlash uchun Click'ga uzatiladi va bizda saqlanmaydi; biz faqat Click bergan token (shifrlangan), niqoblangan raqam (oxirgi 4 ta raqam) va amal qilish muddatini saqlaymiz. CVV/CVC so'ralmaydi va saqlanmaydi.",
         "Ilova ruxsatlari: kamera va galereya (faqat siz hujjat/rasm biriktirganda), bildirishnomalar, Face ID/barmoq izi. Biometrik ma'lumotlar qurilmangizdan chiqmaydi: ilova faqat «tasdiqlandi / rad etildi» natijasini oladi."] },
       { heading: "3. Maqsadlar va huquqiy asoslar", paragraphs: [
         "Xizmatni taqdim etish va himoya qilish, autentifikatsiya, kompaniyalar ma'lumotlarini bir-biridan ajratish, qo'llab-quvvatlash, hisob-kitob, suiiste'molning oldini olish. Asoslar: shartnomani bajarish, sizning roziligingiz, xavfsizlikdagi qonuniy manfaat va qonun talablari.",
@@ -55,7 +55,7 @@ export const privacy: LocalizedDoc = {
         'Технические: IP-адрес, тип браузера/устройства (User-Agent), время входа, идентификатор сессии, журнал безопасности (аудит), токен push-уведомлений (в мобильном приложении), история согласий (версия политики, время, IP).',
         'CRM-данные: контакты, сделки, заказы, задачи, документы, переписка, которые вносит компания. За законность их внесения отвечает компания.',
         'AI и телефония (только если включены): настройки агента, запросы, база знаний, номер телефона, основание согласия, результат звонка, резюме, транскрипт и (если включила компания) запись.',
-        'Платежи: статус и сумма платежа. Данные банковской карты до нас не доходят: их обрабатывает платёжный провайдер (Click, Payme).',
+        'Платежи: статус и сумма платежа. Если вы добавляете карту для автоплатежа, номер и срок действия передаются в Click для разового SMS-подтверждения и у нас не сохраняются; мы храним только токен Click (в зашифрованном виде), маскированный номер (последние 4 цифры) и срок действия. CVV/CVC не запрашивается и не хранится.',
         'Разрешения приложения: камера и галерея (только когда вы прикрепляете документ или фото), уведомления, Face ID/отпечаток. Биометрия не покидает устройство: приложение получает только результат «подтверждено / отклонено».'] },
       { heading: '3. Цели и правовые основания', paragraphs: [
         'Предоставление и защита сервиса, аутентификация, изоляция данных компаний, поддержка, биллинг, предотвращение злоупотреблений. Основания: исполнение договора, ваше согласие, законный интерес в безопасности и требования закона.',
@@ -96,7 +96,7 @@ export const privacy: LocalizedDoc = {
         'Technical: IP address, browser/device type (User-Agent), sign-in time, session identifier, security (audit) log, push-notification token (mobile app), consent history (policy version, time, IP).',
         'CRM data: contacts, deals, orders, tasks, documents and messages entered by the company, which is responsible for their lawfulness.',
         'AI and telephony (only when enabled): agent settings, prompts, knowledge base, phone number, consent basis, call outcome, summary, transcript and, if the company enables it, a recording.',
-        'Payments: payment status and amount. Card data never reaches us; it is processed by the payment provider (Click, Payme).',
+        'Payments: payment status and amount. If you add a card for automatic payments, the card number and expiry are forwarded to Click for a one-time SMS confirmation and are not stored by us; we keep only the Click token (encrypted), the masked number (last 4 digits) and the expiry. The CVV/CVC is never requested or stored.',
         'App permissions: camera and photo library (only when you attach a document or photo), notifications, Face ID/fingerprint. Biometrics never leave your device: the app only receives "confirmed / rejected".'] },
       { heading: '3. Purposes and legal bases', paragraphs: [
         'Providing and protecting the service, authentication, isolating company data, support, billing, preventing abuse. Bases: performance of the contract, your consent, legitimate interest in security, and legal obligations.',
