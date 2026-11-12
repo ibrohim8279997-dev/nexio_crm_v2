@@ -89,6 +89,14 @@ A second, independent database on the same server (own name/file, ideally its ow
 - **Same server = same blast radius.** The standby protects against a database crash, a bad migration or a corrupted/emptied database. It does **not** protect against loss, theft or full compromise of the server itself (an attacker with the server has both databases, and the standby has the same data). For that, point `REPLICA_DB_HOST` at a different host, or copy `storage/app/backups` off the server.
 
 ### Telegram bot
+
+**Voice, images and AI limits in the bot.** A linked user can send a voice note (Groq Whisper: `GROQ_STT_MODEL`, default `whisper-large-v3-turbo`),
+a photo (vision: `GROQ_VISION_MODEL`, default `qwen/qwen3.8-27b`) or `/image <description>`. Everything counts against the company's monthly AI allowance
+(plan `ai_minutes` x 1000 tokens, the same meter as the website: 1 minute of audio = 1000 tokens, 4 characters of speech = 1 token, one generated image = 2000 tokens);
+a plan with 0 AI minutes has no bot AI. Per user: 20 requests/hour, 5 images/hour. Files and transcripts are not stored.
+- **Voice replies** use Groq TTS (`GROQ_TTS_MODEL`, `GROQ_TTS_VOICE`), which speaks **English only**: English voice notes get text + a voice reply, Russian/Uzbek get text.
+  Install `ffmpeg` on the bot host to send real Telegram voice notes (without it the WAV is sent as a file). Switch off with `TELEGRAM_VOICE_REPLIES=false`.
+- **`/image`** needs an OpenAI-compatible image provider because Groq has no image model: `IMAGE_API_KEY` (and optionally `IMAGE_API_BASE_URL`, `IMAGE_MODEL`, `IMAGE_SIZE`). Without a key the command says it is not configured.
 The bot runs as its own process on the same server and uses the same database. It is started and restarted by `./deploybot.sh` (PM2 app `nexio-bot`, `php artisan nexio:telegram:poll`), never by `deploy.sh`. Run `./deploy.sh` first to update the code, then `./deploybot.sh`; `STOP=1 ./deploybot.sh` stops it. Needs `TELEGRAM_BOT_TOKEN` in `backend/.env`. One poller per bot token; never set a webhook for the same bot.
 
 ## Integrations surface
