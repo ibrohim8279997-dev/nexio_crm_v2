@@ -2,12 +2,12 @@
   "id": "P001",
   "buys": false,
   "purchases_first_month": 0,
-  "reason_code": "trust",
-  "reason": "Free moving of my data is nice, but 25 dollars a month is a real chunk when I make about 500 a month, and nobody I know uses this. I would try the free 14 days at most, I would not pay yet.",
-  "objection": "No references. I have no one to ask if it really works, and if the move of my clients goes wrong or the team stops using it, I lose weeks and my client list is a mess.",
-  "would_change_my_mind": "Another shop owner I know in Uzbekistan telling me they use it, plus someone doing the move in front of me and a lower price, around 10 to 15 dollars.",
+  "reason_code": "habit",
+  "reason": "My Excel works and I know every cell of it. $29 a month is real money for me and I would still have to retrain my people, even if they move the data.",
+  "objection": "I would have to move all my clients and retrain my staff, and nobody I know uses this. If it fails I lose a month of work, not just $29.",
+  "would_change_my_mind": "A friend who runs a business like mine, whom I can call, telling me he uses it and his staff learned it in a few days.",
   "price_too_cheap": 5,
-  "price_cheap": 10,
-  "price_expensive": 20,
-  "price_too_expensive": 35
+  "price_cheap": 12,
+  "price_expensive": 25,
+  "price_too_expensive": 40
 }

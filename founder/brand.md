@@ -1,84 +1,80 @@
 # Brand: Nexio CRM
 
-This is an **audit, not a rename.** The product is already called Nexio CRM, "by Nexio Lab", and has a logo, colours and an app icon. The pack's job here is to check the name for risk, tie the voice to the positioning from `marketing.md`, and fix what the audit finds. No image tool was used; the logo section is a brief.
+Positioning used: version 1 from `founder/marketing.md`: *For small shop and service owners in Uzbekistan who keep clients in Excel and Telegram, Nexio is the CRM we set up for you, in Uzbek or Russian, with Click and Payme built in, unlike Bitrix24, which you have to learn yourself.*
 
-## 1. What exists today (from the repo)
+The business already has a name and a look in the code. This brief tests the name rather than inventing a new one, then writes the voice and tightens the look. **Nothing here is legal advice. I can only run public web searches; a trademark lawyer confirms the name, and nothing is registered until you register it.**
 
-- **Name:** Nexio CRM, by Nexio Lab.
-- **Primary colour:** `#2563eb` (blue); dark theme background `#0B1220`; success `#10b981`; warning `#f59e0b`; soft surfaces in light and dark.
-- **Logo (from the SVG in the repo):** the word "Nexio" in bold navy `#092d62`, "CRM" in a light weight, and "BY NEXIO LAB" in grey `#64748b`, set in Arial.
-- **App icon files:** in `resources/` (icon, foreground, background, splash) and `public/`.
-- **Languages:** Uzbek, Russian, English.
+## 1. Name: keep "Nexio", but check it before spending on it
 
-## 2. Name check: the risks, honestly
+Candidate names considered (so the founder can compare):
 
-"Nexio" is a short, invented-sounding word that is easy to say in Uzbek, Russian and English. That is its strength. The risks:
+| Name | Style | What it says | Risk |
+| --- | --- | --- | --- |
+| **Nexio** (current) | invented | "connect"; short, easy to say in Uzbek and Russian | Same name used by other companies (see below) |
+| Nexio Lab | the maker's name | the team behind it | "Lab" says engineering, not service |
+| Mijoz | descriptive (Uzbek: "customer") | exactly the job, instantly understood | very generic; hard to own; likely taken as a domain |
+| Mijoz Bot | descriptive | Telegram feel | sounds like a bot, not a CRM |
+| Klient | descriptive (Russian) | clear to Russian speakers | generic |
+| Hamkor (Uzbek: "partner") | evocative | trust, partnership | common word; used by a bank and others |
+| Savdo+ (Uzbek: "trade") | descriptive | shop trade | weak for services |
+| Tezkor (Uzbek: "quick") | evocative | speed | no CRM meaning |
+| Bozor CRM | place/market | the local bazaar | feels small, retail-only |
+| Orbit | invented | circling around clients | generic, many "Orbit" products |
 
-- **It is generic.** "Nexus"-style names are very common in software. Expect other companies named Nexio or close to it. I could not search trademark registers from here, so this is **unchecked**, not cleared.
-- **Domains.** A DNS lookup (public, no registration check) returned: `nexio.com` is taken (Cloudflare name servers); `nexiolab.uz` has name servers (taken); `nexiolab.com` is parked/for sale (Afternic name servers); `nexio.uz`, `nexiocrm.uz` and `nexiocrm.com` returned no name servers. **No name servers does not prove a domain is free** (a registered domain can have none, and `.uz` lookups can fail). Confirm with a registrar's search before relying on it.
-- **Confusion with competitors:** none of the names in `competitors.md` (Kommo, amoCRM, Bitrix24, shamCRM, 1C) is close. No conflict found there.
+Shortlist: **Nexio**, **Hamkor CRM**, **Mijoz**. Recommendation: **keep Nexio** and register it in Uzbekistan. Changing a name with 1 to 5 customers is cheap now, but nothing here is clearly better and the product, domains and app id (`crm.nexiolab.uz`) already use it.
 
-Founder answers (13 Nov): the founder owns the domains; the "Nexio" trademark is not registered. Registering it, after the register searches below, is still open.
+### Checks you must finish yourself
 
-What you must finish yourself (a trademark lawyer confirms; nothing here is registered or cleared):
+- **Trademark.** The founder says "Nexio" is not registered. A public search found other NEXIO marks in the US: a live Class 45 mark (Nexio, PC), a live Class 35 mark and payment-software marks (Complete Merchant Solutions, LLC), a live Class 9 mark (Imagine Communications Corp.), and a pending Class 9 application (NEXIO TECH LLC). Sources are aggregators and may be out of date: [markinton](https://markinton.com/trademark/nexio-87907977), [Justia, Groupe Nexio](https://trademarks.justia.com/owners/groupe-nexio-inc-1260983). None is clearly a CRM vendor, but the Class 9 and payment-software marks mean **a US filing for NEXIO in software could be blocked**; Uzbekistan is a separate register. Check the register of the Intellectual Property Agency of Uzbekistan (the national office) for classes **9, 35 and 42** (software, business services, SaaS), and the USPTO TSDR if you ever sell in the US. A lawyer should do the final search.
+- **Domains.** The founder owns the domains. Not checked by me; confirm .com and .uz are held, and the app id `crm.nexiolab.uz` matches.
+- **Handles.** Not checked: Telegram (most important), Instagram, YouTube. Reserve `@nexio_crm` or similar on Telegram first.
+- **Confusion.** No competitor in `competitors.md` has a name close to Nexio. A "NeoCRM" application exists in Canada, which is similar but a different word.
+- **Finding nothing for "Nexio Lab" or `nexiolab.uz` in search** means the company has no public footprint yet, which fits having 1 to 5 customers. It is also a reminder that trust has to be built from scratch.
 
-| Check | Where | Class |
-| --- | --- | --- |
-| Trademark, international | [WIPO Global Brand Database](https://branddb.wipo.int/) | Nice classes 9 (software), 42 (SaaS) |
-| Trademark, Uzbekistan | Intellectual Property Agency of the Republic of Uzbekistan (find the current official register; I did not verify its address) | classes 9 and 42 |
-| Trademark, EU / US | [EUIPO](https://euipo.europa.eu/eSearch/), [USPTO](https://tmsearch.uspto.gov/) | classes 9 and 42, only if selling there |
-| Domains | any registrar search for nexio.uz, nexiocrm.uz, nexiocrm.com | n/a |
-| Handles | Telegram (the key one here), Instagram, YouTube, X | n/a |
+## 2. Voice and promise
 
-**Recommendation:** keep the name for now, and do the trademark search **before** spending on ads or printing anything. If the search turns up a conflict in class 9 or 42, the fallback is a descriptive-evocative name; do not pick one before the search results exist.
-
-## 3. Promise, tagline, voice
-
-**One-line promise:** "Your clients, moved in for you, in one place your team actually uses." Drawn from the migration-led positioning in `marketing.md`; it replaces the feature list (CRM, finance, helpdesk, inventory, AI) the repo currently leads with.
+**The one-line promise:** *We move your clients in for you, and we answer when you write.*
 
 **Tagline options:**
-1. "Your clients, already inside." / «Ваши клиенты уже внутри.»
-2. "Move in. We carry the boxes." / «Переезжайте. Коробки несём мы.»
-3. "A CRM your team will actually open." / «CRM, которую команда реально откроет.»
+1. Your clients, set up for you.
+2. Excel to CRM in a week, done for you.
+3. CRM, in Uzbek, with a person behind it.
+
+Recommended: **#1**, because it is short and it is a promise the team can keep for the first 50 customers. (The current page title, "Future Starts Here", promises nothing a buyer can check; replace it.)
 
 **Voice, three adjectives:**
 
 | Adjective | Do | Don't |
 | --- | --- | --- |
-| **Plain** | Short sentences, the word the owner would use | Say "synergy", "ecosystem", "AI-powered" |
-| **Honest** | Say what is not ready ("no AI voice yet", "no references yet") | Imply customers, logos or ratings that do not exist |
-| **Helpful** | Offer to do the migration, answer in Telegram | Make the buyer figure it out |
+| **Plain** | Use the words the owner uses: "clients", "debts", "orders" | Say "pipeline", "leads funnel", "AI-powered" |
+| **Honest** | Say "we are new, 1 to 5 companies pay today" and "voice is not built" | Hide the size of the company or imply references that don't exist |
+| **Helpful** | Offer to do the setup; answer in Telegram in the buyer's language | Send a link to documentation |
 
-**Before / after (from `pitch.md`):**
-- Before: "Nexio CRM is a cloud CRM in Uzbek, Russian and English for small and growing companies. It keeps contacts, leads, deals, tasks, quotes and invoices in one place..."
-- After: "Your clients are in Excel and Telegram. We move them into Nexio for you, free, so your team starts with real data on day one."
+Before / after, from `founder/pitch.md`:
+- Before: "Nexio CRM keeps your clients, deals, tasks and invoices in one place, in Uzbek or Russian, on your phone and computer."
+- After: "Send us your Excel file. We put your clients in Nexio for you, in Uzbek or Russian, and you see them on your phone."
 
-## 4. The look: audit and fixes
+## 3. The look
 
-**Colour contrast checks (WCAG AA needs 4.5:1 for normal text, 3:1 for large text and UI):**
+The product already has a blue-and-white design system (`src/styles/index.css`). Keep it; do not redesign before there are customers.
 
-| Pair | Ratio | Verdict |
-| --- | ---: | --- |
-| White text on primary blue `#2563eb` | 5.17 | Passes AA |
-| Navy `#092d62` text on white | 13.43 | Passes AAA |
-| Grey `#64748b` text on white | 4.76 | Passes AA (small "BY NEXIO LAB" is borderline in size) |
-| Primary blue `#2563eb` on dark `#0B1220` (the token alone) | 3.62 | Looks like a fail, but the dark theme already remaps `text-primary` to `#7db4fb` in `src/styles/index.css`, which passes. **Not a real problem; my first audit missed the override** |
-| White text on success green `#10b981` | 2.54 | **Fails.** Do not put white text on this green; use dark text or a darker green |
-| Amber `#f59e0b` with dark `#111827` text | 8.26 | Passes |
+| Colour | Hex | Job | Contrast on white |
+| --- | --- | --- | --- |
+| Primary blue | `#2563eb` | Buttons, links, the logo mark | 5.17:1 (passes AA for text) |
+| Dark blue | `#1d4ed8` | Hover and pressed states | 6.70:1 |
+| Ink | `#0f172a` | Body text, headings | 17.06:1 on `#f8fafc` |
+| Soft blue | `#dbeafe` | Cards and selected rows; ink text on it is 14.63:1 | n/a |
+| Success green | `#047857` | Paid, done | 5.48:1 |
 
-One fix, done in code on 13 Nov: the success green used for text was `#10b981` (2.54 on white, 2.41 on the light badge background). In the light theme `--color-success` is now `#047857` (5.48 on white, 5.21 on the badge); the dark theme keeps `#10b981`. Where it appears in the app: `text-success` badges and deltas, and `bg-success` dots and bars, which now look darker in the light theme. Never put white text on a `#10b981` button.
+The muted grey `#64748b` is 4.76:1 on white: fine for secondary text at normal size, not for small light-on-light labels.
 
-**Type:** the logo uses Arial, a system font, which any platform can render but looks generic. The rest of the app uses `var(--font-sans)`; check what it resolves to. A free upgrade path: **Inter** (SIL Open Font License, from Google Fonts, supports Cyrillic and Latin, including the Uzbek Latin letters). Verify Uzbek letters (oʻ, gʻ) render correctly before adopting any font.
+**Type:** Inter (display and text), free under the SIL Open Font License from Google Fonts / rsms.me/inter. One family keeps the app fast on low-end phones. Check that Cyrillic and Uzbek Latin characters (o', g', sh, ch) display correctly in the weights used.
 
-**Logo brief:** it must read at 32 px on an app icon, so the icon should be a single letter mark ("N") or a simple shape, not the full wordmark. It must work in light and dark theme, in one colour (for stamps and invoices), and in Cyrillic documents next to Russian text. Avoid: arrows, "connection node" clichés that every CRM uses, and anything resembling a competitor's mark. Any generated concept is a concept, not a finished logo.
+**Logo brief:** it must say "connected clients" without a generic network of dots; work as a 32px app icon, in one colour on a printed invoice and on a Telegram avatar; avoid a lightning bolt, a globe and a speech bubble (every CRM uses them) and avoid blue-purple gradients. Concepts can be generated with an image tool and are concepts only until a designer finishes the file in vector form and the name clears trademark.
 
-**First five touchpoints:**
-1. **Landing page:** the promise, the migration offer, the plain sentence "we do not yet have customer references".
-2. **Signup and first run:** import step first (Excel, Telegram, amoCRM, Bitrix24), then the pipeline view.
-3. **Confirmation and invoice emails:** in the buyer's language, in so'm if they pay through Click or Payme, with the 30-day refund line.
-4. **First Telegram post:** the migration video from `marketing.md`.
-5. **Reply to the first complaint:** same-day, a person, an apology only if deserved, a fix date.
-
-## Rules followed
-
-No competitor name, logo, colour or tagline copied. No font suggested without a free licence. Not legal advice on trademarks.
+**The first five touchpoints:**
+1. **The first message / landing page:** "Send us your Excel file" + the price sheet + the 30-day refund + "we are new" line.
+2. **The first demo:** open the buyer's own client list in Nexio, not a sample.
+3. **The confirmation after paying (Click or Payme):** "Thanks. We will move your clients in within 3 working days. Write to us here in Telegram." with a named person.
+4. **The first social post:** how to move Excel to a CRM in an evening, no pitch (marketing.md hook 3).
+5. **The reply to the first complaint:** "You're right. Here is what happened, here is what we changed, and here is your month back if you want it." Within one working day.

@@ -5,6 +5,7 @@ import { AppShell } from './components/layout/AppShell'
 import { PlatformShell } from './components/layout/PlatformShell'
 import { RequireAuth, RequirePlatform, RequirePortal } from './components/layout/Protected'
 import { Card, Skeleton } from './components/ui/core'
+import { PageTracker } from './components/site/PageTracker'
 
 const Landing = lazy(() => import('./pages/public/Landing'))
 const Login = lazy(() => import('./pages/public/Login'))
@@ -85,6 +86,8 @@ const PlatformAiOps = lazy(() => import('./pages/platform/AiOps'))
 const PlatformSecurity = lazy(() => import('./pages/platform/Security'))
 const PlatformSettings = lazy(() => import('./pages/platform/PlatformSettings'))
 const PlatformMarketplace = lazy(() => import('./pages/platform/Marketplace'))
+const PlatformBanners = lazy(() => import('./pages/platform/Banners'))
+const PlatformSiteAnalytics = lazy(() => import('./pages/platform/SiteAnalytics'))
 
 function RouteSkeleton() {
   return (
@@ -101,6 +104,7 @@ function RouteSkeleton() {
 export function App() {
   return (
     <Suspense fallback={<RouteSkeleton />}>
+      <PageTracker />
       <Routes>
         {/* Public */}
         <Route path="/" element={isNative() ? <Navigate to="/login" replace /> : <Landing />} />
@@ -134,6 +138,8 @@ export function App() {
           <Route path="security" element={<PlatformSecurity />} />
           <Route path="settings" element={<PlatformSettings />} />
           <Route path="marketplace" element={<PlatformMarketplace />} />
+          <Route path="banners" element={<PlatformBanners />} />
+          <Route path="site-analytics" element={<PlatformSiteAnalytics />} />
           <Route path="*" element={<Navigate to="/platform" replace />} />
         </Routes></PlatformShell></RequirePlatform>} />
 

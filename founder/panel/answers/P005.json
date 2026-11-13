@@ -3,11 +3,11 @@
   "buys": false,
   "purchases_first_month": 0,
   "reason_code": "trust",
-  "reason": "My team works fine with a spreadsheet at the end of the day, and I am not going to move my clients to a company with no customers to show me. I might look at the free trial, but I would not pay yet.",
-  "objection": "Will it still exist and be supported in a year? No references, nobody I know uses it, and if they close I lose my client data and my team's time.",
-  "would_change_my_mind": "Two or three real Uzbek companies of my size I can call who use it, plus a way to export all my data any time.",
-  "price_too_cheap": 15,
-  "price_cheap": 35,
-  "price_expensive": 90,
-  "price_too_expensive": 160
+  "reason": "I only buy software after a friend or another owner says they use it, and here 1 to 5 companies pay and there are no references. Also $29 a month is a lot when I earn about $1,000 a month, and I still cannot tell which plan I need.",
+  "objection": "Nobody I know uses it. If it is new and I move my clients over and it stops working, I lose time and clients I cannot afford to lose.",
+  "would_change_my_mind": "A business owner I know personally tells me they use it and are happy, or I can call a founding customer first and try it free.",
+  "price_too_cheap": 5,
+  "price_cheap": 12,
+  "price_expensive": 25,
+  "price_too_expensive": 45
 }

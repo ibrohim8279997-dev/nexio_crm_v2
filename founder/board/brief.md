@@ -1,21 +1,31 @@
-# Board brief: Nexio CRM
+# Brief for the board: Nexio CRM
 
-Evaluate this business idea. You have no other context. Facts below come from the product's own repository; nothing is invented. Anything marked "unknown" is an open question, not a weakness to assume.
+You are evaluating a business idea. You cannot see any conversation, so everything you need is here. Do not look for or read other files in `founder/` apart from the lens file named in your task.
 
-# Nexio CRM (by Nexio Lab)
+## The idea
 
-- What it is: A multi-tenant SaaS CRM (web, plus Android/iOS apps via Capacitor) with contacts, leads, deals, tasks and projects, finance and invoices, helpdesk/SLA, client portals, automation, API/webhooks, plugins (inventory, delivery, telephony, AI assistant) and AI sales agents/calls.
-- Who it is for: Small and growing companies, apparently in Uzbekistan (Uzbek/Russian/English UI, Click and Payme payments, CBU exchange rates, Telegram integration), that currently use amoCRM-style tools. Exact target segment/industry is not stated in the repo and still needs the founder's answer.
-- What it sells, at what price (from the plans migration, per month, yearly = 10x monthly; currency is read from the plan record, charges converted to UZS for Click/Payme):
-  - Starter 89, up to 5 users, no AI minutes, 5 GB
-  - Business 199, up to 15 users, 200 AI minutes, 25 GB (badged "most popular")
-  - Enterprise 349 ("from", contact sales), up to 50 users, 500 AI minutes, 100 GB, SSO, voice calls
-  - New signups start on a Starter trial.
-- Where and how: Online SaaS, self-serve signup with trial, card/Click/Payme billing. Real-time voice (ASR/TTS/SIP) is not implemented; AI calls are sandbox simulations.
-- Budget and constraints: Not stated. Open question for the founder (money, runway, team size, current paying customers).
+**Nexio CRM (by Nexio Lab)** is a multi-tenant cloud CRM (web, Android and iOS apps) with contacts, leads, deals, tasks and projects, finance and invoices, helpdesk/SLA, client portals, automations, API/webhooks, plugins (inventory, delivery, telephony, AI assistant) and AI sales agents/calls. UI in Uzbek, Russian and English. Payments via Click and Payme (so'm), plus card. Telegram integration, CBU exchange rates.
 
-## Additional facts from the repo
-- Stack: React/TypeScript SPA, Laravel API, plugin architecture; a docs PDF "Nexio_vs_amoCRM" shows the founder positions against amoCRM.
-- Features documented: RBAC, audit trail, tenant isolation, webhooks, quotes, orders, inventory, delivery, Telegram, AI assistant with token limits per plan, client portals (portal accounts do not consume seats).
-- Known gaps: AI voice is simulated; controllers partly large/legacy.
-- Unknown: customer count, revenue, churn, acquisition channel, CAC, team size, budget, exact currency/country of sale.
+## Who it is for
+
+Small and growing companies in Uzbekistan that now keep clients in Excel, Telegram chats, amoCRM or Bitrix24. The founder names two segments: retail and shops, and service businesses.
+
+## What it sells, at what price (USD per month; charged in so'm; yearly = 10x monthly)
+
+- Starter $89: up to 5 users, 5 GB, CRM and projects, no AI minutes.
+- Business $199 (badge "most popular"): up to 15 users, 25 GB, 200 AI minutes, plus finance, helpdesk, analytics, automations, API, client portal, documents.
+- Enterprise $349 ("from", contact sales, better from 25 users): up to 50 users, 100 GB, 500 AI minutes, plus AI agents, voice, SSO.
+- Self-serve custom plan (new): $9 base + $10 per user + $0.4 per GB + $0.15 per AI minute + $5 per 1,000 contacts + per-module prices ($5 to $40 each).
+- New signups get a trial. Real-time voice is NOT built (AI calls are sandbox simulations); the founder expects it within 3 months and labels it "coming soon".
+
+## Where and how
+
+Online SaaS, self-serve signup. Production runs on the founder's own server in Uzbekistan. Backups are on the same server only. The "Nexio" trademark is not registered; the founder owns the domains. No lawyer has reviewed the personal-data rules.
+
+## Facts from the founder
+
+- 1 to 5 paying customers today; none has agreed to be a reference.
+- Team of 4 to 10 people including the founder.
+- The founder chose to keep Starter at $89 and not test a lower price.
+- Not known: revenue, churn, acquisition channel and cost, runway, what customers pay today for amoCRM/Bitrix24, server cost, the income the founder needs.
+- Known competitors named in the repo's own comparison documents: amoCRM and Bitrix24. Do not invent others or any market size; name them as open questions.

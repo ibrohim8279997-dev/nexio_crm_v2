@@ -3,11 +3,11 @@
   "buys": false,
   "purchases_first_month": 0,
   "reason_code": "trust",
-  "reason": "I would take the free trial, but I would not pay yet. I only need contacts and deals, and a CRM nobody has vouched for makes me nervous with my client data. I will keep my spreadsheets and Telegram until someone I know uses it.",
-  "objection": "No references at all. If I move all my clients in and it disappears or breaks, I lose my sales history. The plans also jump from 25 to 49 to 199, and I only want contacts and deals, not finance and inventory.",
-  "would_change_my_mind": "Two or three Uzbek companies like mine that I can call and who use it, plus a 49 dollar plan that is honestly enough for my sales team.",
+  "reason": "I already pay for amoCRM and it works, even if it is slow. I know nobody who uses Nexio and they have only 1 to 5 paying companies, so I would not move my clients to them.",
+  "objection": "Who else uses it? I cannot find any company I know. If it disappears, my client list goes with it.",
+  "would_change_my_mind": "A friend who runs a shop like mine telling me he uses it and I can see it working on his phone; the 60-day reference calls would help only after other people have tried it.",
   "price_too_cheap": 8,
-  "price_cheap": 20,
-  "price_expensive": 45,
-  "price_too_expensive": 90
+  "price_cheap": 15,
+  "price_expensive": 29,
+  "price_too_expensive": 45
 }

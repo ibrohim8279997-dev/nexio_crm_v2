@@ -22805,10 +22805,50 @@
         "policyHash": "sha256:00b63b2f746eb8b9095bbd5e1dbae4ddd74fd92a6740b72f59f4069fbfda4737"
       },
       "hash": "sha256:f764a2c5abd74f37a8cec047bbc9d225456d8114d45c9ddb441d318dfafed638"
+    },
+    {
+      "payload": {
+        "receiptId": "sha256:d4b5e19d7e2da27064df15f17ce3cabcb252d548c134e8f9ff0b5c475a4930f0",
+        "previousReceiptHash": "sha256:f764a2c5abd74f37a8cec047bbc9d225456d8114d45c9ddb441d318dfafed638",
+        "sequence": 570,
+        "issuedAt": 1794574453456,
+        "request": {
+          "identity": {
+            "id": "legacy-cli",
+            "type": "legacy"
+          },
+          "action": {
+            "type": "mcp.tool.call",
+            "resource": "hooks_intelligence_verified-ingest",
+            "tool": "hooks_intelligence_verified-ingest",
+            "server": "ruflo",
+            "network": false,
+            "destructive": false
+          },
+          "context": {
+            "metadata": {
+              "inputDigest": "sha256:b72ed13cb525af2592de7b88e763277fa14592edc468666510c59a8cf02dd505"
+            },
+            "now": 1794574453456
+          },
+          "requestId": "bd481136-5f0b-4206-b280-bcb3cb19d80a"
+        },
+        "decision": {
+          "requestId": "bd481136-5f0b-4206-b280-bcb3cb19d80a",
+          "outcome": "allowed",
+          "enforcedOutcome": "allowed",
+          "mode": "legacy",
+          "reason": "legacy-default-allow",
+          "matchedRules": [],
+          "obligations": []
+        },
+        "policyHash": "sha256:00b63b2f746eb8b9095bbd5e1dbae4ddd74fd92a6740b72f59f4069fbfda4737"
+      },
+      "hash": "sha256:54a459aefc10eafd2ea8001cd30d2b8787cd0b6c99ef4a907847bf1d6b0e48f8"
     }
   ],
   "migratedAt": 1791874771258,
   "migratedFrom": "pre-ADR-324; capabilities=none-detected",
-  "ledgerLength": 570,
-  "ledgerHead": "sha256:f764a2c5abd74f37a8cec047bbc9d225456d8114d45c9ddb441d318dfafed638"
+  "ledgerLength": 571,
+  "ledgerHead": "sha256:54a459aefc10eafd2ea8001cd30d2b8787cd0b6c99ef4a907847bf1d6b0e48f8"
 }

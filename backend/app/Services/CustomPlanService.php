@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Support\ApiException;
 use App\Support\H;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -13,12 +14,59 @@ use Illuminate\Support\Facades\DB;
 final class CustomPlanService
 {
     public const CODE_PREFIX = 'custom_';
+    public const SETTING_KEY = 'custom_plan_prices';
 
     private array $cfg;
 
     public function __construct()
     {
-        $this->cfg = (array) config('nexio.custom_plan');
+        $this->cfg = self::effectiveConfig();
+    }
+
+    /**
+     * Prices the superadmin may change, as dotted config path => label. Bounds and steps stay in config/nexio.php.
+     * @return array<string,string>
+     */
+    public static function priceFields(): array
+    {
+        $fields = [
+            'base' => 'Asosiy to‘lov (oyiga)', 'seat.price' => '1 ta xodim (oyiga)', 'storage_gb.price' => '1 GB xotira (oyiga)',
+            'ai_minutes.price' => '1 AI daqiqa', 'contacts.price_per_1000' => '1000 ta kontakt (oyiga)',
+        ];
+        foreach ((array) config('nexio.custom_plan.modules') as $code => $def) {
+            if (empty($def['always'])) $fields["modules.$code.price"] = 'Modul: ' . $code;
+        }
+        return $fields;
+    }
+
+    /** Prices from config/nexio.php, without superadmin overrides. @return array<string,float> */
+    public static function defaultPrices(): array
+    {
+        $cfg = (array) config('nexio.custom_plan');
+        $out = [];
+        foreach (array_keys(self::priceFields()) as $path) $out[$path] = (float) Arr::get($cfg, $path, 0);
+        return $out;
+    }
+
+    /** Superadmin overrides (only known price paths). @return array<string,float> */
+    public static function storedPrices(): array
+    {
+        $raw = DB::table('platform_settings')->where('key', self::SETTING_KEY)->value('value');
+        $data = $raw ? json_decode((string) $raw, true) : [];
+        $allowed = self::priceFields();
+        $out = [];
+        foreach ((array) $data as $path => $price) {
+            if (isset($allowed[$path]) && is_numeric($price) && $price >= 0) $out[$path] = round((float) $price, 2);
+        }
+        return $out;
+    }
+
+    /** config('nexio.custom_plan') with the superadmin price overrides applied. */
+    public static function effectiveConfig(): array
+    {
+        $cfg = (array) config('nexio.custom_plan');
+        foreach (self::storedPrices() as $path => $price) Arr::set($cfg, $path, $price);
+        return $cfg;
     }
 
     /** Public description of what can be configured, unit prices and the paid/free plugin catalogue. */

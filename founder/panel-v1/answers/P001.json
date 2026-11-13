@@ -2,12 +2,12 @@
   "id": "P001",
   "buys": false,
   "purchases_first_month": 0,
-  "reason_code": "price",
-  "reason": "89 dollars a month is more than 1,000 a year, and I earn about 6,000. That is a sixth of my income for a program, and my notebook and Telegram chats work for free.",
-  "objection": "Moving my data from amoCRM or Excel will take weeks, I have no time for it, and nobody does it for me. On top of that the price is far too high for my shop.",
-  "would_change_my_mind": "A price near 15 to 20 dollars a month, plus their team moving my clients from Excel or amoCRM for me for free.",
+  "reason_code": "habit",
+  "reason": "My Excel works and I know every row of it. $89 a month is more than a tenth of what I earn in a year, for something that makes me move everything and retrain people.",
+  "objection": "I would have to move all my clients and retrain my staff, and only 1 to 5 companies pay for it and there are no references. If it breaks, my clients and debts are stuck in someone else's system.",
+  "would_change_my_mind": "A friend who runs a similar business using it for months and telling me it saved him money, plus someone from Nexio importing my Excel for free and a price near $20 a month.",
   "price_too_cheap": 5,
-  "price_cheap": 15,
-  "price_expensive": 35,
-  "price_too_expensive": 60
+  "price_cheap": 12,
+  "price_expensive": 25,
+  "price_too_expensive": 45
 }

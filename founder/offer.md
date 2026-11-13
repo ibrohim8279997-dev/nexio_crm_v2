@@ -1,83 +1,89 @@
-# Offer: Nexio CRM
+# The offer: Nexio CRM
 
-Built from the first panel's objections (`founder/panel-v1/results.md`), the competitor complaints, the board's conditions and `founder/pricing.md`. The CFO has not run yet, so cost scores below are rough ranks, not money. Costs in dollars are open questions for `/founder-cfo`.
+Built from `founder/panel-v1/` (the 20 buyers who saw the old pitch), the competitor map, the board's conditions and `founder/pricing.md`. **Costs below are effort estimates, not CFO numbers**: `founder/numbers.json` does not exist yet, so `/founder-cfo` must confirm that every item is affordable.
 
-## 1. The problem list (in the buyer's words)
+## Offer name
 
-| # | Problem | Before / during / after | Source |
-| --- | --- | --- | --- |
-| 1 | "$89 a month is too much next to what I earn" | before | 10 of 20 passed on price |
-| 2 | "Moving my data will take weeks and nobody does it for me" | before | 16 of 20 named free migration as a flip |
-| 3 | "My spreadsheet and Telegram chats are free and work well enough" | before | 5 passed on habit |
-| 4 | "I do not know this company, no customers I can ask" | before | 5 passed on trust |
-| 5 | "Will it still exist and be supported in a year?" | before / after | P005, P009, P020 |
-| 6 | "I only need contacts and deals, not finance and inventory" | before | P014, P017 |
-| 7 | "I pay about $15 per user now, flat $89 is not obviously better" | before | P010, P015 |
-| 8 | "My team will not learn another tool" | during | P011 |
-| 9 | "Is AI voice real or a demo?" | before | P008 |
-| 10 | "My clients pay me in so'm, I avoid foreign cards" | before | P017 |
-| 11 | "What if I lose my client data?" | after | P009 |
-| 12 | "Support is slow" | after | competitor complaints (Kommo, Bitrix24) |
-| 13 | "Price grows with users and add-ons" | after | competitor complaints (Kommo) |
-| 14 | "Setup by an integrator went wrong" | during | amoCRM complaints (crmindex) |
+**The Founding 50: we move you in, you pay $29 to $49, you can leave in 30 days.**
 
-## 2. Solutions, scored (value to buyer 1 to 5, cost to deliver 1 to 5, 5 = costly)
+## The problem list (buyer's words, where possible)
 
-| Problem | Solution | Value | Cost | Keep? |
+Before buying
+1. "$89 a month is a lot, and Bitrix24 has a free plan." (price, 13 of 20 passed on price)
+2. "I don't know a single company that uses it." (no references, raised by almost every buyer)
+3. "I would have to move all my clients and retrain my staff." (switching effort)
+4. "I can't tell which plan I need." (plan confusion)
+5. "Is my data safe? Backups?" (data safety, P009, P017)
+6. "AI calls don't work yet, so I'd pay for a promise." (P020, P019, P012)
+7. "My Excel works and costs nothing." (habit, P001, P016)
+8. "What if it doesn't work for my business?" (risk)
+
+During
+9. Importing clients from Excel, Telegram, amoCRM or Bitrix24
+10. Learning a new tool, staff resistance
+11. Not knowing the first thing to do after signup (board, Product lens)
+12. Support slow or in the wrong language (the competitors' top complaint)
+
+After
+13. Lock-in, being stuck if it breaks (P001)
+14. Price rising later
+15. The vendor disappearing (1 to 5 customers)
+
+## Solutions, scored (value to buyer 1-5 / cost to deliver 1-5)
+
+| Problem | Solution | Value | Cost | Keep |
 | --- | --- | ---: | ---: | --- |
-| 1, 6, 7 | **Lean plan**: 3 users, contacts, deals, Telegram only, $25 | 5 | 2 | Yes |
-| 1 | Starter at $49 (test $39 to $49) instead of $89 | 5 | 3 | Yes, price test |
-| 2, 14 | **Free done-for-you migration** (Excel, Telegram, amoCRM, Bitrix24) for the first 50 customers | 5 | 4 | Yes, capped |
-| 3, 8 | Trial with your own data loaded by us, 14 days | 4 | 2 | Yes |
-| 4 | Honest statement: no references yet. Offer to talk to the founder directly. | 3 | 1 | Yes |
-| 5, 11 | Month-to-month, cancel any time; data export on request | 4 | 2 | Yes (export must exist: check) |
-| 10 | Pay in so'm via Click or Payme | 4 | 1 | Already built |
-| 9 | Remove AI voice from every price line until it works | 4 | 1 | Yes |
-| 12 | Founder answers support in Telegram during the first 50 customers | 3 | 3 | Maybe |
-| 13 | Flat price per plan, no per-user fees | 4 | 1 | Already built |
-| 2 | Migration for unlimited customers | 5 | 5 | No, cost unknown |
-| 4 | Fake reviews or logos | n/a | n/a | Never |
+| 1 | Lean $29 (3 users) and Team $49 (5 users) | 5 | 3 (margin, CFO to check) | yes |
+| 2, 15 | Founding customers named as references after 60 days; buyers may call them; 30-day refund | 4 | 1 | yes |
+| 3, 9, 10 | Free migration by the Nexio team plus a first-use call in Uzbek or Russian | 5 | 3 (staff hours) | yes, capped at 50 customers |
+| 4 | Two cards on the page, picked by headcount | 3 | 1 | yes |
+| 5 | Daily backup copied off-server (the repo's runbook says to) | 4 | 2 | **yes, must be live before the first founding customer** |
+| 6 | Take AI voice off every plan and say so | 3 | 1 | yes |
+| 7 | Run Excel and Nexio side by side during the first 2 weeks (the migration team does the first import) | 3 | 2 | yes |
+| 8, 13 | 30-day refund of the first month | 4 | 2 (claim rate unknown) | yes |
+| 12 | Answer inside one working day in Telegram | 4 | 3 (people) | test it, only if staff exist |
+| 14 | Price locked for 12 months | 3 | 1 | yes |
+| 11 | Guided first run | 4 | 4 (needs building) | later, not promised |
 
-## 3. The stack
+Dropped: AI voice and AI minutes in the pitch (not built); "export all data" (the repo shows a CSV export for deals and reports only, so it is not promised); any call-center or inventory pitch.
 
-- **The core:** "Your clients and deals out of Excel and Telegram chats and into one place your team actually uses, with your data moved for you."
-- **Bonus 1, the migration:** free for the first 50 companies. Kills "it will take weeks". Needs a scope limit (contacts and deals only, up to a set number) once the CFO prices it.
-- **Bonus 2, the Lean entry plan:** $25 for 3 users. Kills "I only need contacts and deals" and "too expensive".
-- **Bonus 3, month to month with a refund:** no lock-in.
-- **Guarantee:** "If your team is not using it after 30 days of paying, we refund that month in full." Cost = one month of revenue per claim; the claim rate is unknown. Model it with the CFO before it goes public.
-- **Urgency, true only:** the free migration is limited to the first 50 companies. That is a real limit; show a real counter.
-- **Name:** "Founding 50": free data move, a Lean or Starter plan, and a direct line to the founder.
+## The stack
 
-## 4. Value equation, before and after (simulated judgement, 1 to 10)
+**Core (the outcome, not the features):** "Your clients, deals and payments in one place on your phone, set up for you in a week, for the price of about a Bitrix24 seat pack or less."
 
-| Element | Before | After | What moves it |
+**Bonuses (each kills one objection)**
+1. Free migration of your client list from Excel, Telegram, amoCRM or Bitrix24 (objection 3, 9).
+2. Price locked for 12 months at the founding rate (objection 14, 1).
+3. Daily backup copied off-server, in writing (objection 5).
+
+**Guarantee:** if it does not work for you, the first month's money back within 30 days, no questions. *Cost to model:* at $29 to $49, one refund is at most $49 plus about 2 to 3 hours of migration time per claim (an estimate to confirm). The CFO must set a claim rate before this is promised publicly.
+
+**Urgency (true):** a cap of 50 founding companies and an end date, 31 Jan 2027. The cap is real only if the team can migrate 50 customers; say 50 only if that is true.
+
+## Value equation (1 to 10)
+
+| Element | Before (old pitch) | After | What moved it |
 | --- | ---: | ---: | --- |
-| Dream outcome (clients in one place, team uses it) | 5 | 6 | Core described by outcome, not modules |
-| Likelihood it works | 3 | 5 | Guarantee, cancel any time. Still no references. |
-| Time to result | 3 | 7 | Data already loaded when the trial starts |
-| Effort and sacrifice | 2 | 7 | We do the migration; Lean plan is smaller |
+| Dream outcome | 4 | 5 | Stated as an outcome, not a feature list |
+| Perceived likelihood | 2 | 5 | Refund, references to call after 60 days, off-server backup. Still low: nothing is proven yet |
+| Time to the result | 3 | 6 | Migration done for them |
+| Effort and sacrifice | 2 | 6 | Free migration, side-by-side Excel, no staff retraining burden |
 
-## 5. Re-test
+## Re-test
 
-Same seed (672231), same 20 buyer cards, new pitch in `founder/pitch.md` (old one in `founder/pitch-v1.md`, old results in `founder/panel-v1/`).
+Same seed 876453, same 20 buyer cards, shown the new pitch (`founder/pitch.md`; old pitch kept as `founder/pitch-v1.md`; old results in `founder/panel-v1/`).
 
-Result: see the section below, added after the run.
-
-## Re-test result (same seed 672231, same 20 buyer cards)
-
-| | Before (pitch v1) | After (new offer) |
+| | Old pitch ($89 Starter) | New offer ($29 / $49, free migration, refund) |
 | --- | ---: | ---: |
-| Buy | 0 of 20 | **1 of 20** (5%) |
-| Pass because of price | 10 | 1 |
-| Pass because of habit | 5 | 5 |
-| Pass because of trust | 5 | **13** |
+| Buy | 0 of 20 | **0 of 20** |
+| Passed on price | 13 | 4 |
+| Passed on trust | 5 | 11 |
+| Passed on habit | 2 | 5 |
 
-What moved:
-- **Price and migration objections mostly dropped.** The one buyer was P017, a small shop owner on amoCRM who wanted exactly the $25 contacts, deals and Telegram plan with free migration.
-- **Trust became the main wall.** 13 of 19 passers said they cannot find anyone who uses it. Typical flip conditions now: "two or three Uzbek companies I can call", "a company I know using it for months", a live demo moving a sample of their data.
-- **Habit did not move** (5 before, 5 after): their team will not change how it works, whatever the price or migration.
-- Several small-income buyers still found even $25 heavy against incomes of $500 a month or less. Those incomes are the guesses in `customer.json`, not researched facts.
+**The buy rate did not move.** The offer did what it was built to do on price (13 down to 4) but the objection simply became trust (5 up to 11) and habit (2 up to 5). Nobody was moved to yes by price, migration or the refund alone. What the buyers say would flip them now is almost the same in every answer: **a person they know and can call who already uses it**, plus a free month with their own clients moved in. For example (P003): "I do not know a single company that uses it, and they say only 1 to 5 firms pay today. I would not move my clients out of Excel and Telegram into something with no references".
 
-Reading it plainly: the offer fixed the price and effort problems for one segment and exposed the real problem, which is **no proof**. More discounts or bonuses will not fix that. What fixes it is 3 to 5 real customers who will take a call, which is also board condition 1. Treat the 5% as a sign of direction only: simulated buyers, 20 of them, one buyer is the whole difference.
-
-**Caveat found later (13 Nov):** the Lean plan used in this re-test does not exist in the product's plans migration (only Starter, Business and Enterprise do). The one buyer who said yes (P017) wanted exactly that Lean plan, so the 5% result depends on a plan that has not been built. Treat the re-test as a test of the idea of a small plan, not of the current product.
+What this means:
+- The next lever is not price or bonuses; it is **proof**. That is the paid pilot (launch plan): 3 to 5 real founding customers whose owners agree to take calls. Until then an offer cannot clear the trust objection.
+- The 30-day refund and free migration are still worth keeping; they are what a buyer asks for after trust exists. Several buyers said they would want a **free first month with their data moved in** before paying anything, which the pilot can offer at a small, known cost.
+- Panel prices dropped once $29 was shown (acceptable range $8 to $25 instead of $8 to $40, IPP $15): simulated buyers anchor to the number in front of them, so treat ranges as a guide to testing, not truth. $29 is still above the new range; test $19 as well.
+- These are simulated buyers and lean agreeable if anything, so a 0% result is a warning, not a measurement. Real buyers are the only test that counts.

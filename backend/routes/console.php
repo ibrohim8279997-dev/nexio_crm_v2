@@ -23,3 +23,5 @@ if (config('replica.enabled')) {
     Schedule::command('nexio:db:replicate')->everyFiveMinutes()->withoutOverlapping();
     Schedule::command('nexio:db:replicate --verify')->dailyAt('03:30')->withoutOverlapping();
 }
+// Page-view rows are kept 24 months (stated in the Privacy Policy).
+Schedule::call(fn () => \Illuminate\Support\Facades\DB::table('site_visits')->where('visit_day', '<', gmdate('Y-m-d', strtotime('-24 months')))->delete())->dailyAt('04:30');

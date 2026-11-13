@@ -17,6 +17,9 @@ use App\Http\Controllers\Api\V1\ModulesController;
 use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\OpsController;
 use App\Http\Controllers\Api\V1\PlatformController;
+use App\Http\Controllers\Api\V1\PlatformPricingController;
+use App\Http\Controllers\Api\V1\SiteAnalyticsController;
+use App\Http\Controllers\Api\V1\SiteBannersController;
 use App\Http\Controllers\Api\V1\PluginManagerController;
 use App\Http\Controllers\Api\V1\PluginOperationsController;
 use App\Http\Controllers\Api\V1\PortalController;
@@ -296,7 +299,21 @@ Route::prefix('v1')->group(function () use ($h) {
     Route::post('/portal/tickets', $h(PortalController::class, 'createTicket'));
     Route::post('/portal/messages', $h(PortalController::class, 'sendMessage'));
 
+    // ── public site: landing banners and first-party page-view tracking ────────
+    Route::get('/site/banners', $h(SiteBannersController::class, 'publicList'));
+    Route::get('/site/banners/{id}/image', $h(SiteBannersController::class, 'image'));
+    Route::post('/site/track', $h(SiteAnalyticsController::class, 'track'))->middleware('throttle:240,1');
+
     // ── Nexio Lab platform ─────────────────────────────────────────────────
+    Route::get('/platform/banners', $h(SiteBannersController::class, 'index'));
+    Route::post('/platform/banners', $h(SiteBannersController::class, 'store'))->middleware('throttle:30,1');
+    Route::post('/platform/banners/reorder', $h(SiteBannersController::class, 'reorder'));
+    Route::patch('/platform/banners/{id}', $h(SiteBannersController::class, 'update'));
+    Route::delete('/platform/banners/{id}', $h(SiteBannersController::class, 'destroy'));
+    Route::get('/platform/analytics/series', $h(SiteAnalyticsController::class, 'series'));
+    Route::get('/platform/analytics/details', $h(SiteAnalyticsController::class, 'details'));
+    Route::get('/platform/custom-plan-prices', $h(PlatformPricingController::class, 'show'));
+    Route::put('/platform/custom-plan-prices', $h(PlatformPricingController::class, 'update'));
     Route::get('/platform/overview', $h(PlatformController::class, 'overview'));
     Route::get('/platform/health', $h(\App\Http\Controllers\Api\V1\PlatformHealthController::class, 'show'));
     Route::get('/platform/tenants', $h(PlatformController::class, 'tenants'));

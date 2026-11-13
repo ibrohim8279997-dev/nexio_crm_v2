@@ -81,22 +81,28 @@ export function BarsChart({ data, keys, height = 240, horizontal, formatter }: {
   )
 }
 
-export function MultiBars({ data, keys, height = 240, formatter }: {
+export function MultiBars({ data, keys, height = 240, formatter, onSelect, selected }: {
   data: Record<string, unknown>[]
   keys: { key: string; name: string; color: string }[]
   height?: number
   formatter?: (v: number) => string
+  /** Click a bar: receives its `label`. `selected` (a label) keeps that bar at full strength and dims the rest. */
+  onSelect?: (label: string) => void
+  selected?: string
 }) {
   const c = useChartTheme()
   return (
     <div style={{ height }} className="w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} margin={{ top: 8, right: 8, left: -18, bottom: 0 }}>
+        <BarChart data={data} margin={{ top: 8, right: 8, left: -18, bottom: 0 }} style={onSelect ? { cursor: 'pointer' } : undefined}
+          onClick={onSelect ? (e) => { if (e?.activeLabel !== undefined) onSelect(String(e.activeLabel)) } : undefined}>
           <XAxis dataKey="label" tick={c.axis} axisLine={false} tickLine={false} />
           <YAxis tick={c.axis} axisLine={false} tickLine={false} tickFormatter={compactTick} width={54} />
           <Tooltip {...c.tip} formatter={(v: number, n: string) => [formatter ? formatter(v) : compactTick(v), n]} cursor={{ fill: c.cursor }} />
           <Legend wrapperStyle={{ fontSize: 11, paddingTop: 6 }} />
-          {keys.map((k) => <Bar key={k.key} dataKey={k.key} name={k.name} fill={k.color} radius={[6, 6, 0, 0]} maxBarSize={26} />)}
+          {keys.map((k) => <Bar key={k.key} dataKey={k.key} name={k.name} fill={k.color} radius={[6, 6, 0, 0]} maxBarSize={26}>
+            {selected !== undefined && data.map((d, i) => <Cell key={i} fillOpacity={d.label === selected ? 1 : 0.4} />)}
+          </Bar>)}
         </BarChart>
       </ResponsiveContainer>
     </div>

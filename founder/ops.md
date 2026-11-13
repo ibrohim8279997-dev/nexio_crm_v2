@@ -1,106 +1,103 @@
 # Operations: Nexio CRM
 
-Facts about how the system runs come from the repo's `docs/OPERATIONS.md` and `docs/SECURITY.md`. Prices, wages and legal requirements were **not** researched or invented; they are listed as quotes or checks the founder must get. This is a one-person-to-small-team SaaS, so "operations" means: keep it up, move customers in, answer them, get paid.
-
-**Production host (confirmed from the repo).** `docs/ARCHITECTURE.md` says the Cloudflare Worker and D1 code (`api/`, `wrangler.toml`, `migrations/`) is a legacy API that is *not used in production*. Production is the Laravel app on a CloudPanel server (`crmb.nexiolab.uz`, deployed with `deploy.sh`, PM2 for the frontend). So hosting is a **mostly fixed server bill**, not a cost per account. The CFO model spreads it as part of the $3 per account, which understates the cost at low volume. The real server price is still unknown: get it, add it as a fixed cost and re-run `/founder-cfo`.
+A SaaS runs differently from a shop, so the usual sections are adapted: "suppliers" are the services Nexio depends on, "equipment" is the server, and the daily cycle is onboarding, support and keeping the system up. Facts about the system come from `docs/OPERATIONS.md` in the repo; outside facts are linked. Prices of the founder's own server and team are **not known** and stay open.
 
 ## 1. The daily cycle
 
-| Step | Who sees it | What |
+| Step | What happens | Customer sees it? |
 | --- | --- | --- |
-| 1. Check health | internal | Open `GET /api/v1/platform/health`; the health alert posts to `ALERT_WEBHOOK_URL` if something degrades |
-| 2. Support inbox | customer | Answer new questions (Telegram first) within the same day |
-| 3. New trials | customer | For each trial that asked for migration, receive their Excel/Telegram/amoCRM/Bitrix24 data |
-| 4. Run the migration | customer | Import, check counts, send a "your clients are in" message |
-| 5. Check payments | customer | Click/Payme/card confirmations match subscriptions; failed renewals followed up |
-| 6. Webhooks and jobs | internal | Look for `webhook_deliveries` with status `dead`, failed queue jobs |
-| 7. Follow-ups | customer | Day 3, day 10, day 28 of each trial: is the team using it? |
-| 8. Deploy, if needed | internal | `./deploy.sh` after taking a backup if migrations are included |
+| 1. Check health | `GET /api/v1/platform/health`, alert webhook, Sentry if set. Look at failed jobs, dead webhooks and the last backup age (over 36 h = failed) | No |
+| 2. Support inbox | Answer Telegram and email questions; target: reply within one working day | Yes |
+| 3. Onboarding | Founding customers: receive Excel / Telegram / amoCRM / Bitrix24 data, import it, check it, show it to the owner | Yes |
+| 4. Billing | Hourly renewals (`nexio:billing:renew`); watch failed Click / Payme charges; send receipts | Yes |
+| 5. Build and deploy | `./deploy.sh` on the server; backup first for any migration | Sometimes (maintenance) |
+| 6. Backup | `nexio:backup` at 02:00; copy the folder off-server (not yet set up per the founder) | No |
+| 7. Review | Weekly numbers: demos, pre-sales, refunds, churn, support time | No |
 
-## 2. Suppliers and services (get quotes; no prices claimed)
+## 2. The services Nexio depends on
 
-| Need | Options to quote | Notes |
-| --- | --- | --- |
-| Server hosting | The current CloudPanel server provider; a local data-centre provider | Ask: monthly price, backups, location of the servers (see section 6, data location) |
-| Payment collection | Click and Payme merchant accounts, a card acquirer | Ask: commission, payout delay, onboarding documents. The CFO used 2.5% as a guess |
-| SMS / OTP | A local SMS gateway | Ask: price per SMS, sender-name approval time |
-| Email sending | A transactional email provider | Ask: free tier, domain verification |
-| Error monitoring | Sentry (the app supports it via `SENTRY_LARAVEL_DSN`) | Free tier exists; check current limits |
-| Off-server backups | Object storage (S3-compatible, R2 or MinIO supported by the app) | The repo says a backup on the same disk is not disaster recovery |
+| Need | Option | Price / how to get it | Status |
+| --- | --- | --- | --- |
+| **Hosting** | The founder's own server (CloudPanel on the Uzbekistan server per `docs/ARCHITECTURE.md`) | Monthly cost **not given**. Ask the hosting provider for the invoice | Open; CFO uses an estimate |
+| **Off-server backup** | A second location: S3-compatible storage (e.g. Cloudflare R2, Backblaze B2) or a second VPS via rsync | Public price pages on the provider's site; a few dollars a month for small data (estimate, not checked) | **Must be live before the first founding customer** |
+| **Payments** | Click and Payme merchant accounts | No verified online merchant rate found. A third-party listing says Click 1% on Uzcard/Humo and 1.5 to 2.5% on Visa ([source](https://paymentproviders.io/providers/click-uzb.md)); national QR payments cost merchants 0.65% ([source](https://kun.uz/en/news/2026/06/23/uzbekistan-rolls-out-mandatory-qr-payment-system-charging-merchants-on-each-transaction-a21a28)). Rates are negotiated: ask both for the merchant tariff | The CFO's 2.5% is the high end, so conservative |
+| **Telegram bot / notifications** | Telegram Bot API | Free | Exists in the product |
+| **Email / SMS** | Any transactional email service; a local SMS gateway | Prices not researched | Open |
+| **Error tracking** | Sentry (optional in the repo) | Free tier exists; check current plan | Optional |
 
-If real prices differ from `numbers.json` (hosting $3 per account, payment 2.5%), update the file and re-run `/founder-cfo`.
+If the real server or payment fees differ from `numbers.json`, update it and have `/founder-cfo` re-run.
 
 ## 3. People
 
-Nobody is hired in the data. The CFO's estimate assumed one part-time support/onboarding helper at $500 a month. Weekly rota for the slow first month:
+Known: the founder says 4 to 10 people including the founder, but not who does what or what they cost. The model has **no payroll** (every $1,000 a month adds about 25 accounts to break-even, see `cfo.md`). Proposed split for the first 50 customers:
 
-| Role | Hours | What |
-| --- | --- | --- |
-| Founder | variable | Demos, migrations until a helper is trained, deploys, billing issues |
-| Support/onboarding helper (not hired) | part-time | Telegram inbox, migrations, follow-ups |
+| Role | Hours a week (first month) | Does |
+| --- | ---: | --- |
+| Founder / sales | 25 | Calls, demos, pre-sales, references |
+| Onboarding (migration) | 10 to 15 | Imports data for founding customers, 2 to 3 h each |
+| Support | 8 | Telegram replies, same working day |
+| Developer | 10 | Bug fixes, backup job, import tools |
 
-Wage assumption: from the CFO file (estimate). Local payroll costs and taxes were not researched; ask the accountant.
+Open: whether these are existing salaried staff (a cost the model leaves out) or contractors. Payroll taxes in Uzbekistan were not researched: accountant.
 
-## 4. Routines
+## 4. Routines (SOPs)
 
-**A. New customer migration (target: same day for a small file)**
-1. Get the file or export (Excel, amoCRM, Bitrix24) and the customer's written OK to handle their client data.
-2. Open it, count rows, remove obvious duplicates only with the customer's agreement.
-3. Import into a staging tenant first.
-4. Check 10 random records against the original.
-5. Move to the customer's real account.
-6. Message the customer: counts imported, anything not imported and why.
-7. Book a 20-minute walkthrough with the person who will use it daily.
+**A. Onboard a founding customer (target: live within 3 working days of payment)**
+1. Customer pays the first month by Click or Payme (refundable for 30 days). Send the welcome message with a named contact.
+2. Ask for their Excel, Telegram export or amoCRM/Bitrix24 export. Do not ask them to clean it.
+3. Import into a test account first; check counts of clients, phones and debts against the original.
+4. Fix duplicates and phone formats; tell the owner what you changed.
+5. Open it with the owner on a 20-minute call using their own list; set up users.
+6. Day 7: check in; day 14: ask for problems; day 30: ask about the refund and a referral; day 60: ask for permission to be named as a reference.
 
-**B. Complaint**
-1. Reply within the same working day, from a person, not a template.
-2. Say what you will do and by when.
-3. Fix it, tell them, and offer the refund if the 30-day promise applies.
-4. Record the cause in one line in a shared sheet; review it weekly.
+**B. Handle a complaint**
+1. Reply within one working day, in their language, from a named person.
+2. Say what happened, in plain words; do not blame the customer.
+3. Fix it or give the date; offer the month back if it is within 30 days.
+4. Write the cause in a shared log; if the same cause happens twice, change the product or the routine.
 
-**C. Deploy** (from the repo runbook)
-1. Take a backup if the change includes migrations.
-2. `cd` to the site folder and run `./deploy.sh` on the server.
-3. Check `GET /up` and the platform health endpoint.
-4. If a migration breaks, `php artisan migrate:rollback --step=1` only for migrations that define `down()`.
+**C. Deploy**
+1. Run a backup first if the change includes migrations.
+2. `./deploy.sh` from `docs/OPERATIONS.md`; check `GET /up` and the health endpoint.
+3. If it fails, `php artisan migrate:rollback --step=1` only for migrations with `down()`; announce in the customer group if there was downtime.
 
-**D. Weekly**
-1. Check that the last backup is under 36 hours old, and copy backups off the server.
-2. Review dead webhooks, failed jobs and the disk space check.
-3. Count demos, trials, finished migrations, paying accounts, refunds (the numbers in `marketing.md`).
+**D. Weekly backup check**
+1. Confirm `last.json` is under 36 hours old.
+2. Confirm the off-server copy exists and its size is sane.
+3. Once a month, restore the latest backup into a staging database and open it (restore runbook is in `docs/OPERATIONS.md`).
 
-## 5. Tools (smallest stack)
+**E. Close the week**
+Count demos, pre-sales, refunds, support tickets and hours; compare with `marketing.md` thresholds; decide the single change for next week.
 
-The app itself is the CRM for the business's own customers (dogfooding is cheap and credible). Beyond that: Telegram for support, a spreadsheet for the migration log, Sentry for errors, an accounting tool the accountant already uses. Prices not researched.
+## 5. Tools
 
-## 6. Licences, permits, data rules: a checklist to confirm
+Smallest stack: the product itself as the CRM (use Nexio to track its own customers); Telegram for support; a shared spreadsheet or Notion for the SOPs and the issue log; GitHub Actions (already in `.github/workflows/ci.yml`) for tests; Sentry for errors (optional). No new paid tool is needed to start.
 
-Rules change and differ by case. Confirm each with the authority or a local lawyer or accountant. Not legal advice. The official legal database is [lex.uz](https://lex.uz/); the IT Park programme is at [it-park.uz](https://it-park.uz/).
+## 6. Licences, permits, legal (confirm each with the authority; not legal advice)
 
-- [ ] **Business registration** (individual entrepreneur or a company) and tax registration.
-- [ ] **Merchant agreements** with Click and Payme; their onboarding documents and any category limits for software subscriptions.
-- [ ] **Personal data law.** The CRM stores customers' customers' personal data (names, phones, chats). Uzbekistan has a personal data law with requirements about where citizens' data is stored and processed. Check this one with a lawyer *before* choosing between servers in Uzbekistan and abroad. I did not verify the current text.
-- [ ] **Privacy policy and terms of service** in Uzbek and Russian. The repo history mentions a privacy policy rewrite; have it reviewed.
-- [ ] **IT Park resident status.** Ask whether it applies and what tax treatment it gives; confirm on the official page.
-- [ ] **Telegram bot and messaging terms**, and **call recording consent** for the telephony plugin (recordings are stored; the repo restricts who can read them).
-- [ ] **Invoices and VAT** for business customers; ask the accountant what to charge and how to issue invoices in so'm.
-- [ ] **Insurance** (professional liability or cyber): ask a broker whether it is worth it at this size.
+- **Company registration and tax numbers:** confirm the company's current legal form and tax status with the tax authority or an accountant.
+- **IT Park residency:** the IT Park programme lists tax benefits for resident software companies (reported as 0% corporate tax and 7.5% personal income tax, with VAT excluded). Figures differ by source; read the official rules at [it-park.uz](https://www.it-park.uz/en/itpark/news/useful-guide-what-support-programs-does-it-park-provide) and ask the accountant if the company qualifies. This could change the CFO's cost lines.
+- **Personal-data law:** the March 2026 amendments loosened the rule that all personal data must be stored in Uzbekistan; biometric, genetic and telecom subscriber data still must ([summary](https://kun.uz/en/news/2026/03/28/uzbekistan-amends-personal-data-law-to-facilitate-global-payment-systems)). Cabinet lists were not yet approved as of the sources found. The founder's server is in Uzbekistan, which is the safe position, but **no lawyer has reviewed it**; check consent wording, the database-registration duty and a data-processing agreement for customers. This is a board condition.
+- **Payment providers:** merchant agreements with Click and Payme; confirm what documents they require.
+- **Trademark:** see `brand.md`; "Nexio" is not registered in Uzbekistan.
+- **Terms and privacy policy:** customers store their own clients' data; a short terms of service and a privacy policy in Uzbek and Russian are needed before the first founding customer.
+- **Insurance:** professional liability / cyber insurance availability in Uzbekistan was not researched.
 
 ## 7. Risk register
 
 | # | Risk | Likelihood | Impact | Plan |
 | --- | --- | --- | --- | --- |
-| 1 | No customer will act as a reference | High (no customers yet) | High (trust is the main wall) | Founding-50 pilots with written permission; free migration in return |
-| 2 | A migration loses or corrupts customer data | Medium | High | Staging import, spot-check 10 records, keep original file, written OK |
-| 3 | Backups only on the same server (confirmed by the founder, 13 Nov) | High | Very high | Do this first: copy `storage/app/backups` off-server (S3 or R2) now. 1 to 5 customers' data is already at risk |
-| 4 | Server bill is fixed but the CFO model spreads it per account | High | Low | Get the real monthly server price, add it as a fixed cost, re-run the CFO |
-| 5 | Key person (the founder) unavailable | Medium | High | Runbook above, a second person with server access, the standby DB feature already in the repo |
-| 6 | Payment provider holds or rejects the account | Low to medium | High | Apply early; keep card as a second path |
-| 7 | AI voice or telephony oversold | Medium | High | Not in the price; label as "not ready" until real-time voice exists (the repo says it is a sandbox simulation) |
-| 8 | Support falls behind during the first 50 | High | Medium | Same-day reply rule; cap trials per week |
-| 9 | Personal-data rules breached (servers are in Uzbekistan, which helps, but no lawyer has reviewed it) | Unknown | High | Lawyer review before launch |
-| 10 | Slow growth: fewer than 14 paying accounts | High (per CFO, break-even) | High | Watch the three weekly numbers; stop spend if no trials after 10 demos |
+| 1 | The server or its disk fails and the only backup is on it | Medium | **Critical** (customers' client lists lost) | Off-server backup before launch; monthly restore test; standby database exists but is on the same server |
+| 2 | A founding customer's data import goes wrong and trust is lost | Medium | High | Import to a test account first; check counts; keep the original file |
+| 3 | A key person is ill and support goes quiet | Medium | Medium | Two people can answer; auto-reply with the expected time |
+| 4 | Click or Payme changes fees or pauses a merchant | Low | Medium | Card as a second route; keep merchant contacts |
+| 5 | A personal-data complaint or a lawyer finds a gap | Low | High | Lawyer review; clear consent text; data kept in Uzbekistan |
+| 6 | Support load from 50 migrations is higher than 3 h each | High | Medium | Cap founding customers; measure hours on the first 5; raise the price or shrink the offer |
+| 7 | A deploy breaks billing renewal | Low | High | Backup first; watch `billing:renew` and failed charges after each deploy |
+| 8 | Refund rate above 1 in 4 | Medium | Medium | Ask why at day 14; change the product or who is onboarded |
+| 9 | A bigger rival (shamCRM, Bitrix24) cuts price or copies the offer | Medium | Medium | Win on named references and fast support, not on features |
+| 10 | The founder promises AI voice or a feature that is not built | Medium | High | Keep voice off every price sheet and message until it works |
 
-## Open questions for the founder
+## Open questions
 
-The real monthly server price, who handles support, who else can deploy, whether IT Park applies, real Click/Payme rates.
+Real server cost; payroll and who does what; Click and Payme merchant tariffs; IT Park eligibility; legal review of personal-data duties; insurance. Update `numbers.json` and re-run `/founder-cfo` when any of these is known.

@@ -1,29 +1,27 @@
 # Product lens
-
-Score: 4 | Vote: FUND IF
+Score: 4/10 | Vote: FUND IF
 
 ## What is strong
-- Local fit is real touches: Uzbek/Russian/English UI, Click and Payme, CBU rates, Telegram. These are the details a foreign CRM skips, and they show craft in the parts a buyer feels daily.
-- Client portals that do not consume seats: a considered decision that treats the customer's customer as part of the experience.
-- Self-serve signup with a trial on the entry plan means the first five minutes can be owned end to end.
-- Honest about gaps in the repo: AI voice is labeled as simulated.
+- Local fit: Uzbek, Russian and English UI, Click and Payme in so'm, CBU rates and Telegram are details a foreign CRM tends to skip. If they work well, they are the one thing this product could do brilliantly.
+- One shared suite (contacts to invoices to helpdesk to portal) could remove the seams between Excel, Telegram and amoCRM/Bitrix24, where customers lose information.
+- Real paying customers exist (1 to 5), so some people have used it.
 
 ## What would kill it (the top 3, most dangerous first)
-1. No focus. Contacts, deals, projects, finance, helpdesk, inventory, delivery, telephony, AI agents and portals in one product. The pitch cannot be said in one sentence, and each module will be thinner than a specialist rival. The one thing the product must do brilliantly is not named.
-2. Selling what is not built. AI sales calls are sandbox simulations, yet plans advertise AI minutes and "voice calls" (Enterprise). A buyer's first real call exposes the seam, and trust in every other feature goes with it.
-3. The first five minutes are undefined. Nothing shows what a new owner does in the trial, how contacts get in from amoCRM or Telegram, or when they first feel value. A broad feature set with no guided path means trials stall. Large legacy controllers also hint that unseen quality is uneven.
+1. No single thing. The product is a CRM, finance, helpdesk, projects, portal, plugins, AI agents and voice at once, plus four price plans, for 1 to 5 customers. Nothing shows which part is brilliant. Voice is not built and AI calls are simulations, yet they sit in the pitch. Selling "coming soon" features breaks trust at the first seam.
+2. Hidden craft failures. Backups live only on the production server, and personal-data rules are unreviewed. A customer cannot see these, but one data loss ends the business. The Product lens treats cut corners where no one looks as a sign of cuts where they do.
+3. The first five minutes are unknown. Nothing in the brief describes what a shop owner or service manager sees on day one, or how Excel or Bitrix24 data comes in. Four plans plus a pay-per-component custom plan make the first purchase decision complicated. The one-sentence pitch is missing.
 
 ## The questions I would ask the founder
-- In one sentence, what is the one thing Nexio does better than amoCRM, and for which kind of company?
-- Which single industry or team type is the first target? (Open question: not stated.)
-- What does a new user see and do in minutes one to five, and what is the "it works" moment?
-- How does a customer move their data from amoCRM, and how long does it take?
-- Which modules would you remove or hide today to make the core sharper?
-- How many paying customers, trial-to-paid rate and churn exist? (Open questions: all unknown.)
-- What happens when a customer buys AI minutes and the voice is simulated?
+- In one sentence, what does Nexio do better than amoCRM or Bitrix24 for one of the two segments?
+- Pick retail or services. Which one, and what would you cut for them?
+- Walk me through the first five minutes after signup. How long until a customer sees their own clients in it?
+- Why does a shop with 3 people need AI minutes or SSO at $89?
+- What do the 1 to 5 customers actually use daily? (Open question; answer from customers, then /founder-consumer.)
+- What do customers pay amoCRM or Bitrix24 today? (Open question: /founder-competitors.)
+- Would a lower Starter price change buying? (Open question: /founder-consumer, then /founder-cfo.)
 
 ## If FUND IF: the conditions
-- Name one core job and one target segment, and cut or hide modules that do not serve it.
-- Remove or clearly label unbuilt features (AI voice, telephony) in plans and marketing until they work.
-- Ship a guided first-run path with a fast import (amoCRM/Excel) and a defined first-value moment, and measure trial-to-paid against it.
-- Provide the missing numbers (customers, revenue, churn, team, runway) before any further commitment.
+- Name one segment and one core job; hide unfinished voice and AI-call features until they work.
+- Add off-server backups and get the personal-data rules reviewed by a lawyer.
+- Show a documented first-run flow, including data import from Excel and amoCRM/Bitrix24, and test it with real buyers.
+- Get at least two paying customers to confirm what they use and be references.

@@ -56,7 +56,7 @@ class ApiContext
         // so no internal endpoint can leak supplier data to a customer account.
         if ($ctx->role === 'client_portal_user') {
             $path = $request->path();
-            if (!str_starts_with($path, 'api/v1/portal') && !str_starts_with($path, 'api/v1/auth')) {
+            if (!str_starts_with($path, 'api/v1/portal') && !str_starts_with($path, 'api/v1/auth') && !str_starts_with($path, 'api/v1/site/')) {
                 throw new ApiException(403, 'Пользователю портала доступны только данные его организации в разделе портала', 'forbidden');
             }
         }

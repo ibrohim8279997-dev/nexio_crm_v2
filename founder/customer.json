@@ -1,35 +1,33 @@
 {
-  "business": "Nexio CRM (cloud CRM for small Uzbek companies)",
-  "target": "Owner or sales head of a 3 to 15 person company in Uzbekistan that sells to other businesses or consumers and tracks clients in chats, spreadsheets, or amoCRM/Bitrix24",
-  "where": "Tashkent and other cities of Uzbekistan",
-  "age": [26, 55],
+  "business": "Nexio CRM (a cloud CRM for small Uzbek companies)",
+  "target": "Owners and sales managers of small companies in Uzbekistan (retail shops and service businesses, 3 to 25 staff) who now keep clients in Excel, Telegram chats, amoCRM or Bitrix24",
+  "where": "Tashkent and other Uzbek cities",
+  "age": [24, 52],
   "segments": [
-    {"name": "Owner of a small shop or service business (3 to 6 staff)", "share": 0.40, "income": [5000, 14000]},
-    {"name": "Owner or sales head of a growing company (7 to 15 staff)", "share": 0.40, "income": [12000, 36000]},
-    {"name": "Head of sales at a larger firm (15 to 50 staff)", "share": 0.20, "income": [20000, 60000]}
+    {"name": "Small shop or retail owner", "share": 0.40, "income": [4000, 12000]},
+    {"name": "Service business owner", "share": 0.35, "income": [6000, 20000]},
+    {"name": "Sales manager at a growing company", "share": 0.25, "income": [5000, 15000]}
   ],
   "behaviours": [
-    {"name": "Spreadsheet and Telegram user", "share": 0.25, "how": "Tracks clients in Excel and Telegram chats, has never paid for a CRM."},
-    {"name": "Unhappy amoCRM user", "share": 0.15, "how": "Pays per seat for amoCRM, finds the bill growing and support slow."},
-    {"name": "Bitrix24 user", "share": 0.15, "how": "Uses Bitrix24 free or cheap plan, finds it heavy but familiar."},
-    {"name": "Price comparer", "share": 0.15, "how": "Checks three vendors, asks for the cheapest, wants a trial first."},
-    {"name": "Trusts a recommendation", "share": 0.10, "how": "Buys what a friend or partner already uses."},
-    {"name": "Needs local payments", "share": 0.10, "how": "Pays vendors in so'm through Click or Payme, avoids foreign cards."},
-    {"name": "Wants it set up for them", "share": 0.10, "how": "Has no time to migrate data or learn tools, pays for done-for-you."}
+    {"name": "Runs it from Telegram", "share": 0.22, "how": "Handles every client in Telegram chats and a notebook; has never used a CRM."},
+    {"name": "Excel keeper", "share": 0.18, "how": "Keeps clients and debts in a spreadsheet and is proud of it."},
+    {"name": "Bitrix24 or amoCRM user", "share": 0.18, "how": "Already pays for a CRM, finds it complicated or slow, but has set it up."},
+    {"name": "Price comparer", "share": 0.15, "how": "Asks three vendors for prices, picks the cheapest that works, tries free tiers first."},
+    {"name": "Asks other owners", "share": 0.15, "how": "Buys software only after a friend or competitor says they use it."},
+    {"name": "Wants it done for them", "share": 0.12, "how": "Pays to avoid setup; will not spend an evening importing data."}
   ],
   "objections": [
-    "I do not know this company, it has no customers I can ask",
-    "I pay about $15 per user elsewhere and cannot see why a flat $89 is better",
-    "Moving my data from amoCRM or Excel will take weeks",
-    "Is the AI voice real or just a demo",
-    "Will it still exist and be supported in a year",
-    "My team will not learn another tool",
-    "I only need contacts and deals, not finance and inventory"
+    "$89 a month is a lot when Bitrix24 has a free plan",
+    "Who else uses it? I cannot find any company I know",
+    "I would have to move all my clients and retrain my staff",
+    "Is my customer data safe on your server, and are there backups?",
+    "AI calls and voice are not working yet, so why would I pay for them",
+    "I cannot tell which of your plans I need"
   ],
   "habits": [
-    "you answer most customers in Telegram and sometimes in Instagram",
-    "you take payments in cash, by Click or Payme, and by bank transfer",
-    "you ask your sales team to update a spreadsheet at the end of the day",
-    "you check prices in dollars but your clients pay you in so'm"
+    "you take most orders and questions from clients in Telegram",
+    "you pay suppliers and receive money through Click and Payme",
+    "you check the shop or office numbers on your phone in the evening",
+    "you ask friends who run businesses which tools they use"
   ]
 }

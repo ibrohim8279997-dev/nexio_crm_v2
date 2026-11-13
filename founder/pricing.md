@@ -1,50 +1,64 @@
 # Pricing: Nexio CRM
 
-Inputs: the 20-buyer simulated panel ([pricing-curve.md](pricing-curve.md)), competitor list prices ([competitors.md](competitors.md)). The CFO has not run yet, so there is no margin figure. Cost per customer is an open question and the price below must be checked against it in `/founder-cfo`.
+Inputs: the 20-buyer panel (`founder/panel/`, simulated), `founder/pricing-curve.md`, the competitor map (`founder/competitors.md`) and the plan prices in the repo. **The CFO has not run yet, so margin and break-even are not computed here.** Prices below are what to test; `/founder-cfo` must confirm the floor before any of them is used.
 
-**Founder decision (13 Nov):** keep Starter at $89 and do not run the $39 to $49 test. The analysis below stands as advice: $89 is above the panel's acceptable range, and 0 of 20 simulated buyers took it. The $89 price is only safe to keep if the real paying customers confirm they accept it. Ask the 1 to 5 current customers what they pay, and what they would have refused to pay.
+## What buyers said
 
-## 1. The price
+Acceptable range from the panel: **$8.01 to $40.14 a month**. Least resistance (OPP) $10.14; indifference point (IPP) $19.98. Median answers: too cheap $5, a bargain $15, getting expensive $30, too expensive $60.
+Starter at **$89 is above the range, and above the "too expensive" point of 19 of 20 buyers** (their "too expensive" answers run $40 to $89; only one buyer's reached $89).
+Caveat: the 20 buyers are simulated, most of them one-person or very small businesses, and the pitch asked them to value a 5-user plan. A bigger firm may sit higher.
 
-**Current Starter price, $89/mo for 5 users, is above the panel's acceptable range ($15.50 to $69.97) and is the most expensive 5-user entry plan in the competitor table.**
+## What competitors charge (about 5 users, per month)
 
-- Panel: OPP and IPP both at **$35.56**. Median "a bargain" $30, "getting expensive" $55, "too expensive" $90. 0 of 20 would buy at $89.
-- Competitors, 5 users: Bitrix24 Basic about $49 to $69, Kommo Base $75, shamCRM from $15 for 3 users. Nexio at $89 is above all of them.
-- Recommendation to test: **Starter at $39 to $49 per month for 5 users.** That is inside the acceptable range, near the least-resistance point, and at or below Bitrix24 and Kommo for the same team size.
+| Option | Price |
+| --- | --- |
+| shamCRM | from $15 for 3 users (own blog; conflicts with other figures) |
+| Bitrix24 Basic | $49 annual / $69 monthly, flat for 5 users. Free plan for 1 to 2 users |
+| Zoho / Pipedrive | about $70 for 5 |
+| Kommo (amoCRM) Base | about $75 for 5 |
+| **Nexio Starter** | **$89** |
 
-Business ($199, 15 users) and Enterprise ($349, 50 users) were not priced by their own panel cohort, because only 8 buyers had 7 to 15 staff and they gave one set of answers each. Evidence so far: those buyers said "too expensive" between $100 and $300 for their whole team (P011: $160, P015: $100, P019: $300, P020: $100, P013: $120). Treat $199 as untested, not as wrong. At 15 users Kommo Base is $225, so $199 is only slightly below it.
+Nexio is the dearest at 5 users. At 15 users Nexio Business is $199; Bitrix24 Standard is $99 for 50 users.
 
-## 2. The ladder
+## The price
 
-| Rung | Who | Price to test | Reason to step up |
+**Do not sell Starter at $89 as the entry price.** Evidence: it is 2.2 times the panel's top of range and above every competitor at the same size. Nothing in the research says Nexio is worth a premium: no references, voice not built.
+
+Recommended to test (inside the buyers' range and level with the market):
+
+- **Entry: $29 a month for up to 3 users, CRM only.** This is inside the panel range, close to the $30 "getting expensive" median, and the repo's self-serve custom plan already prices 2 users at $29 ($9 base + $10 per user) and 1 user at $19. So the entry plan needs no new pricing engine, only a visible plan card. (Founder to confirm that the custom plan's CRM-only price is what the CFO can afford.)
+- **Starter: test $49 for 5 users**, level with Bitrix24 Basic, instead of $89. The founder earlier chose to keep $89 and not test $39 to $49; the panel and the competitor prices say this is the biggest barrier, so it is the first thing to test with real buyers.
+- Business ($199, 15 users) and Enterprise ($349, 50 users): leave until the entry price is proven; they are not yet comparable to Bitrix24's $99 for 50 users and need a reason (finance, helpdesk, portal included) to be believed.
+
+## The ladder
+
+| Rung | For | Price to test | Reason to step up |
 | --- | --- | --- | --- |
-| Lean (new) | 1 to 3 users, contacts, deals, Telegram only | $19 to $25 | The panel's small-shop owners said $15 to $30. A cheap rung competes with shamCRM ($15 for 3 users). |
-| Starter | up to 5 users | $39 to $49 | Projects, tasks, quotes, invoices |
-| Business | up to 15 users | $149 to $199 (test) | Client portal, finance, helpdesk, automation |
-| Enterprise | up to 50 users | from $349, contact sales | SSO, voice (only when voice is real) |
+| Lean | 1 to 3 people, owners leaving Excel and Telegram | $29 | Starts where the buyer is; migration included |
+| Team | up to 5 people | $49 | More users, projects, Telegram inbox |
+| Business | up to 15 | $199 (unchanged for now) | Finance, helpdesk, automations, client portal |
+| Enterprise | 25 to 50 | from $349 | SSO, API, voice when built |
 
-The Lean rung is new: it does not exist in the plans migration (`backend/database/migrations/2026_11_10_000400_pricing_page_plans.php` has only Starter, Business and Enterprise, checked 13 Nov), so it must be built before it can be sold. It matches the objection "I only need contacts and deals" (P014, P017). Whether it cannibalises Starter is unknown.
+Voice and AI calls stay off every rung until they work.
 
-## 3. The opening offer
+## The opening offer
 
-- **Free data migration from amoCRM, Bitrix24 or Excel for the first 50 customers**, offered until a fixed end date. 16 of 20 buyers named free migration or import as part of what would flip them (counted from the answer files by keyword).
-- A trial long enough to use: 14 days, extendable once. Several buyers asked for two weeks of real team use.
-- No fake "was $X" anchors. Announce the new prices as the prices.
+**Founding 50**, ends **31 Jan 2027**: the first 50 companies get the Lean or Team price locked for 12 months, free data migration from Excel, Telegram or amoCRM/Bitrix24 by the Nexio team, and a 30-day money-back refund. In return each agrees in writing to be named as a reference after 60 days. No "was" price; the locked price is the real price.
 
-Do not put AI voice in any price line until it works.
+## What to test with real buyers
 
-## 4. What to test with real buyers
+Run two prices for the same entry plan to 20 owners each from the founder's own contacts: **$19 versus $29** (Lean), then **$49 versus $89** for 5 users. Method: a one-page price sheet or Telegram message with a pre-sale link (first month paid through Click or Payme, refundable). Success bar to set before testing: for example 5 paid out of 20 contacts at one price.
 
-1. Two landing pages with Starter at **$39** and **$49** (same page otherwise). Measure sign-ups and trial starts.
-2. A pre-sale: 10 to 20 firms from one niche pay a deposit for a founding-customer rate, with migration included. This also tests currency: show the price both in USD and in so'm.
-3. Ask each trial user the four Van Westendorp questions in a survey. Real answers replace the simulated ones.
+## The panel's top three price objections (verbatim)
 
-## 5. The panel's top price objections (verbatim, for marketing)
+1. "$89 a month is more than a whole month of what I take home for some weeks, and Bitrix24 has a free plan. I would only try the free trial if someone sets it up for me, and I would not pay after." (P002)
+2. "I make $7,000 a year, so $89 a month is a big bite, and I run everything from Telegram and a notebook just fine. I don't know a single company that uses Nexio and my friends haven't mentioned it." (P004)
+3. "My Excel works and I know every row of it. $89 a month is more than a tenth of what I earn in a year, for something that makes me move everything and retrain people." (P001)
 
-1. "89 dollars a month is more than 1,000 a year, and I earn about 6,000. That is a sixth of my income for a program, and my notebook and Telegram chats work for free." (P001)
-2. "I pay about $15 per user elsewhere and cannot see why a flat $89 is better" (a pitch-stage objection, P010 and P015: the flat plan only wins above about 6 users)
-3. "I might open the free trial, but $199 a month for my team is a lot to commit to when I'd have to move everything over myself." (P002)
+## CFO check (added after `/founder-cfo`)
 
-## Limits
+At a $45 blended price (estimates): contribution $40.40 per account (90%), break-even 20 accounts. At a $29 blended price break-even is 32 accounts and year 1 loses $4,360; at $55 break-even is 16 and year 1 earns $840. So $29 works only as an entry door to the $49 plan, not as the whole business. The buyers' range ($8 to $25 once $29 was shown) and the CFO's floor do not overlap: price alone cannot close this gap; trust and volume must.
 
-Simulated buyers lean towards price sensitivity when told to be sceptical, so $35.56 is a test point, not a verdict. Only 20 answers, thin per segment. The 0% buy rate in the first panel comes from buyers told to be unagreeable, with incomes set by guesses in `customer.json`. Real owner incomes in Uzbekistan were not researched; the founder judged the guessed incomes roughly right (13 Nov), and named small and growing companies as the first segments.
+## Open
+
+Margin at $29, $49 and $89 and the break-even need `/founder-cfo` (real server cost, support time, payment fees). If the CFO finds $29 below the cost to serve, the entry rung moves up and the free-migration promise shrinks accordingly.

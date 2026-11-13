@@ -1,16 +1,19 @@
-# CFO's note
+# CFO's note: Nexio CRM
 
-**Read this first: every input is an estimate.** No real costs, team, hosting bill or customer data exist in the project (production is a fixed-cost CloudPanel server; the model spreads it per account, which understates cost at low volume), so `numbers.json` holds model guesses (see `cfo-sources.md`). **The founder reported a team of 4 to 10 people, but the model's fixed costs ($750 a month) include only one part-time helper and no salaries.** Every extra $1,000 of monthly payroll adds about 19 accounts to the break-even ($1,000 divided by the $54.50 contribution). For example, $3,000 of payroll on top of $750 means about 69 paying accounts to break even, not 14. That figure is an example, not data: real payroll is unknown. The model also assumed a blended price of $60 built from the test prices; the founder is keeping Starter at $89, so the real blend would be higher, but fewer buyers accept that price in the panel. The tool's "a day" columns mean "a month" here: the unit is one paying account for one month. An accountant should check structure, payroll and tax before money moves. This is not financial, tax or legal advice.
+**Everything below rests on estimates.** No invoices, payroll, hosting bill or customer data exist, so each input is marked "est." in `numbers.json` and sourced in `cfo-sources.md`. A good-looking line here is not evidence.
 
-- **The margin:** each paying account-month leaves $54.50 of $60 (91%). At 50 paying accounts the profit margin is 66%. That is a software margin; it is not where the risk is.
-- **The line to watch: volume.** Break-even is 14 paying accounts, and the plan assumes 50 by month 12. At half the volume (25 accounts) year 1 loses $1,615 and the cash need rises to $6,124. At 30% of plan (15 accounts) it loses $4,569. The ramp is a pure assumption, and the buyer panel (0 of 20, then 1 of 20) cannot support or contradict it.
-- **Cash:** about $4,746 before it pays for itself in the base case; $6,124 at half volume. Founder pay is set to 0. Any salary adds directly to fixed costs.
-- **The scale problem:** 50 accounts is $3,000 of revenue a month and about $1,975 of monthly profit at the end of year 1. That is not a living for a team. The numbers say this business only works with several hundred accounts or a much higher blended price.
-- **Three ways to improve the margin** (run with the tool, not guessed):
-  1. Blended price $60 to $70 (push accounts to Business): year 1 profit $5,770 to $8,480, break-even 14 to 12 accounts.
-  2. Hold the blended price at $60 and keep the Lean plan small. If the mix drifts to Starter-only ($49), year 1 profit falls to $2,788 and the startup spend is not earned back within the year (-$212).
-  3. Get to plan volume faster. This is the biggest lever. Each doubling of early volume matters more than any cost cut, because fixed costs are only $750 a month.
-- **Board conditions about money:** the board asked for "price currency and willingness to pay confirmed with real pre-sales" and "paying customers and retention numbers". Neither is met: there are no real numbers yet. The refund guarantee in the offer has no cost in this model: one refunded month costs about $60 per claim, and the claim rate is unknown. The migration promise is the largest startup line ($1,500 for 50 accounts) and rests on a 3-hour-per-account guess.
+- **The margin.** Each paying account-month leaves **$40.40 of $45 (90%)** after its own costs. At 40 accounts the profit margin is 47%. Break-even is **20 paying accounts** against fixed costs of $770 a month.
+- **The line to watch: the ramp, then payroll.** With the ramp used (1 account in month 1 up to 40 in month 12) **year 1 loses $1,160 on operations and $4,060 after startup**; the cash needed before it pays for itself is **$6,270**. The ramp is a guess: the second buyer panel put **0 of 20** simulated buyers at yes, so nothing supports even this slow ramp yet. And the model counts **no salaries**, though the founder reports a team of 4 to 10: at $2,000 a month of team pay break-even moves to **69 accounts** and year 1 loses **$25,160**. Every $1,000 a month of payroll adds about 25 accounts to break-even.
+- **Cash.** $6,270 in the base case, $7,550 if the entry price is $29, and far more with payroll. Founder pay is assumed 0.
+- **Three ways to improve the margin (ran each):**
+  1. Price $45 to $55 blended: margin 47% to 57%, break-even 20 to 16, year 1 profit -$1,160 to +$840. Against the buyers' range this is the hardest to win.
+  2. Volume +50% (60 accounts by month 12): year 1 profit +$2,920, cash need $5,419. This needs proof (trust), not marketing spend.
+  3. Cut the $500 helper and run support yourself: break-even 7, year 1 profit +$4,840. This costs founder time that is not priced.
+- **The offer's guarantee.** At 10% of the 50 founding accounts claiming the 30-day refund, that is 5 refunds of at most $49, about **$245**, on top of the $1,500 of migration time already in startup. That is affordable; a 40% claim rate would be about $980, still small next to the other risks. Real claim rate is unknown.
+- **Price test:** at a $29 blended price, break-even is **32 accounts** and year 1 loses $4,360 (-$7,260 after startup). So the $29 entry plan cannot be the whole business: it only works as a door to the $49 plan or if the founder's time is free.
+- **Board conditions about money.** "Disclose team size, runway and budget": **not met** (payroll and runway unknown). "A guarantee the CFO can afford": **met on paper** at the claim rates above. "Measured acquisition cost": **not met**; the model assumes no paid acquisition.
+
+*Not financial, tax or legal advice. An accountant should check the structure, payroll costs, VAT and tax before money moves. Revenue is shown before tax.*
 
 ---
 
@@ -22,48 +25,51 @@ Every number below comes from the input file. Nothing is looked up or guessed.
 
 | line | per paying account-month |
 | --- | ---: |
-| Price | $60.00 |
-| Payment fees (Click/Payme/card), est. 2.5% of 60 | -$1.50 |
-| Server share, storage, email/Telegram per account (est.; real server cost is fixed) | -$3.00 |
-| Support and AI tokens per account (est.) | -$1.00 |
-| **Contribution** (what each paying account-month leaves to pay the fixed costs) | **$54.50** (91%) |
+| Price | $45.00 |
+| Payment fees (Click/Payme/card), est. 2.5% of 45 | -$1.10 |
+| Server, storage, email/Telegram share per account (est.; the real server bill is mostly fixed) | -$2.00 |
+| Support time and AI tokens per account (est.) | -$1.50 |
+| **Contribution** (what each paying account-month leaves to pay the fixed costs) | **$40.40** (90%) |
 
 ## The margin that matters
 
-Fixed costs: $750 a month (Part-time support/onboarding helper (est.) $500, Tools, domain, monitoring, SMS base (est.) $150, Accountant (est.) $100, Founder pay (OPEN INPUT, set to 0) $0).
+Fixed costs: $770 a month (Part-time support/onboarding helper (est.) $500, Tools, domain, monitoring, SMS base (est.) $150, Accountant (est.) $100, Off-server backup storage (est.) $20, Founder and existing team pay (OPEN INPUT, set to 0) $0).
 
-- **Break-even: 14 paying account-months a day.** Below that you lose money every month.
-- **Profit margin at your plan** (50 a day): **66%** of every sale, after every cost.
+- **Break-even: 20 paying account-months a day.** Below that you lose money every month.
+- **Profit margin at your plan** (40 a day): **47%** of every sale, after every cost.
 
 ## Year 1, month by month
 
-| month | paying account-months a day | revenue | profit | cumulative (after $3,000 startup) |
+| month | paying account-months a day | revenue | profit | cumulative (after $2,900 startup) |
 | ---: | ---: | ---: | ---: | ---: |
-| 1 | 2 | $120 | -$641 | -$3,641 |
-| 2 | 4 | $240 | -$532 | -$4,173 |
-| 3 | 7 | $420 | -$368 | -$4,542 |
-| 4 | 10 | $600 | -$205 | -$4,746 |
-| 5 | 14 | $840 | $13 | -$4,734 |
-| 6 | 18 | $1,080 | $231 | -$4,502 |
-| 7 | 23 | $1,380 | $504 | -$3,999 |
-| 8 | 28 | $1,680 | $776 | -$3,223 |
-| 9 | 33 | $1,980 | $1,048 | -$2,174 |
-| 10 | 38 | $2,280 | $1,321 | -$854 |
-| 11 | 44 | $2,640 | $1,648 | $794 |
-| 12 | 50 | $3,000 | $1,975 | $2,770 |
+| 1 | 1 | $45 | -$730 | -$3,630 |
+| 2 | 2 | $90 | -$689 | -$4,319 |
+| 3 | 4 | $180 | -$608 | -$4,927 |
+| 4 | 6 | $270 | -$528 | -$5,455 |
+| 5 | 9 | $405 | -$406 | -$5,861 |
+| 6 | 12 | $540 | -$285 | -$6,146 |
+| 7 | 16 | $720 | -$124 | -$6,270 |
+| 8 | 20 | $900 | $38 | -$6,232 |
+| 9 | 25 | $1,125 | $240 | -$5,992 |
+| 10 | 30 | $1,350 | $442 | -$5,550 |
+| 11 | 35 | $1,575 | $644 | -$4,906 |
+| 12 | 40 | $1,800 | $846 | -$4,060 |
 
-- **Year 1 operating profit: $5,770** on $16,260 of revenue.
-- After the $3,000 startup spend: $2,770.
-- Startup money earned back: month 11.
-- Cash you need before it pays for itself: **$4,746**.
+- **Year 1 operating profit: -$1,160** on $9,000 of revenue.
+- After the $2,900 startup spend: -$4,060.
+- Startup money earned back: not within year 1.
+- Cash you need before it pays for itself: **$6,270**.
 
 ## What if
 
 | scenario | margin at plan | break-even a day | year 1 profit |
 | --- | ---: | ---: | ---: |
-| Base plan | 66% | 14 | $5,770 |
-| Price -10% | 62% | 16 | $4,144 |
-| Volume -20% | 60% | 14 | $2,816 |
-| Unit costs +15% | 64% | 14 | $5,546 |
+| Base plan | 47% | 20 | -$1,160 |
+| Price -10% | 41% | 22 | -$2,060 |
+| Volume -20% | 36% | 20 | -$2,776 |
+| Unit costs +15% | 45% | 20 | -$1,298 |
 
-No red flags in these numbers. They are only as good as the inputs: check every cost against a real quote.
+## Red flags
+
+- Year 1 loses money on operations (-$1,160).
+- The startup spend is not earned back within year 1.

@@ -3,11 +3,11 @@
   "buys": false,
   "purchases_first_month": 0,
   "reason_code": "habit",
-  "reason": "My Excel and Telegram chats work, I have never paid for a CRM and I do not want to pay 25 dollars a month for something my team will ignore after a week. The free move of data is nice, but I still have to retrain everyone.",
-  "objection": "Moving my data from amoCRM or Excel will take weeks and my staff will keep using Telegram anyway, and you have no customers I can ask about it.",
-  "would_change_my_mind": "A person from a company like mine in Uzbekistan showing me it running on their real Telegram chats, and your team moving my data in front of me in a day or two.",
-  "price_too_cheap": 5,
-  "price_cheap": 12,
-  "price_expensive": 30,
-  "price_too_expensive": 50
+  "reason": "My Excel sheet works and I am proud of it, and I take orders in Telegram anyway. Paying $29 or more a month for something I cannot yet tell I need is hard to justify when I earn about $830 a month.",
+  "objection": "I cannot tell which of your plans I need, and you are new with no references. If I move my clients and debts over and it fails, I lose time and trust in my own data.",
+  "would_change_my_mind": "A manager I can call who runs a shop like mine and has used it for a few months, plus a simple single plan under $15 that imports my Excel and debts and shows them inside Telegram.",
+  "price_too_cheap": 4,
+  "price_cheap": 9,
+  "price_expensive": 20,
+  "price_too_expensive": 35
 }

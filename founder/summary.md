@@ -1,28 +1,28 @@
 # Summary: Nexio CRM
 
-**The business.** Nexio CRM is a multi-tenant cloud CRM (web, Android, iOS) in Uzbek, Russian and English for small and growing Uzbek companies that keep clients in Excel, Telegram chats, amoCRM or Bitrix24. It takes payment in so'm through Click and Payme.
+**The business.** Nexio CRM is a cloud CRM (web, Android, iOS) in Uzbek, Russian and English for small Uzbek companies, mainly shops and service businesses, that keep clients in Excel, Telegram chats, amoCRM or Bitrix24. It takes payment in so'm through Click and Payme. The founder reports 1 to 5 paying customers and a team of 4 to 10.
 
 **Verdict: Not yet.** Computed by `compile.py`, not written by hand.
 
 | Number | Value | Check |
 | --- | --- | --- |
-| Contribution per paying account-month | $54.50 of $60 (91%) | passes |
-| Year 1 operating profit | $5,770 (estimates; startup $3,000, cash needed $4,746) | passes |
-| Simulated buyers who buy | 1 of 20 (5%); bar is 25% | **fails** |
+| Contribution per paying account-month | $40.40 of $45 (90%) | passes |
+| Year 1 operating result | -$1,160 (startup $2,900; cash needed $6,270) | **fails** |
+| Simulated buyers who buy | 0 of 20 (0%); bar is 25% | **fails** |
 
-The first two rest on estimated inputs: no real costs, team size, hosting bill or customer data exist, so a "pass" there is not evidence. The one failing check is the only one that touches buyers, and the buyers are simulated.
+The first line rests on estimated inputs (no real costs, hosting bill or payroll exist), so a "pass" there is not evidence. The model counts no salaries; at $2,000 a month of team pay break-even moves from 20 to 69 accounts and year 1 loses $25,160.
 
 **What has to change, and which skill changes it.**
-1. **No proof.** 13 of 19 simulated buyers who passed said they could not find anyone who uses it. Fix: 3 real paying customers who agree in writing to be references. That is the paid pilot in `founder/launch.md`, not another skill run.
-2. **Price is above the buyers' range.** The first panel's acceptable range was $15.50 to $69.97 and Starter was $89. The founder chose to keep $89 and not run the $39 to $49 test. Advice (`/founder-pricing`): at least ask the 1 to 5 paying customers whether they would still pay it, and consider a $25 Lean plan (not built yet).
-3. **Unmet board conditions.** The segment is now only partly named (shops and services, small and growing companies); customer data is rough (1 to 5 paying customers, none willing to be a reference); revenue is unknown; no measured CAC, no confirmed currency or pre-sale. Fix: real data from the founder and the pilot.
+1. **Trust.** 11 of 20 simulated buyers passed on trust: they know no company that uses Nexio. Almost all said the same thing would flip a no: an owner they know and can call who uses it, plus their own clients moved in for free. That is the paid founding-member pilot in `launch.md`, not another skill run.
+2. **Price.** The old $89 Starter was above 19 of 20 buyers' "too expensive" point (acceptable range $8 to $40). A new $29/$49 offer cut price-based passes from 13 to 4 but the buy rate stayed at 0 of 20. At a $29 blended price the CFO's break-even rises to 32 accounts, so price alone cannot close the gap (`pricing.md`, `cfo.md`).
+3. **Unmet board conditions.** One niche is only partly named; no references; revenue, churn, payroll, runway and acquisition cost are unknown; off-server backup is not set up; personal-data rules have not been reviewed by a lawyer; AI voice is not built.
 
-**What the board, the competitors and the panel agreed on.** All three board members voted FUND IF (average 4/10) and raised the same risks: no proof, no niche, selling unbuilt AI voice. The panel agreed on price and migration effort first, then, once those were addressed, on trust. Where they differ: the board saw breadth as a focus problem; the competitor map suggests the one real gap is a done-for-you migration plus flat pricing above about 6 users, and shamCRM is the closest and fastest rival.
+**What the board, the competitors and the panel agreed on.** The board voted 2 fund-if and 1 pass (average 3.7 of 10) and all three raised no proof, no niche and selling unbuilt AI voice. The panel agreed on proof first, then price and switching effort. The members differ on breadth: Offers sees it as assets to bundle, Monopoly and Product see a focus problem. The competitor map found one defensible gap, a hands-on setup plus fast support, not price: Nexio is dearer than Bitrix24, Zoho, Pipedrive and shamCRM at the same size, and shamCRM targets the same region.
 
-**Biggest risk and the plan.** Trust: no references. Plan: the Founding-50 offer with free migration and a 30-day refund, in exchange for written reference permission.
+**Biggest risk and the plan.** Trust. The plan: the Founding 50 offer (free migration, price locked 12 months, 30-day refund, backups copied off-server), sold first through the founder's own contacts, with each customer asked to be a callable reference.
 
-**What the founder needs to start.** About $4,746 in the CFO's base case (estimate), $6,124 if volume is half of plan. Founder pay is assumed 0, and the model counts no salaries although the founder reports a team of 4 to 10: every $1,000 of monthly payroll adds about 19 accounts to the break-even. At 50 paying accounts the business earns about $1,975 a month, which is not a living; it needs several hundred accounts or a higher blended price.
+**What the founder needs to start.** About $6,270 in the CFO's base case (an estimate), $7,550 if the entry price is $29. Founder and team pay are assumed 0.
 
-**One thing to do this week.** Book 5 demos with owners of small companies from your own contacts, offer to migrate their data free, and ask each one to pay the first month. Do not spend on ads, and do not change the price page until you have heard what real owners say.
+**One thing to do this week.** Set up the off-server backup copy and test a restore (the offer promises it), then list 60 owners you know and book the first 5 demos. Do not spend on ads and do not promise AI voice.
 
 *The buyers in the panel are simulated and the numbers are projections built on estimates. Real customers and real quotes confirm or overturn them. This is not financial, legal or tax advice.*
