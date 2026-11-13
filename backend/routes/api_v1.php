@@ -1,7 +1,9 @@
 <?php
 use App\Http\Controllers\Api\V1\AdminMarketplaceController;
 use App\Http\Controllers\Api\V1\AiController;
+use App\Http\Controllers\Api\V1\AiCrmAccessController;
 use App\Http\Controllers\Api\V1\AiExtrasController;
+use App\Http\Controllers\Api\V1\DocumentFilesController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\BillingController;
 use App\Http\Controllers\Api\V1\CardsController;
@@ -218,6 +220,9 @@ Route::prefix('v1')->group(function () use ($h) {
     Route::get('/documents', $h(ModulesController::class, 'listDocuments'));
     Route::get('/documents/{id}', $h(ModulesController::class, 'getDocument'));
     Route::post('/documents', $h(ModulesController::class, 'createDocument'));
+    Route::post('/documents/upload', $h(DocumentFilesController::class, 'upload'))->middleware('throttle:60,1');
+    Route::get('/documents/{id}/file', $h(DocumentFilesController::class, 'download'));
+    Route::delete('/documents/{id}', $h(DocumentFilesController::class, 'destroy'));
     Route::post('/documents/proposal-draft', $h(ModulesController::class, 'generateProposal'));
     Route::post('/documents/{id}/status', $h(ModulesController::class, 'setDocumentStatus'));
     Route::patch('/documents/{id}/content', $h(ModulesController::class, 'updateDocumentContent'));
@@ -292,6 +297,10 @@ Route::prefix('v1')->group(function () use ($h) {
     Route::post('/ai/suppression', $h(AiController::class, 'addSuppression'));
     Route::get('/ai/analytics', $h(AiController::class, 'analytics'));
     Route::post('/ai/complete', $h(AiController::class, 'complete'));
+    Route::get('/ai/crm-access', $h(AiCrmAccessController::class, 'show'));
+    Route::post('/ai/crm-access', $h(AiCrmAccessController::class, 'connect'))->middleware('throttle:20,1');
+    Route::post('/ai/crm-access/generate', $h(AiCrmAccessController::class, 'generate'))->middleware('throttle:10,1');
+    Route::delete('/ai/crm-access', $h(AiCrmAccessController::class, 'disconnect'));
 
     // ── client portal ───────────────────────────────────────────────────────
     Route::get('/portal', $h(PortalController::class, 'overview'));

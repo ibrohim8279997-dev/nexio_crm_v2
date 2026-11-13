@@ -33,6 +33,7 @@ const PLATFORM_LABELS: Record<string, string> = {
   '/platform': 'dashboard', '/platform/tenants': 'companies', '/platform/plans': 'pricing', '/platform/subscriptions': 'billing',
   '/platform/usage': 'analytics', '/platform/nexio-orders': 'orders', '/platform/support': 'helpdesk', '/platform/ai-ops': 'aiControl',
   '/platform/security': 'security', '/platform/settings': 'settings', '/platform/marketplace': 'marketplace',
+  '/platform/banners': 'siteBanners', '/platform/site-analytics': 'siteAnalytics',
 }
 
 function Nav({ onNavigate }: { onNavigate?: () => void }) {

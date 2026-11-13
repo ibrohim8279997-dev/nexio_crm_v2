@@ -46,10 +46,13 @@ class Plugin implements OfficialPlugin
         }
         $system = trim((string) ($context->setting('system_prompt', '') ?: ''));
         $model = trim((string) ($context->setting('model', '') ?: '')) ?: null;
-        $crm = $this->crmContext($context);
-        $instruction = "\n\nCRM konteksti (faqat joriy kompaniya):\n" . json_encode($crm, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        // CRM data reaches the model only through the company's own API key (AI settings → CRM access).
+        $access = \App\Services\AiCrmAccess::allows($context->tenantId);
+        $instruction = $access
+            ? "\n\nCRM konteksti (faqat joriy kompaniya):\n" . json_encode($this->crmContext($context), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
+            : "\n\nCRM ma'lumotlariga ulanilmagan: kompaniya AI sozlamalarida API kalitni ulamagan yoki kalit bekor qilingan. CRM ma'lumotlari haqida taxmin qilmang; kerak bo'lsa foydalanuvchiga AI sozlamalarida kalitni ulashni ayting.";
         $result = (new GroqAi())->complete($system !== '' ? $system . $instruction . "\n\nUser savoli:\n" . $prompt : $instruction . "\n\nUser savoli:\n" . $prompt, $model);
-        return ['content' => $result['content'], 'model' => $result['model'], 'provider' => $result['provider'], 'usage' => $result['usage']];
+        return ['content' => $result['content'], 'model' => $result['model'], 'provider' => $result['provider'], 'usage' => $result['usage'], 'crm_access' => $access];
     }
 
     /**

@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { resolveUrl } from '../../lib/api'
+import { useTr } from '../../lib/i18n'
+import { siteAdminDict } from '../../i18n/siteAdmin'
 
 export interface SiteBanner { id: string; image_url: string; link_url: string | null; alt?: string | null }
 
@@ -13,6 +15,7 @@ const safeLink = (u: string | null) => (u && (/^https?:\/\//i.test(u) || /^\/(?!
  * The admin preview renders this same component, so what the superadmin sees is what visitors get.
  */
 export function BannerCarousel({ banners }: { banners: SiteBanner[] }) {
+  const t = useTr(siteAdminDict)
   const [index, setIndex] = useState(0)
   const [paused, setPaused] = useState(false)
   const count = banners.length
@@ -29,7 +32,7 @@ export function BannerCarousel({ banners }: { banners: SiteBanner[] }) {
   const go = (d: number) => setIndex((i) => (i + d + count) % count)
 
   return (
-    <section aria-roledescription="carousel" aria-label="Yangiliklar va takliflar" className="mx-auto max-w-6xl px-4 pt-4"
+    <section aria-roledescription="carousel" aria-label={t('carouselLabel')} className="mx-auto max-w-6xl px-4 pt-4"
       onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)} onFocus={() => setPaused(true)} onBlur={() => setPaused(false)}>
       <div className="relative overflow-hidden rounded-2xl border border-line bg-subtle">
         <div className="flex transition-transform duration-500 ease-out motion-reduce:transition-none" style={{ transform: `translateX(-${index * 100}%)` }}>
@@ -47,10 +50,10 @@ export function BannerCarousel({ banners }: { banners: SiteBanner[] }) {
           })}
         </div>
         {count > 1 && <>
-          <button type="button" onClick={() => go(-1)} aria-label="Oldingi banner" className="absolute left-2 top-1/2 hidden size-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white hover:bg-black/60 sm:inline-flex"><ChevronLeft className="size-5" /></button>
-          <button type="button" onClick={() => go(1)} aria-label="Keyingi banner" className="absolute right-2 top-1/2 hidden size-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white hover:bg-black/60 sm:inline-flex"><ChevronRight className="size-5" /></button>
+          <button type="button" onClick={() => go(-1)} aria-label={t('prev')} className="absolute left-2 top-1/2 hidden size-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white hover:bg-black/60 sm:inline-flex"><ChevronLeft className="size-5" /></button>
+          <button type="button" onClick={() => go(1)} aria-label={t('next')} className="absolute right-2 top-1/2 hidden size-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white hover:bg-black/60 sm:inline-flex"><ChevronRight className="size-5" /></button>
           <div className="absolute inset-x-0 bottom-2 flex justify-center gap-1.5">
-            {banners.map((b, i) => <button key={b.id} type="button" onClick={() => setIndex(i)} aria-label={`${i + 1}-banner`} aria-current={i === index}
+            {banners.map((b, i) => <button key={b.id} type="button" onClick={() => setIndex(i)} aria-label={t('goTo', { n: i + 1 })} aria-current={i === index}
               className={`h-2 rounded-full transition-all ${i === index ? 'w-5 bg-white' : 'w-2 bg-white/60'}`} />)}
           </div>
         </>}

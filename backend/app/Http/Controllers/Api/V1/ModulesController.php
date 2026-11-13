@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers\Api\V1;
 
+use App\Support\AiDocument;
 use App\Support\ApiException;
 use App\Support\Ctx;
 use App\Support\H;
@@ -247,7 +248,9 @@ class ModulesController
             'customer' => ['company' => $deal->org_name, 'industry' => $deal->industry, 'contact' => trim(($deal->first_name ?? '') . ' ' . ($deal->last_name ?? '')), 'email' => $deal->email, 'phone' => $deal->phone],
             'approved_catalog' => array_map(fn ($p) => (array) $p, $products),
         ];
-        $prompt = "Siz Nexio CRM commercial proposal draft generatorisiz. Faqat quyidagi VERIFIED_FACTS ichidagi ma'lumotlardan foydalaning. Narx, chegirma, muddat, kafolat, legal shart yoki mahsulot mavjudligini o'ylab topmang. Yetishmayotgan fakt o'rniga [MISSING: ...] yozing. Hujjatni o'zbek tilida Markdown ko'rinishida yozing. Bu faqat DRAFT, yuborilmaydi va binding emas.\n\nVERIFIED_FACTS:\n" . json_encode($facts, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        $lang = H::oneOf($body['lang'] ?? null, 'lang', ['uz', 'ru', 'en'], 'uz');
+        $prompt = "You are the Nexio CRM commercial proposal draft generator. Write the whole document in " . AiDocument::languageName($lang) . ", as Markdown (headings, lists, tables allowed). "
+            . AiDocument::rulesForPrompt() . "\n\nVERIFIED_FACTS:\n" . json_encode($facts, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
         $generated = (new GroqAi())->complete($prompt, $body['model'] ?? null);
         $content = trim((string) ($generated['content'] ?? ''));
         if ($content === '') throw new ApiException(502, 'AI proposal matni bo‘sh qaytdi', 'ai_invalid_response');
@@ -260,10 +263,11 @@ class ModulesController
             'id' => $id, 'tenant_id' => $ctx->tenantId, 'name' => $name, 'kind' => 'proposal',
             'org_id' => $deal->org_id, 'order_id' => null, 'version' => $nextVersion, 'size_kb' => (int) ceil(strlen($content) / 1024),
             'status' => 'draft', 'created_by' => $user['id'], 'created_at' => H::now(), 'content' => $content,
-            'source_deal_id' => $dealId, 'updated_at' => H::now(),
+            'source_deal_id' => $dealId, 'updated_at' => H::now(), 'ai_generated' => 1,
         ]);
         H::audit($ctx, 'document.proposal_generated', 'document', $id, ['deal_id' => $dealId, 'version' => $nextVersion]);
-        return H::json(['id' => $id, 'version' => $nextVersion, 'content' => $content, 'draft' => true, 'model' => $generated['model'] ?? null], 201);
+        return H::json(['id' => $id, 'version' => $nextVersion, 'content' => $content, 'draft' => true, 'model' => $generated['model'] ?? null,
+            'missing' => AiDocument::missing($content), 'prohibited' => AiDocument::PROHIBITED], 201);
     }
 
     public function listDocuments(Ctx $ctx)
@@ -276,7 +280,8 @@ class ModulesController
         $rows = DB::select(
             'SELECT d.id, d.tenant_id, d.name, d.kind, d.org_id, d.order_id, d.version, d.size_kb, d.status,
                     d.created_by, d.created_at, d.source_deal_id, d.approved_at, d.approved_by, d.updated_at,
-                    org.name AS org_name, u.name AS created_by_name FROM documents d
+                    d.ai_generated, d.mime, d.original_name, (CASE WHEN d.file_path IS NULL THEN 0 ELSE 1 END) AS has_file,
+                    (CASE WHEN d.content IS NULL THEN 0 ELSE 1 END) AS has_text, org.name AS org_name, u.name AS created_by_name FROM documents d
                LEFT JOIN organizations org ON org.id=d.org_id LEFT JOIN users u ON u.id=d.created_by
               WHERE ' . implode(' AND ', $where) . ' ORDER BY d.created_at DESC LIMIT 200',
             $binds
@@ -293,7 +298,10 @@ class ModulesController
             [$ctx->params['id'], $ctx->tenantId]
         );
         if (!$row) throw new ApiException(404, 'Dokument topilmadi', 'not_found');
-        return H::json(['data' => (array) $row]);
+        $data = (array) $row;
+        unset($data['file_path'], $data['file_disk']);   // storage internals stay on the server
+        if (!empty($data['ai_generated'])) { $data['missing'] = AiDocument::missing($data['content'] ?? null); $data['prohibited'] = AiDocument::PROHIBITED; }
+        return H::json(['data' => $data]);
     }
 
     public function createDocument(Ctx $ctx)
@@ -341,7 +349,7 @@ class ModulesController
             $content, (int) ceil(strlen($content) / 1024), H::str($body['name'] ?? null, 'name', false, 250), H::now(), $ctx->params['id'], $ctx->tenantId,
         ]);
         H::audit($ctx, 'document.content_updated', 'document', $ctx->params['id'], ['updated_by' => $user['id']]);
-        return H::json(['ok' => true]);
+        return H::json(['ok' => true, 'missing' => AiDocument::missing($content)]);
     }
 
     // ── Automations ──────────────────────────────────────────────────────────
