@@ -1,0 +1,13 @@
+{
+  "id": "P002",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "We run on Excel and Telegram and it works well enough, and I have never paid for a CRM. I might open the free trial, but $199 a month for my team is a lot to commit to when I'd have to move everything over myself.",
+  "objection": "Moving my data from Excel and Telegram will take weeks and nobody does it for me, and I'm not sure my sales team will actually use it instead of the spreadsheet.",
+  "would_change_my_mind": "They import my Excel and Telegram clients for me for free, and I see my own team using it during the trial.",
+  "price_too_cheap": 30,
+  "price_cheap": 80,
+  "price_expensive": 150,
+  "price_too_expensive": 250
+}

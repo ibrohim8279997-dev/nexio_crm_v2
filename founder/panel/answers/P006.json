@@ -1,0 +1,13 @@
+{
+  "id": "P006",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "trust",
+  "reason": "I do not know this company and they say themselves they have no customers I can ask. Excel and Telegram work for me, and handing my client list to a stranger feels risky.",
+  "objection": "No references. If they disappear or lose my clients, I lose my business, and 25 dollars is a big part of what I make in a month.",
+  "would_change_my_mind": "Another shop owner I know, or a Telegram channel I trust, tells me they use it, plus I try it free for 14 days and see my Telegram chats really come in.",
+  "price_too_cheap": 3,
+  "price_cheap": 8,
+  "price_expensive": 18,
+  "price_too_expensive": 30
+}

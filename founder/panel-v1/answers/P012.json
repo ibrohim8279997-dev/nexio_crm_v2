@@ -1,0 +1,13 @@
+{
+  "id": "P012",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "trust",
+  "reason": "I only buy what a friend or partner already uses, and nobody I know has Nexio. 89 dollars a month is a lot when I earn about 20,000 a year, and my clients are already in Telegram and Excel.",
+  "objection": "Moving my data from amoCRM or Excel will take weeks, and there is no migration help included. I do not want to stop selling to set this up and then find it does not fit.",
+  "would_change_my_mind": "A friend or another company I know recommending it, plus free data migration from amoCRM or Excel and a Starter price nearer 40 to 50 dollars.",
+  "price_too_cheap": 15,
+  "price_cheap": 35,
+  "price_expensive": 75,
+  "price_too_expensive": 130
+}

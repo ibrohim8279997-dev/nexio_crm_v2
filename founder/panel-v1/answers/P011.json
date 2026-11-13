@@ -1,0 +1,13 @@
+{
+  "id": "P011",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "My team barely updates a spreadsheet at the end of the day, and they already know Bitrix24 even if it is heavy. I am not going to push them onto another tool and pay 199 dollars a month for it, since with 7 to 15 people I would need the Business plan.",
+  "objection": "My team will not learn another tool, and moving all my clients over by hand is a lot of work for me. 199 dollars a month is a big chunk when I earn about 26k a year.",
+  "would_change_my_mind": "Free import of my Bitrix24 and spreadsheet data, a trial where my team actually uses it for two weeks, and a price under about 100 dollars for my whole team.",
+  "price_too_cheap": 20,
+  "price_cheap": 45,
+  "price_expensive": 100,
+  "price_too_expensive": 160
+}

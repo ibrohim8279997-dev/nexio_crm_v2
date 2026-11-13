@@ -1,0 +1,13 @@
+{
+  "id": "P005",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "trust",
+  "reason": "My team has 7 to 15 people so I would need Business at 199 dollars a month, and that is a lot next to what I earn when a spreadsheet costs nothing. I might open the free trial, but I would not pay in the first month.",
+  "objection": "Will it still exist and be supported in a year? I do not know this company, and moving my clients over myself with no help sounds like a headache my sales guys will not bother with.",
+  "would_change_my_mind": "Free data migration done for us, a few local companies I know using it for a year or more, and a lower price or a monthly so'm price that I can stop any time.",
+  "price_too_cheap": 20,
+  "price_cheap": 50,
+  "price_expensive": 120,
+  "price_too_expensive": 200
+}

@@ -1,0 +1,13 @@
+{
+  "id": "P007",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "price",
+  "reason": "89 dollars a month is about a tenth of what I earn in a year, and my Excel and Telegram cost me nothing. I would maybe try the trial but I would not pay.",
+  "objection": "Moving my data from Excel and my Telegram chats will take weeks, and there is no migration help. For 89 dollars a month I would be paying for something my team may never actually use.",
+  "would_change_my_mind": "A much cheaper plan for 3 to 6 people, around 15 to 20 dollars a month, plus someone importing my Excel and Telegram clients for me for free.",
+  "price_too_cheap": 5,
+  "price_cheap": 15,
+  "price_expensive": 30,
+  "price_too_expensive": 60
+}

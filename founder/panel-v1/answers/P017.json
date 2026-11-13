@@ -1,0 +1,13 @@
+{
+  "id": "P017",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "price",
+  "reason": "89 dollars a month is more than a fifth of what I make in a month, and my clients pay me in so'm. I only need contacts and deals, so I'd be paying for finance and inventory I won't touch.",
+  "objection": "89 dollars flat is too much for a shop my size, and nobody moves my amoCRM data for me, so switching costs me time on top of the money.",
+  "would_change_my_mind": "A plan with just contacts, deals and Telegram for around 25 to 30 dollars a month, with my amoCRM data imported for free.",
+  "price_too_cheap": 10,
+  "price_cheap": 25,
+  "price_expensive": 45,
+  "price_too_expensive": 70
+}

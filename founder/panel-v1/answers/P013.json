@@ -1,0 +1,13 @@
+{
+  "id": "P013",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "trust",
+  "reason": "I do not know this company and I cannot ask any customer of theirs how it went. I have no time to move my data myself, and they do not do the migration for me.",
+  "objection": "Nobody I know uses it, and if I have to move all my clients over by myself it will eat my weeks. 89 dollars a month is real money when my clients pay me in so'm.",
+  "would_change_my_mind": "A done-for-you data migration included, plus two or three Uzbek companies like mine I can call who use it.",
+  "price_too_cheap": 15,
+  "price_cheap": 35,
+  "price_expensive": 70,
+  "price_too_expensive": 120
+}

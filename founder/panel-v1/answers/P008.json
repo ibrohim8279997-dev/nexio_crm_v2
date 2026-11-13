@@ -1,0 +1,13 @@
+{
+  "id": "P008",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "price",
+  "reason": "89 dollars a month is almost a tenth of what I earn in a year, and I already answer clients in Telegram for free. I would look at the trial and then go back to my notebook and spreadsheet.",
+  "objection": "Is the AI voice real or just a demo? And 89 dollars is far too much for a shop with 4 people, when I can get a cheaper tool or use free Telegram.",
+  "would_change_my_mind": "A price under about 30 dollars a month, a long free trial with my own clients, and proof the Telegram connection works in real use.",
+  "price_too_cheap": 8,
+  "price_cheap": 20,
+  "price_expensive": 40,
+  "price_too_expensive": 65
+}

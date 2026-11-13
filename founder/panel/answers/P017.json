@@ -1,0 +1,13 @@
+{
+  "id": "P017",
+  "buys": true,
+  "purchases_first_month": 1,
+  "reason_code": "price",
+  "reason": "amoCRM charges me per seat and the bill keeps growing, so a flat 25 dollars for contacts and deals only is exactly what I need. Free migration and a 14-day trial with my own clients means I lose nothing by trying it.",
+  "objection": "No customer references. If it breaks or they disappear I lose my client data, and 25 dollars covers only 3 users while I have more staff, so I would really be paying 49.",
+  "would_change_my_mind": "Seeing one or two real shops like mine in Uzbekistan using it, or a way to export all my data any time.",
+  "price_too_cheap": 5,
+  "price_cheap": 15,
+  "price_expensive": 40,
+  "price_too_expensive": 70
+}

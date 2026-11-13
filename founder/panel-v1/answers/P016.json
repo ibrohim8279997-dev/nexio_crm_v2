@@ -1,0 +1,13 @@
+{
+  "id": "P016",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "I run everything in Excel and Telegram and it works well enough, and I have never paid for a CRM. 89 dollars a month is a lot for me when my sheet costs nothing.",
+  "objection": "Moving my data from Excel and Telegram chats will take weeks, and nobody does it for me. Meanwhile I pay 89 dollars a month for a tool my staff may not even use.",
+  "would_change_my_mind": "Free done-for-you import of my Excel clients and a long free trial where my team works inside Telegram, with a price near 30 dollars a month.",
+  "price_too_cheap": 10,
+  "price_cheap": 25,
+  "price_expensive": 50,
+  "price_too_expensive": 89
+}

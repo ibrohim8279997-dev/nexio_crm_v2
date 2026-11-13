@@ -1,0 +1,144 @@
+{
+ "business": "Nexio CRM (cloud CRM for small Uzbek companies)",
+ "seed": 672231,
+ "dealt": 20,
+ "answered": 20,
+ "skipped": [],
+ "buys": 0,
+ "passes": 20,
+ "buy_rate": 0.0,
+ "by_segment": [
+  [
+   "Owner of a small shop or service business (3 to 6 staff)",
+   8,
+   0.0
+  ],
+  [
+   "Head of sales at a larger firm (15 to 50 staff)",
+   4,
+   0.0
+  ],
+  [
+   "Owner or sales head of a growing company (7 to 15 staff)",
+   8,
+   0.0
+  ]
+ ],
+ "by_behaviour": [
+  [
+   "Wants it set up for them",
+   2,
+   0.0
+  ],
+  [
+   "Spreadsheet and Telegram user",
+   5,
+   0.0
+  ],
+  [
+   "Price comparer",
+   3,
+   0.0
+  ],
+  [
+   "Unhappy amoCRM user",
+   3,
+   0.0
+  ],
+  [
+   "Needs local payments",
+   2,
+   0.0
+  ],
+  [
+   "Bitrix24 user",
+   3,
+   0.0
+  ],
+  [
+   "Trusts a recommendation",
+   2,
+   0.0
+  ]
+ ],
+ "by_income": [
+  [
+   "under $10,000",
+   6,
+   0.0
+  ],
+  [
+   "$24,000 and up",
+   7,
+   0.0
+  ],
+  [
+   "$10,000 to $24,000",
+   7,
+   0.0
+  ]
+ ],
+ "why_not": [
+  [
+   "price",
+   10,
+   [
+    "89 dollars a month is more than 1,000 a year, and I earn about 6,000. That is a sixth of my income for a program, and my notebook and Telegram chats work for free.",
+    "89 dollars a month is almost a fifth of what I earn in a month. Excel and Telegram cost me nothing and they work well enough."
+   ],
+   [
+    "P001",
+    "P006"
+   ]
+  ],
+  [
+   "habit",
+   5,
+   [
+    "We run on Excel and Telegram and it works well enough, and I have never paid for a CRM. I might open the free trial, but $199 a month for my team is a lot to commit to when I'd have to move everything over myself.",
+    "My team already keeps everything in a spreadsheet and it works well enough. I would open the trial to look, but I will not pay 89 dollars a month when I have to move all my data myself."
+   ],
+   [
+    "P002",
+    "P003"
+   ]
+  ],
+  [
+   "trust",
+   5,
+   [
+    "I do not know this company and there are no customers I can ask. 89 dollars a month is a lot when I earn about 580 a month, and moving my data off amoCRM by myself is a headache I do not have time for.",
+    "My team has 7 to 15 people so I would need Business at 199 dollars a month, and that is a lot next to what I earn when a spreadsheet costs nothing. I might open the free trial, but I would not pay in the first month."
+   ],
+   [
+    "P004",
+    "P005"
+   ]
+  ]
+ ],
+ "why_yes": [],
+ "flip": [
+  "A price near 15 to 20 dollars a month, plus their team moving my clients from Excel or amoCRM for me for free.",
+  "They import my Excel and Telegram clients for me for free, and I see my own team using it during the trial.",
+  "Free data migration from my spreadsheet, plus a price near 30 to 40 dollars a month, with the trial running long enough for my team to really use it.",
+  "Two or three shops like mine that I can call and who say it works, plus someone moving my amoCRM data for free during the trial.",
+  "Free data migration done for us, a few local companies I know using it for a year or more, and a lower price or a monthly so'm price that I can stop any time.",
+  "A plan around 15 to 20 dollars a month, plus a shop owner I know who already uses it and says it saves time.",
+  "A much cheaper plan for 3 to 6 people, around 15 to 20 dollars a month, plus someone importing my Excel and Telegram clients for me for free.",
+  "A price under about 30 dollars a month, a long free trial with my own clients, and proof the Telegram connection works in real use.",
+  "A much cheaper small plan, around 15 to 20 dollars a month, plus free help moving my clients over and proof the company has been around and has other shops like mine using it.",
+  "Free done-for-you migration from amoCRM plus a clearly lower total than my current bill at my real team size, with a proper trial on the Business plan.",
+  "Free import of my Bitrix24 and spreadsheet data, a trial where my team actually uses it for two weeks, and a price under about 100 dollars for my whole team.",
+  "A friend or another company I know recommending it, plus free data migration from amoCRM or Excel and a Starter price nearer 40 to 50 dollars.",
+  "A done-for-you data migration included, plus two or three Uzbek companies like mine I can call who use it.",
+  "A cheaper plan with just contacts, deals and Telegram at around 30 to 40 dollars, plus free help moving my data from spreadsheets or amoCRM.",
+  "A lower starting price (around $35 to $40) or free migration from Bitrix24 done for me, plus proof from another Uzbek company like mine.",
+  "Free done-for-you import of my Excel clients and a long free trial where my team works inside Telegram, with a price near 30 dollars a month.",
+  "A plan with just contacts, deals and Telegram for around 25 to 30 dollars a month, with my amoCRM data imported for free.",
+  "A price around 10 to 15 dollars a month, plus someone who moves my Excel data for free and shows my staff how to use it.",
+  "Free done-for-you import from Bitrix24 and a trial I can run alongside it with a few of my managers, with Telegram chats landing in the deal card.",
+  "A partner or friend of mine already using it and recommending it, plus someone doing the data move for me and a cheaper start."
+ ],
+ "purchases_first_month_per_buyer": null,
+ "price_answers": 20
+}

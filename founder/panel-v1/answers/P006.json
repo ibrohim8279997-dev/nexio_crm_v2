@@ -1,0 +1,13 @@
+{
+  "id": "P006",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "price",
+  "reason": "89 dollars a month is almost a fifth of what I earn in a month. Excel and Telegram cost me nothing and they work well enough.",
+  "objection": "I do not know this company and it has no customers I can ask. Paying 89 dollars for something I cannot check is too risky for me.",
+  "would_change_my_mind": "A plan around 15 to 20 dollars a month, plus a shop owner I know who already uses it and says it saves time.",
+  "price_too_cheap": 3,
+  "price_cheap": 12,
+  "price_expensive": 30,
+  "price_too_expensive": 55
+}

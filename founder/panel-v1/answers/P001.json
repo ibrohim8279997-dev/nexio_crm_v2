@@ -1,0 +1,13 @@
+{
+  "id": "P001",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "price",
+  "reason": "89 dollars a month is more than 1,000 a year, and I earn about 6,000. That is a sixth of my income for a program, and my notebook and Telegram chats work for free.",
+  "objection": "Moving my data from amoCRM or Excel will take weeks, I have no time for it, and nobody does it for me. On top of that the price is far too high for my shop.",
+  "would_change_my_mind": "A price near 15 to 20 dollars a month, plus their team moving my clients from Excel or amoCRM for me for free.",
+  "price_too_cheap": 5,
+  "price_cheap": 15,
+  "price_expensive": 35,
+  "price_too_expensive": 60
+}

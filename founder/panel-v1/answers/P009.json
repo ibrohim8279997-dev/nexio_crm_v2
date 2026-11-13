@@ -1,0 +1,13 @@
+{
+  "id": "P009",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "price",
+  "reason": "89 dollars a month is over a thousand a year, about a fifth of what I take home. For a shop with 4 staff and a notebook plus Telegram, that is far too much, even if Click and Payme work.",
+  "objection": "Will it still exist and be supported in a year? I would pay 89 dollars every month and if the company disappears I lose all my client data.",
+  "would_change_my_mind": "A much cheaper small plan, around 15 to 20 dollars a month, plus free help moving my clients over and proof the company has been around and has other shops like mine using it.",
+  "price_too_cheap": 5,
+  "price_cheap": 12,
+  "price_expensive": 30,
+  "price_too_expensive": 55
+}
