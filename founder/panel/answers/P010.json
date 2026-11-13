@@ -1,0 +1,13 @@
+{
+  "id": "P010",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "trust",
+  "reason": "I would maybe try the free trial, but I would not pay yet. I know amoCRM is annoying, but my team's data and routines are in it, and I will not move a sales team to a CRM with no references.",
+  "objection": "Per seat I pay about $15 elsewhere, and a flat $199 for 15 users is not clearly cheaper for my team. There are no customers I can call, and I do not know if support will be any faster than amoCRM's.",
+  "would_change_my_mind": "Two or three real Uzbek companies my size that I can call and that have used it for months, plus a clear side-by-side showing I pay less than I do now for my number of users.",
+  "price_too_cheap": 40,
+  "price_cheap": 100,
+  "price_expensive": 200,
+  "price_too_expensive": 350
+}

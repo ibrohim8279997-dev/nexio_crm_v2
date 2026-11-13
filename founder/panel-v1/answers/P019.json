@@ -1,0 +1,13 @@
+{
+  "id": "P019",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "We already run on Bitrix24 and everyone knows it, even if it is heavy. Moving a 20-person sales team to a new CRM and no help with moving the data is a lot of pain for me.",
+  "objection": "No migration. All my deals and client history are in Bitrix24, and I am not re-entering them by hand or risking my team's work for a CRM I have never heard of.",
+  "would_change_my_mind": "Free done-for-you import from Bitrix24 and a trial I can run alongside it with a few of my managers, with Telegram chats landing in the deal card.",
+  "price_too_cheap": 15,
+  "price_cheap": 45,
+  "price_expensive": 150,
+  "price_too_expensive": 300
+}

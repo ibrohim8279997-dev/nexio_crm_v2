@@ -1,0 +1,13 @@
+{
+  "id": "P008",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "trust",
+  "reason": "I run everything in Telegram and a notebook and it works. A new CRM with no customers I can call is a risk, and $25 is real money for me. I would maybe click the free trial, but I would not pay.",
+  "objection": "No references, nobody I know uses it. I do not want to move my clients in and then find the thing disappears or does not work the way they say. Is the Telegram part real or just a demo?",
+  "would_change_my_mind": "A shop owner in Uzbekistan I can phone who uses it daily, plus a Lean price under about $15 after a trial where my own Telegram chats really work.",
+  "price_too_cheap": 5,
+  "price_cheap": 12,
+  "price_expensive": 25,
+  "price_too_expensive": 45
+}

@@ -1,0 +1,13 @@
+{
+  "id": "P002",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "My team already lives in Excel and Telegram and it works well enough. I would maybe try the free 14 days, but I would not pay in the first month because getting 10+ salespeople to change how they report is the real work, not the price.",
+  "objection": "Free migration is nice, but my people will still have to relearn everything and they hate new tools. There are no customer references, so if it fails I look bad to the director.",
+  "would_change_my_mind": "Seeing a similar-sized Uzbek company that moved from Excel and Telegram and kept using it, plus a demo where my own spreadsheet is imported in one day and sales reports build themselves.",
+  "price_too_cheap": 15,
+  "price_cheap": 50,
+  "price_expensive": 120,
+  "price_too_expensive": 250
+}

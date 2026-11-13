@@ -1,0 +1,13 @@
+{
+  "id": "P015",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "I already use Bitrix24 on a free or cheap plan. It is heavy but my team knows it, and with 7 to 15 people I would need the 199 dollar plan to fit everyone, which is much more than I pay now.",
+  "objection": "I pay about 15 dollars per user elsewhere and cannot see why a flat price is better. For my team size it would be 199 a month, and there are no customers or references to prove it works.",
+  "would_change_my_mind": "Seeing another Uzbek company of my size using it, plus a Telegram setup that clearly beats Bitrix24 and a mid-tier price of around 100 dollars for 10 users.",
+  "price_too_cheap": 20,
+  "price_cheap": 50,
+  "price_expensive": 110,
+  "price_too_expensive": 180
+}

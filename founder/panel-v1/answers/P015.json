@@ -1,0 +1,13 @@
+{
+  "id": "P015",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "price",
+  "reason": "I use Bitrix24 free or cheap and it works, even if it is heavy. $89 a month is a lot of money for me, and I would also have to move all my clients by hand.",
+  "objection": "I pay about $15 per user elsewhere and cannot see why a flat $89 is better. With 7 to 15 people I would likely need the $199 Business plan anyway, and there is no help moving my data.",
+  "would_change_my_mind": "A lower starting price (around $35 to $40) or free migration from Bitrix24 done for me, plus proof from another Uzbek company like mine.",
+  "price_too_cheap": 15,
+  "price_cheap": 30,
+  "price_expensive": 60,
+  "price_too_expensive": 100
+}

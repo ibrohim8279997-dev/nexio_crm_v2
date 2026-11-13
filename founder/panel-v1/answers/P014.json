@@ -1,0 +1,13 @@
+{
+  "id": "P014",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "price",
+  "reason": "89 dollars a month is a lot when I earn about 27,000 a year and I know Bitrix24 has a free or cheap plan. I would maybe open the trial, but I would not pay in the first month.",
+  "objection": "I only need contacts and deals, not finance and inventory, and I pay in dollars-equivalent while my clients pay me in so'm. Why pay 89 or 199 when other CRMs cost less and I would have to move all my data by hand?",
+  "would_change_my_mind": "A cheaper plan with just contacts, deals and Telegram at around 30 to 40 dollars, plus free help moving my data from spreadsheets or amoCRM.",
+  "price_too_cheap": 8,
+  "price_cheap": 25,
+  "price_expensive": 55,
+  "price_too_expensive": 90
+}

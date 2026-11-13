@@ -1,0 +1,13 @@
+{
+  "id": "P014",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "trust",
+  "reason": "I would take the free trial, but I would not pay yet. I only need contacts and deals, and a CRM nobody has vouched for makes me nervous with my client data. I will keep my spreadsheets and Telegram until someone I know uses it.",
+  "objection": "No references at all. If I move all my clients in and it disappears or breaks, I lose my sales history. The plans also jump from 25 to 49 to 199, and I only want contacts and deals, not finance and inventory.",
+  "would_change_my_mind": "Two or three Uzbek companies like mine that I can call and who use it, plus a 49 dollar plan that is honestly enough for my sales team.",
+  "price_too_cheap": 8,
+  "price_cheap": 20,
+  "price_expensive": 45,
+  "price_too_expensive": 90
+}

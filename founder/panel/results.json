@@ -1,0 +1,152 @@
+{
+ "business": "Nexio CRM (cloud CRM for small Uzbek companies)",
+ "seed": 672231,
+ "dealt": 20,
+ "answered": 20,
+ "skipped": [],
+ "buys": 1,
+ "passes": 19,
+ "buy_rate": 0.05,
+ "by_segment": [
+  [
+   "Owner of a small shop or service business (3 to 6 staff)",
+   8,
+   0.125
+  ],
+  [
+   "Head of sales at a larger firm (15 to 50 staff)",
+   4,
+   0.0
+  ],
+  [
+   "Owner or sales head of a growing company (7 to 15 staff)",
+   8,
+   0.0
+  ]
+ ],
+ "by_behaviour": [
+  [
+   "Unhappy amoCRM user",
+   3,
+   0.3333333333333333
+  ],
+  [
+   "Wants it set up for them",
+   2,
+   0.0
+  ],
+  [
+   "Spreadsheet and Telegram user",
+   5,
+   0.0
+  ],
+  [
+   "Price comparer",
+   3,
+   0.0
+  ],
+  [
+   "Needs local payments",
+   2,
+   0.0
+  ],
+  [
+   "Bitrix24 user",
+   3,
+   0.0
+  ],
+  [
+   "Trusts a recommendation",
+   2,
+   0.0
+  ]
+ ],
+ "by_income": [
+  [
+   "under $10,000",
+   6,
+   0.16666666666666666
+  ],
+  [
+   "$24,000 and up",
+   7,
+   0.0
+  ],
+  [
+   "$10,000 to $24,000",
+   7,
+   0.0
+  ]
+ ],
+ "why_not": [
+  [
+   "trust",
+   13,
+   [
+    "Free moving of my data is nice, but 25 dollars a month is a real chunk when I make about 500 a month, and nobody I know uses this. I would try the free 14 days at most, I would not pay yet.",
+    "My team works in a spreadsheet and it costs me nothing. A new CRM with no customer references, and I would be paying monthly out of a $13,000 year, is a hard sell when amoCRM and Bitrix24 have trials too."
+   ],
+   [
+    "P001",
+    "P003"
+   ]
+  ],
+  [
+   "habit",
+   5,
+   [
+    "My team already lives in Excel and Telegram and it works well enough. I would maybe try the free 14 days, but I would not pay in the first month because getting 10+ salespeople to change how they report is the real work, not the price.",
+    "I run everything in Excel and Telegram and it works well enough, and I have never paid for a CRM. I might look at the free trial, but paying dollars every month for something nobody I know uses is a hard sell."
+   ],
+   [
+    "P002",
+    "P007"
+   ]
+  ],
+  [
+   "price",
+   1,
+   [
+    "I make about $5,000 a year, so 25 dollars a month is 300 a year, that is a real chunk of my income for something Excel and Telegram already do for free. My staff will not change their habit just because I pay."
+   ],
+   [
+    "P018"
+   ]
+  ]
+ ],
+ "why_yes": [
+  [
+   "price",
+   1,
+   [
+    "amoCRM charges me per seat and the bill keeps growing, so a flat 25 dollars for contacts and deals only is exactly what I need. Free migration and a 14-day trial with my own clients means I lose nothing by trying it."
+   ],
+   [
+    "P017"
+   ]
+  ]
+ ],
+ "flip": [
+  "Another shop owner I know in Uzbekistan telling me they use it, plus someone doing the move in front of me and a lower price, around 10 to 15 dollars.",
+  "Seeing a similar-sized Uzbek company that moved from Excel and Telegram and kept using it, plus a demo where my own spreadsheet is imported in one day and sales reports build themselves.",
+  "Names of two or three companies like mine in Uzbekistan that use it, and a cheaper plan at around 15 dollars that I could test with my own clients.",
+  "Two or three real shops like mine in Uzbekistan that I can phone, who have used it for months, plus the free move of my data from amoCRM done and shown to me before I pay anything.",
+  "Two or three real Uzbek companies of my size I can call who use it, plus a way to export all my data any time.",
+  "Another shop owner I know, or a Telegram channel I trust, tells me they use it, plus I try it free for 14 days and see my Telegram chats really come in.",
+  "Another shop owner I know and trust showing me it working, plus the free migration done in a couple of days and a price of 15 dollars or less in so'm.",
+  "A shop owner in Uzbekistan I can phone who uses it daily, plus a Lean price under about $15 after a trial where my own Telegram chats really work.",
+  "Two or three real shops like mine in Uzbekistan I can call who already use it, plus a cheaper plan paid in so'm through Click.",
+  "Two or three real Uzbek companies my size that I can call and that have used it for months, plus a clear side-by-side showing I pay less than I do now for my number of users.",
+  "Seeing another company like mine in Uzbekistan using it daily, or you set it up and train my sales team in person during the trial and it actually replaces the end-of-day spreadsheet.",
+  "A friend or another company owner I know already using it and telling me the migration from amoCRM went smoothly, or a live demo where you move a sample of my data.",
+  "Two or three real Uzbek companies of my size that I can phone and that say they use it, plus the free move of my data actually done and shown to me before I pay.",
+  "Two or three Uzbek companies like mine that I can call and who use it, plus a 49 dollar plan that is honestly enough for my sales team.",
+  "Seeing another Uzbek company of my size using it, plus a Telegram setup that clearly beats Bitrix24 and a mid-tier price of around 100 dollars for 10 users.",
+  "A person from a company like mine in Uzbekistan showing me it running on their real Telegram chats, and your team moving my data in front of me in a day or two.",
+  "A free or very cheap plan (under 10 dollars) for my small team, plus seeing a shop like mine already using it.",
+  "Two or three real Uzbek companies of my size using it who I can call, plus a plan with just contacts, deals and Telegram for 15+ users at a lower price.",
+  "A company I know personally, in Uzbekistan, that has used it for months and tells me it works, plus a way to export all my data at any time."
+ ],
+ "purchases_first_month_per_buyer": 1.0,
+ "price_answers": 20
+}

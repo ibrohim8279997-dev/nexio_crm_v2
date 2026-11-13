@@ -1,0 +1,13 @@
+{
+  "id": "P018",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "price",
+  "reason": "I make about $5,000 a year, so 25 dollars a month is 300 a year, that is a real chunk of my income for something Excel and Telegram already do for free. My staff will not change their habit just because I pay.",
+  "objection": "I have never paid for a CRM and my team already updates the spreadsheet every evening. 25 dollars a month is too much for 3 people, and no one can show me another shop like mine that uses it.",
+  "would_change_my_mind": "A free or very cheap plan (under 10 dollars) for my small team, plus seeing a shop like mine already using it.",
+  "price_too_cheap": 2,
+  "price_cheap": 6,
+  "price_expensive": 12,
+  "price_too_expensive": 20
+}

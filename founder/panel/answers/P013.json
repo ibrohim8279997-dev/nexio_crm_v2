@@ -1,0 +1,13 @@
+{
+  "id": "P013",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "trust",
+  "reason": "I do not know this company and there is not a single customer I can call. I would be handing over my clients' data to strangers, and I have no time to find out if it works.",
+  "objection": "I do not know this company, it has no customers I can ask. If it fails, my team and my client data are stuck there.",
+  "would_change_my_mind": "Two or three real Uzbek companies of my size that I can phone and that say they use it, plus the free move of my data actually done and shown to me before I pay.",
+  "price_too_cheap": 15,
+  "price_cheap": 40,
+  "price_expensive": 120,
+  "price_too_expensive": 220
+}

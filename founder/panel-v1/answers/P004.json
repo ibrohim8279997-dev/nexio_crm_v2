@@ -1,0 +1,13 @@
+{
+  "id": "P004",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "trust",
+  "reason": "I do not know this company and there are no customers I can ask. 89 dollars a month is a lot when I earn about 580 a month, and moving my data off amoCRM by myself is a headache I do not have time for.",
+  "objection": "Nobody I know uses it, so if it breaks or the company disappears I lose my client data. And there is no help moving my data from amoCRM.",
+  "would_change_my_mind": "Two or three shops like mine that I can call and who say it works, plus someone moving my amoCRM data for free during the trial.",
+  "price_too_cheap": 15,
+  "price_cheap": 30,
+  "price_expensive": 55,
+  "price_too_expensive": 89
+}

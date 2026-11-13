@@ -1,0 +1,24 @@
+{
+  "business": "Nexio CRM (ESTIMATES - no real cost, team or customer data was provided)",
+  "unit": "paying account-month",
+  "price": 60,
+  "variable": [
+    {"label": "Payment fees (Click/Payme/card), est. 2.5% of 60", "cost": 1.5},
+    {"label": "Server share, storage, email/Telegram per account (est.; real server cost is fixed)", "cost": 3.0},
+    {"label": "Support and AI tokens per account (est.)", "cost": 1.0}
+  ],
+  "fixed_monthly": [
+    {"label": "Part-time support/onboarding helper (est.)", "cost": 500},
+    {"label": "Tools, domain, monitoring, SMS base (est.)", "cost": 150},
+    {"label": "Accountant (est.)", "cost": 100},
+    {"label": "Founder pay (OPEN INPUT, set to 0)", "cost": 0}
+  ],
+  "startup": [
+    {"label": "Free migrations: 50 accounts x 3 h x $10/h (est.)", "cost": 1500},
+    {"label": "Launch ads and content (est.)", "cost": 1000},
+    {"label": "Business registration and legal (est.)", "cost": 500}
+  ],
+  "days_per_month": 1,
+  "plan_per_day": 50,
+  "ramp_per_day": [2, 4, 7, 10, 14, 18, 23, 28, 33, 38, 44, 50]
+}
