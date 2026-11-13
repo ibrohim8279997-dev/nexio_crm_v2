@@ -9,3 +9,19 @@
   - New signups start on a Starter trial.
 - Where and how: Online SaaS, self-serve signup with trial, card/Click/Payme billing. Real-time voice (ASR/TTS/SIP) is not implemented; AI calls are sandbox simulations.
 - Budget and constraints: Not stated. Open question for the founder (money, runway, team size, current paying customers).
+
+## Founder answers (13 Nov 2026)
+
+- **Customers:** 1 to 5 paying customers today. Nobody has agreed to act as a reference.
+- **Team:** 4 to 10 people (founder included).
+- **Price currency:** plans are priced in USD and converted to so'm for Click and Payme.
+- **Starter price:** the founder chose to keep Starter at $89 and not run the $39 to $49 test.
+- **AI voice:** real-time voice is expected within 3 months. Until then it will be labelled "coming soon" on the plans, not removed.
+- **Segments:** retail and shops, plus services; small and growing companies. Rough income guesses in the buyer panel were judged about right.
+- **Name and domains:** the founder owns the domains; the "Nexio" trademark is not registered.
+- **Servers and law:** servers are in Uzbekistan; no lawyer has reviewed the personal-data rules.
+- **Backups:** only on the same server, nothing off-server.
+- **Production:** the founder's own server (CloudPanel per the repo docs), not Cloudflare.
+- **Code:** light-theme success green was darkened from `#10b981` to `#047857` (text contrast 2.5 to 5.5); dark theme keeps `#10b981`.
+- **Not answered:** current real prices paid for amoCRM or Bitrix24, the real monthly server price, the income the founder needs, whether the founder knows shamCRM.
+

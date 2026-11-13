@@ -92,13 +92,13 @@ Rules change and differ by case. Confirm each with the authority or a local lawy
 | --- | --- | --- | --- | --- |
 | 1 | No customer will act as a reference | High (no customers yet) | High (trust is the main wall) | Founding-50 pilots with written permission; free migration in return |
 | 2 | A migration loses or corrupts customer data | Medium | High | Staging import, spot-check 10 records, keep original file, written OK |
-| 3 | Backups only on the same server | Medium | Very high | Copy `storage/app/backups` off-server (S3 or R2) before taking real customers |
+| 3 | Backups only on the same server (confirmed by the founder, 13 Nov) | High | Very high | Do this first: copy `storage/app/backups` off-server (S3 or R2) now. 1 to 5 customers' data is already at risk |
 | 4 | Server bill is fixed but the CFO model spreads it per account | High | Low | Get the real monthly server price, add it as a fixed cost, re-run the CFO |
 | 5 | Key person (the founder) unavailable | Medium | High | Runbook above, a second person with server access, the standby DB feature already in the repo |
 | 6 | Payment provider holds or rejects the account | Low to medium | High | Apply early; keep card as a second path |
 | 7 | AI voice or telephony oversold | Medium | High | Not in the price; label as "not ready" until real-time voice exists (the repo says it is a sandbox simulation) |
 | 8 | Support falls behind during the first 50 | High | Medium | Same-day reply rule; cap trials per week |
-| 9 | Personal-data rules breached | Unknown | High | Lawyer review before launch |
+| 9 | Personal-data rules breached (servers are in Uzbekistan, which helps, but no lawyer has reviewed it) | Unknown | High | Lawyer review before launch |
 | 10 | Slow growth: fewer than 14 paying accounts | High (per CFO, break-even) | High | Watch the three weekly numbers; stop spend if no trials after 10 demos |
 
 ## Open questions for the founder

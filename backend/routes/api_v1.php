@@ -243,6 +243,9 @@ Route::prefix('v1')->group(function () use ($h) {
 
     // ── billing & finance ──────────────────────────────────────────────────
     Route::get('/billing/plans', $h(BillingController::class, 'plans'));
+    Route::get('/billing/custom-plan/options', $h(BillingController::class, 'customOptions'));
+    Route::post('/billing/custom-plan/quote', $h(BillingController::class, 'customQuote'))->middleware('throttle:60,1');
+    Route::post('/billing/custom-plan', $h(BillingController::class, 'customCreate'))->middleware('throttle:20,1');
     Route::get('/billing', $h(BillingController::class, 'subscription'));
     Route::get('/billing/transactions', $h(BillingController::class, 'transactions'));
     Route::post('/billing/plan', $h(BillingController::class, 'changePlan'));

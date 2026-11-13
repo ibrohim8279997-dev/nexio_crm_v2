@@ -2,6 +2,8 @@
 
 Inputs: the 20-buyer simulated panel ([pricing-curve.md](pricing-curve.md)), competitor list prices ([competitors.md](competitors.md)). The CFO has not run yet, so there is no margin figure. Cost per customer is an open question and the price below must be checked against it in `/founder-cfo`.
 
+**Founder decision (13 Nov):** keep Starter at $89 and do not run the $39 to $49 test. The analysis below stands as advice: $89 is above the panel's acceptable range, and 0 of 20 simulated buyers took it. The $89 price is only safe to keep if the real paying customers confirm they accept it. Ask the 1 to 5 current customers what they pay, and what they would have refused to pay.
+
 ## 1. The price
 
 **Current Starter price, $89/mo for 5 users, is above the panel's acceptable range ($15.50 to $69.97) and is the most expensive 5-user entry plan in the competitor table.**

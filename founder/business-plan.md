@@ -29,6 +29,21 @@
 - Where and how: Online SaaS, self-serve signup with trial, card/Click/Payme billing. Real-time voice (ASR/TTS/SIP) is not implemented; AI calls are sandbox simulations.
 - Budget and constraints: Not stated. Open question for the founder (money, runway, team size, current paying customers).
 
+### Founder answers (13 Nov 2026)
+
+- **Customers:** 1 to 5 paying customers today. Nobody has agreed to act as a reference.
+- **Team:** 4 to 10 people (founder included).
+- **Price currency:** plans are priced in USD and converted to so'm for Click and Payme.
+- **Starter price:** the founder chose to keep Starter at $89 and not run the $39 to $49 test.
+- **AI voice:** real-time voice is expected within 3 months. Until then it will be labelled "coming soon" on the plans, not removed.
+- **Segments:** retail and shops, plus services; small and growing companies. Rough income guesses in the buyer panel were judged about right.
+- **Name and domains:** the founder owns the domains; the "Nexio" trademark is not registered.
+- **Servers and law:** servers are in Uzbekistan; no lawyer has reviewed the personal-data rules.
+- **Backups:** only on the same server, nothing off-server.
+- **Production:** the founder's own server (CloudPanel per the repo docs), not Cloudflare.
+- **Code:** light-theme success green was darkened from `#10b981` to `#047857` (text contrast 2.5 to 5.5); dark theme keeps `#10b981`.
+- **Not answered:** current real prices paid for amoCRM or Bitrix24, the real monthly server price, the income the founder needs, whether the founder knows shamCRM.
+
 ## Summary
 
 **The business.** Nexio CRM is a multi-tenant cloud CRM (web, Android, iOS) in Uzbek, Russian and English for small and growing Uzbek companies that keep clients in Excel, Telegram chats, amoCRM or Bitrix24. It takes payment in so'm through Click and Payme.
@@ -45,14 +60,14 @@ The first two rest on estimated inputs: no real costs, team size, hosting bill o
 
 **What has to change, and which skill changes it.**
 1. **No proof.** 13 of 19 simulated buyers who passed said they could not find anyone who uses it. Fix: 3 real paying customers who agree in writing to be references. That is the paid pilot in `founder/launch.md`, not another skill run.
-2. **Price is above the buyers' range.** The first panel's acceptable range was $15.50 to $69.97 and Starter was $89. Fix (`/founder-pricing`): test Starter at $39 to $49 and a $25 Lean plan.
-3. **Unmet board conditions.** No named niche, no customer or revenue data, no measured CAC, no confirmed currency or pre-sale. Fix: real data from the founder and the pilot.
+2. **Price is above the buyers' range.** The first panel's acceptable range was $15.50 to $69.97 and Starter was $89. The founder chose to keep $89 and not run the $39 to $49 test. Advice (`/founder-pricing`): at least ask the 1 to 5 paying customers whether they would still pay it, and consider a $25 Lean plan (not built yet).
+3. **Unmet board conditions.** The segment is now only partly named (shops and services, small and growing companies); customer data is rough (1 to 5 paying customers, none willing to be a reference); revenue is unknown; no measured CAC, no confirmed currency or pre-sale. Fix: real data from the founder and the pilot.
 
 **What the board, the competitors and the panel agreed on.** All three board members voted FUND IF (average 4/10) and raised the same risks: no proof, no niche, selling unbuilt AI voice. The panel agreed on price and migration effort first, then, once those were addressed, on trust. Where they differ: the board saw breadth as a focus problem; the competitor map suggests the one real gap is a done-for-you migration plus flat pricing above about 6 users, and shamCRM is the closest and fastest rival.
 
 **Biggest risk and the plan.** Trust: no references. Plan: the Founding-50 offer with free migration and a 30-day refund, in exchange for written reference permission.
 
-**What the founder needs to start.** About $4,746 in the CFO's base case (estimate), $6,124 if volume is half of plan. Founder pay is assumed 0. At 50 paying accounts the business earns about $1,975 a month, which is not a living; it needs several hundred accounts or a higher blended price.
+**What the founder needs to start.** About $4,746 in the CFO's base case (estimate), $6,124 if volume is half of plan. Founder pay is assumed 0, and the model counts no salaries although the founder reports a team of 4 to 10: every $1,000 of monthly payroll adds about 19 accounts to the break-even. At 50 paying accounts the business earns about $1,975 a month, which is not a living; it needs several hundred accounts or a higher blended price.
 
 **One thing to do this week.** Book 5 demos with owners of small companies from your own contacts, offer to migrate their data free, and ask each one to pay the first month. Do not spend on ads, and do not change the price page until you have heard what real owners say.
 
@@ -247,6 +262,8 @@ Buyers say they would buy **1.0 times** in the first month on average.
 
 Inputs: the 20-buyer simulated panel ([pricing-curve.md](pricing-curve.md)), competitor list prices ([competitors.md](competitors.md)). The CFO has not run yet, so there is no margin figure. Cost per customer is an open question and the price below must be checked against it in `/founder-cfo`.
 
+**Founder decision (13 Nov):** keep Starter at $89 and do not run the $39 to $49 test. The analysis below stands as advice: $89 is above the panel's acceptable range, and 0 of 20 simulated buyers took it. The $89 price is only safe to keep if the real paying customers confirm they accept it. Ask the 1 to 5 current customers what they pay, and what they would have refused to pay.
+
 ### 1. The price
 
 **Current Starter price, $89/mo for 5 users, is above the panel's acceptable range ($15.50 to $69.97) and is the most expensive 5-user entry plan in the competitor table.**
@@ -290,7 +307,7 @@ Do not put AI voice in any price line until it works.
 
 ### Limits
 
-Simulated buyers lean towards price sensitivity when told to be sceptical, so $35.56 is a test point, not a verdict. Only 20 answers, thin per segment. The 0% buy rate in the first panel comes from buyers told to be unagreeable, with incomes set by guesses in `customer.json`. Real owner incomes in Uzbekistan were not researched.
+Simulated buyers lean towards price sensitivity when told to be sceptical, so $35.56 is a test point, not a verdict. Only 20 answers, thin per segment. The 0% buy rate in the first panel comes from buyers told to be unagreeable, with incomes set by guesses in `customer.json`. Real owner incomes in Uzbekistan were not researched; the founder judged the guessed incomes roughly right (13 Nov), and named small and growing companies as the first segments.
 
 ## The offer
 
@@ -378,7 +395,7 @@ Reading it plainly: the offer fixed the price and effort problems for one segmen
 
 ## The numbers
 
-**Read this first: every input is an estimate.** No real costs, team, hosting bill or customer data exist in the project (production is a fixed-cost CloudPanel server; the model spreads it per account, which understates cost at low volume), so `numbers.json` holds model guesses (see `cfo-sources.md`). The tool's "a day" columns mean "a month" here: the unit is one paying account for one month. An accountant should check structure, payroll and tax before money moves. This is not financial, tax or legal advice.
+**Read this first: every input is an estimate.** No real costs, team, hosting bill or customer data exist in the project (production is a fixed-cost CloudPanel server; the model spreads it per account, which understates cost at low volume), so `numbers.json` holds model guesses (see `cfo-sources.md`). **The founder reported a team of 4 to 10 people, but the model's fixed costs ($750 a month) include only one part-time helper and no salaries.** Every extra $1,000 of monthly payroll adds about 19 accounts to the break-even ($1,000 divided by the $54.50 contribution). For example, $3,000 of payroll on top of $750 means about 69 paying accounts to break even, not 14. That figure is an example, not data: real payroll is unknown. The model also assumed a blended price of $60 built from the test prices; the founder is keeping Starter at $89, so the real blend would be higher, but fewer buyers accept that price in the panel. The tool's "a day" columns mean "a month" here: the unit is one paying account for one month. An accountant should check structure, payroll and tax before money moves. This is not financial, tax or legal advice.
 
 - **The margin:** each paying account-month leaves $54.50 of $60 (91%). At 50 paying accounts the profit margin is 66%. That is a software margin; it is not where the risk is.
 - **The line to watch: volume.** Break-even is 14 paying accounts, and the plan assumes 50 by month 12. At half the volume (25 accounts) year 1 loses $1,615 and the cash need rises to $6,124. At 30% of plan (15 accounts) it loses $4,569. The ramp is a pure assumption, and the buyer panel (0 of 20, then 1 of 20) cannot support or contradict it.
@@ -520,7 +537,7 @@ Each answers one panel objection. None is a testimonial; none quotes a simulated
 6. **"What if it fails?"** "If your team is not using it after 30 days of paying, we refund that month." (Check that the refund rule is real before publishing.)
 7. **"Will the company still exist?"** "Month to month, cancel any time. Ask us how to export your clients." (Check export exists.)
 8. **"Do I pay in dollars?"** "Pay in so'm with Click or Payme." / «Платите в сумах через Click или Payme.»
-9. **"Is the AI voice real?"** "No AI voice in the price. It is not ready, so we do not sell it." (Turns a weakness into honesty.)
+9. **"Is the AI voice real?"** "AI voice is coming soon. It is not in the price today." (Turns a weakness into honesty. The founder expects real-time voice within 3 months, so say "coming soon", not a date, unless you can keep the date. Do not sell it as working.)
 10. **"Support is slow."** "In the first 50 companies, the founder answers in Telegram." (Only if the founder will.)
 
 ### 5. Budget and the most you can pay for a customer
@@ -562,6 +579,8 @@ This is an **audit, not a rename.** The product is already called Nexio CRM, "by
 - **It is generic.** "Nexus"-style names are very common in software. Expect other companies named Nexio or close to it. I could not search trademark registers from here, so this is **unchecked**, not cleared.
 - **Domains.** A DNS lookup (public, no registration check) returned: `nexio.com` is taken (Cloudflare name servers); `nexiolab.uz` has name servers (taken); `nexiolab.com` is parked/for sale (Afternic name servers); `nexio.uz`, `nexiocrm.uz` and `nexiocrm.com` returned no name servers. **No name servers does not prove a domain is free** (a registered domain can have none, and `.uz` lookups can fail). Confirm with a registrar's search before relying on it.
 - **Confusion with competitors:** none of the names in `competitors.md` (Kommo, amoCRM, Bitrix24, shamCRM, 1C) is close. No conflict found there.
+
+Founder answers (13 Nov): the founder owns the domains; the "Nexio" trademark is not registered. Registering it, after the register searches below, is still open.
 
 What you must finish yourself (a trademark lawyer confirms; nothing here is registered or cleared):
 
@@ -605,11 +624,11 @@ What you must finish yourself (a trademark lawyer confirms; nothing here is regi
 | White text on primary blue `#2563eb` | 5.17 | Passes AA |
 | Navy `#092d62` text on white | 13.43 | Passes AAA |
 | Grey `#64748b` text on white | 4.76 | Passes AA (small "BY NEXIO LAB" is borderline in size) |
-| Primary blue `#2563eb` on dark `#0B1220` | 3.62 | Fails for body text, OK for large text and icons only |
+| Primary blue `#2563eb` on dark `#0B1220` (the token alone) | 3.62 | Looks like a fail, but the dark theme already remaps `text-primary` to `#7db4fb` in `src/styles/index.css`, which passes. **Not a real problem; my first audit missed the override** |
 | White text on success green `#10b981` | 2.54 | **Fails.** Do not put white text on this green; use dark text or a darker green |
 | Amber `#f59e0b` with dark `#111827` text | 8.26 | Passes |
 
-Two fixes: (1) in dark theme, use a lighter blue for links and body-size text (the repo already has lighter tokens for other hues); (2) never white text on `#10b981` buttons or badges.
+One fix, done in code on 13 Nov: the success green used for text was `#10b981` (2.54 on white, 2.41 on the light badge background). In the light theme `--color-success` is now `#047857` (5.48 on white, 5.21 on the badge); the dark theme keeps `#10b981`. Where it appears in the app: `text-success` badges and deltas, and `bg-success` dots and bars, which now look darker in the light theme. Never put white text on a `#10b981` button.
 
 **Type:** the logo uses Arial, a system font, which any platform can render but looks generic. The rest of the app uses `var(--font-sans)`; check what it resolves to. A free upgrade path: **Inter** (SIL Open Font License, from Google Fonts, supports Cyrillic and Latin, including the Uzbek Latin letters). Verify Uzbek letters (oʻ, gʻ) render correctly before adopting any font.
 
@@ -720,13 +739,13 @@ Rules change and differ by case. Confirm each with the authority or a local lawy
 | --- | --- | --- | --- | --- |
 | 1 | No customer will act as a reference | High (no customers yet) | High (trust is the main wall) | Founding-50 pilots with written permission; free migration in return |
 | 2 | A migration loses or corrupts customer data | Medium | High | Staging import, spot-check 10 records, keep original file, written OK |
-| 3 | Backups only on the same server | Medium | Very high | Copy `storage/app/backups` off-server (S3 or R2) before taking real customers |
+| 3 | Backups only on the same server (confirmed by the founder, 13 Nov) | High | Very high | Do this first: copy `storage/app/backups` off-server (S3 or R2) now. 1 to 5 customers' data is already at risk |
 | 4 | Server bill is fixed but the CFO model spreads it per account | High | Low | Get the real monthly server price, add it as a fixed cost, re-run the CFO |
 | 5 | Key person (the founder) unavailable | Medium | High | Runbook above, a second person with server access, the standby DB feature already in the repo |
 | 6 | Payment provider holds or rejects the account | Low to medium | High | Apply early; keep card as a second path |
 | 7 | AI voice or telephony oversold | Medium | High | Not in the price; label as "not ready" until real-time voice exists (the repo says it is a sandbox simulation) |
 | 8 | Support falls behind during the first 50 | High | Medium | Same-day reply rule; cap trials per week |
-| 9 | Personal-data rules breached | Unknown | High | Lawyer review before launch |
+| 9 | Personal-data rules breached (servers are in Uzbekistan, which helps, but no lawyer has reviewed it) | Unknown | High | Lawyer review before launch |
 | 10 | Slow growth: fewer than 14 paying accounts | High (per CFO, break-even) | High | Watch the three weekly numbers; stop spend if no trials after 10 demos |
 
 ### Open questions for the founder

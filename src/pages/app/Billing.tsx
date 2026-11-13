@@ -7,6 +7,7 @@ import { api } from '../../lib/api'
 import { num, shortDate } from '../../lib/format'
 import { useCan } from '../../lib/auth'
 import PaymentCards from './PaymentCards'
+import CustomPlanBuilder from '../../components/billing/CustomPlanBuilder'
 
 interface Plan { id: string; code: string; name: string; tagline: string; price_monthly: number; price_yearly: number; currency: string; seats: number; api_requests: number; ai_minutes: number; storage_gb: number; modules: string[]; features: { label: string; included: boolean }[] }
 interface Invoice { id: string; number: string; total: number; currency: string; status: string; issued_at: string; paid_at: string | null; line_items: { label?: string; amount?: number; kind?: string }[]; click_amount_uzs?: number; exchange_rate?: number; exchange_rate_date?: string }
@@ -32,6 +33,10 @@ export default function Billing() {
   const providerName = methods.find((m) => m.code === provider)?.name ?? 'to‘lov tizimi'
 
   const changePlan = useApiMutation(({ plan, interval }: { plan: string; interval: string }) => api.post<{ payment_url?: string; note?: string }>('/api/v1/billing/plan', { plan, interval, provider }), { invalidate: [['billing'], ['auth']], success: provider === 'card' ? 'Tarif o‘zgartirildi' : 'Tarif invoice yaratildi' })
+  const buyCustom = useApiMutation(async ({ sel, interval }: { sel: unknown; interval: 'month' | 'year' }) => {
+    const created = await api.post<{ code: string }>('/api/v1/billing/custom-plan', sel)
+    return api.post<{ payment_url?: string; note?: string }>('/api/v1/billing/plan', { plan: created.code, interval, provider })
+  }, { invalidate: [['billing'], ['auth']], success: provider === 'card' ? 'Custom tarif faollashdi' : 'Custom tarif invoice yaratildi' })
   const pay = useApiMutation((id: string) => api.post<{ payment_url?: string }>(`/api/v1/billing/invoices/${id}/pay`, { provider }), { invalidate: [['billing']], success: 'Invoice tayyorlandi' })
   const sub = billing.data?.subscription
   const usage = billing.data?.usage
@@ -88,6 +93,11 @@ export default function Billing() {
             </SectionCard>
           </div>
         </div>
+
+        {can('billing.write') && <SectionCard title="Custom tarif" subtitle="O‘zingizga mos paketni yig‘ing: narx tanlovingizga qarab hisoblanadi va faqat sizning kompaniyangiz uchun yaratiladi.">
+          <CustomPlanBuilder busy={buyCustom.isPending} onBuy={(sel, interval) => provider && buyCustom.mutate({ sel, interval })} />
+          {!provider && <p className="mt-2 text-[12px] text-muted">Avval to‘lov usulini tanlang.</p>}
+        </SectionCard>}
 
         <SectionCard title="Invoice lar" subtitle="To‘lov summasi UZSda alohida ko‘rsatiladi." padded={false}>
           <div className="overflow-x-auto"><table className="w-full min-w-[680px] text-sm"><thead><tr className="border-b border-line text-left text-xs text-muted"><th className="p-3">Invoice</th><th className="p-3">Summa</th><th className="p-3">To‘lov (UZS)</th><th className="p-3">Status</th><th className="p-3"></th></tr></thead><tbody>{billing.data?.invoices.map((i) => <tr key={i.id} className="border-b border-line/70"><td className="p-3"><b>{i.number}</b><div className="text-xs text-muted">{shortDate(i.issued_at)}</div></td><td className="p-3">{money(i.total, i.currency)}</td><td className="p-3">{i.currency === 'USD' ? `${num(i.click_amount_uzs)} UZS` : money(i.total, 'UZS')}{i.exchange_rate ? <div className="text-[10px] text-muted">CBU: {i.exchange_rate} ({i.exchange_rate_date})</div> : null}</td><td className="p-3"><StatusPill value={i.status} /></td><td className="p-3 text-right">{can('billing.write') && i.status !== 'paid' && <Button size="sm" variant="secondary" disabled={!provider} onClick={() => pay.mutate(i.id)} loading={pay.isPending}>{providerName} orqali to‘lash</Button>}</td></tr>)}</tbody></table></div>

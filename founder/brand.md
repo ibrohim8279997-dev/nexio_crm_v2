@@ -18,6 +18,8 @@ This is an **audit, not a rename.** The product is already called Nexio CRM, "by
 - **Domains.** A DNS lookup (public, no registration check) returned: `nexio.com` is taken (Cloudflare name servers); `nexiolab.uz` has name servers (taken); `nexiolab.com` is parked/for sale (Afternic name servers); `nexio.uz`, `nexiocrm.uz` and `nexiocrm.com` returned no name servers. **No name servers does not prove a domain is free** (a registered domain can have none, and `.uz` lookups can fail). Confirm with a registrar's search before relying on it.
 - **Confusion with competitors:** none of the names in `competitors.md` (Kommo, amoCRM, Bitrix24, shamCRM, 1C) is close. No conflict found there.
 
+Founder answers (13 Nov): the founder owns the domains; the "Nexio" trademark is not registered. Registering it, after the register searches below, is still open.
+
 What you must finish yourself (a trademark lawyer confirms; nothing here is registered or cleared):
 
 | Check | Where | Class |
@@ -60,11 +62,11 @@ What you must finish yourself (a trademark lawyer confirms; nothing here is regi
 | White text on primary blue `#2563eb` | 5.17 | Passes AA |
 | Navy `#092d62` text on white | 13.43 | Passes AAA |
 | Grey `#64748b` text on white | 4.76 | Passes AA (small "BY NEXIO LAB" is borderline in size) |
-| Primary blue `#2563eb` on dark `#0B1220` | 3.62 | Fails for body text, OK for large text and icons only |
+| Primary blue `#2563eb` on dark `#0B1220` (the token alone) | 3.62 | Looks like a fail, but the dark theme already remaps `text-primary` to `#7db4fb` in `src/styles/index.css`, which passes. **Not a real problem; my first audit missed the override** |
 | White text on success green `#10b981` | 2.54 | **Fails.** Do not put white text on this green; use dark text or a darker green |
 | Amber `#f59e0b` with dark `#111827` text | 8.26 | Passes |
 
-Two fixes: (1) in dark theme, use a lighter blue for links and body-size text (the repo already has lighter tokens for other hues); (2) never white text on `#10b981` buttons or badges.
+One fix, done in code on 13 Nov: the success green used for text was `#10b981` (2.54 on white, 2.41 on the light badge background). In the light theme `--color-success` is now `#047857` (5.48 on white, 5.21 on the badge); the dark theme keeps `#10b981`. Where it appears in the app: `text-success` badges and deltas, and `bg-success` dots and bars, which now look darker in the light theme. Never put white text on a `#10b981` button.
 
 **Type:** the logo uses Arial, a system font, which any platform can render but looks generic. The rest of the app uses `var(--font-sans)`; check what it resolves to. A free upgrade path: **Inter** (SIL Open Font License, from Google Fonts, supports Cyrillic and Latin, including the Uzbek Latin letters). Verify Uzbek letters (oʻ, gʻ) render correctly before adopting any font.
 

@@ -72,7 +72,7 @@ Each answers one panel objection. None is a testimonial; none quotes a simulated
 6. **"What if it fails?"** "If your team is not using it after 30 days of paying, we refund that month." (Check that the refund rule is real before publishing.)
 7. **"Will the company still exist?"** "Month to month, cancel any time. Ask us how to export your clients." (Check export exists.)
 8. **"Do I pay in dollars?"** "Pay in so'm with Click or Payme." / «Платите в сумах через Click или Payme.»
-9. **"Is the AI voice real?"** "No AI voice in the price. It is not ready, so we do not sell it." (Turns a weakness into honesty.)
+9. **"Is the AI voice real?"** "AI voice is coming soon. It is not in the price today." (Turns a weakness into honesty. The founder expects real-time voice within 3 months, so say "coming soon", not a date, unless you can keep the date. Do not sell it as working.)
 10. **"Support is slow."** "In the first 50 companies, the founder answers in Telegram." (Only if the founder will.)
 
 ## 5. Budget and the most you can pay for a customer
