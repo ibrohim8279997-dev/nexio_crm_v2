@@ -301,6 +301,8 @@ Route::prefix('v1')->group(function () use ($h) {
     Route::post('/ai/crm-access', $h(AiCrmAccessController::class, 'connect'))->middleware('throttle:20,1');
     Route::post('/ai/crm-access/generate', $h(AiCrmAccessController::class, 'generate'))->middleware('throttle:10,1');
     Route::delete('/ai/crm-access', $h(AiCrmAccessController::class, 'disconnect'));
+    Route::patch('/ai/crm-access/scopes', $h(AiCrmAccessController::class, 'updateScopes'))->middleware('throttle:20,1');
+    Route::get('/ai/crm-access/check', $h(AiCrmAccessController::class, 'check'))->middleware('throttle:10,1');
 
     // ── client portal ───────────────────────────────────────────────────────
     Route::get('/portal', $h(PortalController::class, 'overview'));

@@ -71,6 +71,40 @@ class GroqAi
         ];
     }
 
+    /**
+     * Chat completion that may answer with tool calls (OpenAI-compatible function calling).
+     * @return array{content: string, tool_calls: list<array{name: string, arguments: array}>, model: string, provider: string, usage: array}
+     */
+    public function chatWithTools(array $messages, array $tools, ?string $model = null): array
+    {
+        [$key, $storedModel] = $this->credentials();
+        if ($key === '') throw new ApiException(503, 'Groq API key sozlanmagan', 'ai_not_configured');
+        $response = Http::withToken($key)->acceptJson()
+            ->withOptions(config('ai.ca_bundle') ? ['verify' => config('ai.ca_bundle')] : [])
+            ->timeout((int) config('ai.timeout', 30))
+            ->post(config('ai.base_url') . '/chat/completions', [
+                'model' => $model ?: ($storedModel ?: config('ai.model')), 'messages' => $messages,
+                'tools' => $tools, 'tool_choice' => 'auto', 'temperature' => 0.2, 'max_tokens' => (int) config('ai.max_tokens', 2048),
+            ]);
+        if ($response->failed()) throw new ApiException(502, 'Groq AI provider javob bermadi', 'ai_provider_error', ['status' => $response->status()]);
+
+        $calls = [];
+        foreach ((array) $response->json('choices.0.message.tool_calls', []) as $c) {
+            $args = json_decode((string) ($c['function']['arguments'] ?? '{}'), true);
+            if (is_string($c['function']['name'] ?? null)) $calls[] = ['name' => $c['function']['name'], 'arguments' => is_array($args) ? $args : []];
+        }
+        $content = (string) $response->json('choices.0.message.content', '');
+        if ($content === '' && !$calls) throw new ApiException(502, 'Groq javobida matn topilmadi', 'ai_invalid_response');
+        return [
+            'content' => $content, 'tool_calls' => $calls, 'model' => $response->json('model', config('ai.model')), 'provider' => 'groq',
+            'usage' => [
+                'prompt_tokens' => (int) $response->json('usage.prompt_tokens', 0),
+                'completion_tokens' => (int) $response->json('usage.completion_tokens', 0),
+                'total_tokens' => (int) $response->json('usage.total_tokens', 0),
+            ],
+        ];
+    }
+
     /** Question about up to 3 images (data URLs). The images are data to read, never instructions. */
     public function vision(string $question, array $dataUrls): array
     {
