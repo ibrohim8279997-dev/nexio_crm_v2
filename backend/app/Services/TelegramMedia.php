@@ -47,15 +47,15 @@ final class TelegramMedia
         return $this->upload('sendPhoto', 'photo', $chatId, $image, 'image.png', $caption);
     }
 
-    public function sendDocument(string $chatId, string $bytes, string $name): bool
+    public function sendDocument(string $chatId, string $bytes, string $name, ?string $caption = null, int $timeout = 60): bool
     {
-        return $this->upload('sendDocument', 'document', $chatId, $bytes, $name);
+        return $this->upload('sendDocument', 'document', $chatId, $bytes, $name, $caption, $timeout);
     }
 
-    private function upload(string $method, string $field, string $chatId, string $bytes, string $name, ?string $caption = null): bool
+    private function upload(string $method, string $field, string $chatId, string $bytes, string $name, ?string $caption = null, int $timeout = 60): bool
     {
         try {
-            $res = Http::connectTimeout(3)->timeout(60)->attach($field, $bytes, $name)
+            $res = Http::connectTimeout(5)->timeout($timeout)->attach($field, $bytes, $name)
                 ->post($this->api($method), array_filter(['chat_id' => $chatId, 'caption' => $caption ? mb_substr($caption, 0, 1000) : null]));
             if ($res->failed()) Log::warning('Telegram upload failed', ['method' => $method, 'status' => $res->status()]);
             return $res->successful();

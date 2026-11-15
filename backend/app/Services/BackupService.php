@@ -27,13 +27,13 @@ class BackupService
     }
 
     /** @return array{file:string,bytes:int,driver:string} */
-    public static function run(int $keep = 90): array
+    public static function run(int $keep = 90, string $prefix = 'nexio'): array
     {
         $conn = (string) config('database.default');
         $cfg = (array) config("database.connections.{$conn}");
         $driver = (string) ($cfg['driver'] ?? $conn);
         $stamp = gmdate('Ymd-His');
-        $base = self::dir() . "/nexio-{$stamp}";
+        $base = self::dir() . "/{$prefix}-{$stamp}";
 
         if ($driver === 'sqlite') {
             $src = (string) ($cfg['database'] ?? '');
@@ -64,12 +64,12 @@ class BackupService
         }
         @chmod($out, 0640);
 
-        $files = glob(self::dir() . '/nexio-*.gz') ?: [];
+        $files = glob(self::dir() . "/{$prefix}-*.gz") ?: [];
         rsort($files);
         foreach (array_slice($files, max(1, $keep)) as $old) @unlink($old);
 
         $meta = ['time' => time(), 'file' => basename($out), 'bytes' => (int) filesize($out), 'driver' => $driver];
-        file_put_contents(self::dir() . '/last.json', json_encode($meta));
+        if ($prefix === 'nexio') file_put_contents(self::dir() . '/last.json', json_encode($meta));   // the health check tracks the daily backup only
         return $meta;
     }
 }

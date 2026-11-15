@@ -25,3 +25,7 @@ if (config('replica.enabled')) {
 }
 // Page-view rows are kept 24 months (stated in the Privacy Policy).
 Schedule::call(fn () => \Illuminate\Support\Facades\DB::table('site_visits')->where('visit_day', '<', gmdate('Y-m-d', strtotime('-24 months')))->delete())->dailyAt('04:30');
+// Encrypted whole-database copy to the platform operators in Telegram (interval: BACKUP_TELEGRAM_EVERY_MINUTES, default 90).
+if (config('backup.telegram.enabled')) {
+    Schedule::command('nexio:backup:telegram --if-due')->everyFifteenMinutes()->withoutOverlapping(120);
+}

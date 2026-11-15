@@ -88,6 +88,22 @@ A second, independent database on the same server (own name/file, ideally its ow
 - Data written after the last copy (≤ 5 min) is lost on failover. For a fully consistent history keep the nightly `nexio:backup` dumps as well.
 - **Same server = same blast radius.** The standby protects against a database crash, a bad migration or a corrupted/emptied database. It does **not** protect against loss, theft or full compromise of the server itself (an attacker with the server has both databases, and the standby has the same data). For that, point `REPLICA_DB_HOST` at a different host, or copy `storage/app/backups` off the server.
 
+### Encrypted database backups in Telegram (survive the loss of the server)
+Every 90 minutes (`BACKUP_TELEGRAM_EVERY_MINUTES`, minimum 30) the scheduler sends the **whole database** to every platform superadmin who linked Telegram, plus any chat in `BACKUP_TELEGRAM_CHAT_IDS`
+(use a private channel where the bot is admin: it works even when the database is down). Telegram keeps the files, so the history is in the chat.
+
+`.env`: `BACKUP_TELEGRAM_ENABLED=true`, `BACKUP_ENCRYPTION_KEY=<long random passphrase>`. **Store that passphrase outside the server** (password manager, paper): without it the backups cannot be opened,
+and nothing is ever sent unencrypted or with a key shorter than 16 characters. The dump is gzip + AES-256-CBC (openssl, PBKDF2 200k) split into parts of at most 45 MB (the bot upload limit is 50 MB);
+backups above `BACKUP_TELEGRAM_MAX_MB` (400) are not sent and the operators are alerted: use off-server storage for big databases. Failures are announced to the same chats.
+The file contains all customers' data and password hashes: only add trusted people to those chats.
+
+**Restore on a new server**
+1. Install the app (`git clone`, `composer install`, `.env` with the same `APP_KEY` and `BACKUP_ENCRYPTION_KEY`, empty database, `php artisan migrate`).
+2. Download all `.partNNN` files (or the single `.enc`) of the newest backup from the chat into one folder.
+3. `php artisan nexio:backup:decrypt nexio-*.enc.part* --out=dump.gz` or without the app:
+   `cat $(ls *.part* | sort) > b.enc && openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -md sha256 -in b.enc -out dump.gz -pass env:KEY` (`KEY` = the passphrase), then check with `gunzip -t dump.gz`.
+4. `gunzip dump.gz`, then import: sqlite: replace `database.sqlite` with the file; mysql: `mysql DB < dump`; pgsql: `psql DB < dump`. `php artisan nexio:db:status` should then show the database alive.
+
 ### Telegram bot
 
 **Voice, images and AI limits in the bot.** A linked user can send a voice note (Groq Whisper: `GROQ_STT_MODEL`, default `whisper-large-v3-turbo`),
