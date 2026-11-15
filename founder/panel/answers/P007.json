@@ -3,11 +3,11 @@
   "buys": false,
   "purchases_first_month": 0,
   "reason_code": "habit",
-  "reason": "I run everything in Excel and Telegram and it works well enough, and I have never paid for a CRM. I might look at the free trial, but paying dollars every month for something nobody I know uses is a hard sell.",
-  "objection": "Moving my data will take weeks and my staff will not change how they work. Also no references, so I do not know if it is any good.",
-  "would_change_my_mind": "Another shop owner I know and trust showing me it working, plus the free migration done in a couple of days and a price of 15 dollars or less in so'm.",
-  "price_too_cheap": 5,
-  "price_cheap": 10,
-  "price_expensive": 25,
-  "price_too_expensive": 45
+  "reason": "My Excel works and I am proud of it. I do not want to move all my clients and debts to a new system and retrain my people for something I do not need yet.",
+  "objection": "Nobody I know uses it, there are no references, and if the company is gone in a year I lose my client list and my staff learned a tool for nothing. $29 a month is also a lot when I earn $9,000 a year.",
+  "would_change_my_mind": "A friend who runs a shop like mine uses it and shows me it, plus a free trial where they load my Excel for me and I pay nothing for a few months.",
+  "price_too_cheap": 3,
+  "price_cheap": 8,
+  "price_expensive": 15,
+  "price_too_expensive": 25
 }

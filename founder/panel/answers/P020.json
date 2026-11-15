@@ -2,12 +2,12 @@
   "id": "P020",
   "buys": false,
   "purchases_first_month": 0,
-  "reason_code": "trust",
-  "reason": "I only buy what a friend or partner already uses, and you say yourselves you have no customers to show me. I would not put my clients' data into something I cannot be sure will exist next year.",
-  "objection": "Will it still exist and be supported in a year? No references, so who can I ask? If it closes, my client list is stuck there.",
-  "would_change_my_mind": "A company I know personally, in Uzbekistan, that has used it for months and tells me it works, plus a way to export all my data at any time.",
-  "price_too_cheap": 10,
-  "price_cheap": 20,
-  "price_expensive": 40,
-  "price_too_expensive": 70
+  "reason_code": "habit",
+  "reason": "I already pay for Bitrix24 and I have it set up, even if it is slow. Switching to a company with 1 to 5 customers and no references is a risk for my shop, and $29 a month is real money on what I earn.",
+  "objection": "They are brand new, nobody I know uses it, and the AI calls are not even built. Why would I move my clients to something unproven when my current CRM, although annoying, works?",
+  "would_change_my_mind": "A shop owner I know in Tashkent showing me it running on his phone, plus a free first 2 months or a price near $10 a month.",
+  "price_too_cheap": 5,
+  "price_cheap": 10,
+  "price_expensive": 20,
+  "price_too_expensive": 30
 }

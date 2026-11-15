@@ -2,43 +2,42 @@
 
 ## The vote
 
-**3 FUND IF, 0 fund, 0 pass.** Average score **4.0 / 10** (Offers 4, Monopoly 4, Product 4).
+**2 fund if, 1 pass, 0 fund.** Average score **3.7 / 10** (Offers 4, Monopoly 3, Product 4).
 
-Nobody passed, but nobody funded outright either. Every member says the idea is workable only if conditions are met, and every member points at the same missing facts.
+Nobody funded outright. The Monopoly lens passed: it sees no durable edge yet and no proven way to reach buyers. The Offers and Product lenses would back it only if conditions are met. A pass is a result, not a failure: it says the business as described today does not hold, not that it cannot be made to.
 
 ## Risks raised by more than one member (most dangerous first)
 
-1. **No proof yet.** No customer count, revenue, churn or case study is known. (Offers, Monopoly, Product)
-2. **No narrow niche.** The target segment is unnamed; the product is a broad suite competing with amoCRM-style tools. (Offers, Monopoly, Product)
-3. **Selling what is not built.** AI voice calls are sandbox simulations, but plans advertise AI minutes and voice calls. (Offers, Monopoly, Product)
-4. **No repeatable way to find buyers.** Acquisition channel and CAC are unknown; self-serve signup is not a channel. (Offers, Monopoly)
-5. **Price and currency unclear.** 89 / 199 / 349 per month, currency unconfirmed, may be high for small local firms. (Offers, Monopoly)
-6. **Switching effort.** Moving data and retraining a team from amoCRM is a high-effort ask with no defined migration path or first-value moment. (Offers, Product)
+1. **No proof, no references.** 1 to 5 paying customers, none willing to be a reference, no revenue, churn or case study. (Offers, Monopoly, Product)
+2. **Selling what is not built.** AI calls and real-time voice are sandbox simulations, yet they sit in the upper plans and the pitch. (Offers, Monopoly, Product)
+3. **No single thing, no named niche.** A broad suite across two segments (retail, services) against amoCRM and Bitrix24; nothing shown to be 10x better. (Offers, Monopoly, Product)
+4. **Trust gaps the buyer cannot see.** Backups only on the production server, personal-data rules never reviewed by a lawyer, unregistered trademark. (Offers, Monopoly, Product)
+5. **Price untested.** $89 Starter is unproven against what these buyers pay now; the custom per-unit plan invites price comparison. (Offers, Product)
+6. **No known route to the first 100 customers.** Channel and acquisition cost are unknown. (Offers, Monopoly)
 
 ## Where the members disagree or stress different things
 
-- **Offers lens:** the offer is a feature list, not a result. Fix it with one measurable outcome, a done-for-you amoCRM migration and an affordable guarantee.
-- **Monopoly lens:** nothing is shown to be 10x better, and a feature list can be copied in months. Wants a small market owned first and breadth cut (inventory, delivery, helpdesk).
-- **Product lens:** the first five minutes are undefined. Wants a guided first run with fast import and one named "it works" moment.
-- Offers treats breadth as stackable assets for bonuses; Monopoly and Product treat it as a focus problem.
+- **Offers lens:** the problem is the offer. It is a feature list, not a result. Wants one outcome, a guarantee the CFO can afford, and treats the local features as the buyer's reduced effort.
+- **Monopoly lens:** the problem is the market. Localization is copyable in months; wants one small market owned first and a capability that is clearly better. Is the only member to pass. It sees breadth as a switching-cost asset once data is inside, but not as a moat today.
+- **Product lens:** the problem is focus and the first five minutes. Wants things cut, a one-sentence pitch, and a documented first run with data import.
+- Offers and Product agree on hiding unfinished voice; they differ on why (broken promise vs. broken trust at the first seam).
 
 ## Conditions (checklist for the rest of the pack)
 
-- [ ] Name one niche and one core job (consumer, competitors)
-- [ ] State one measurable outcome with a time frame (offer)
-- [ ] Show paying customers, revenue, churn, trial-to-paid (founder input, still unknown)
-- [ ] Show a repeatable channel to the first 100 customers with a measured CAC (marketing, cfo)
-- [ ] Confirm price currency and willingness to pay with real pre-sales, not trials alone (pricing, consumer)
-- [ ] Package done-for-you amoCRM migration with a guarantee the CFO can afford (offer, cfo)
-- [ ] Do not sell simulated AI voice or telephony as working until it works (offer, marketing)
-- [ ] Ship a guided first run with amoCRM/Excel import and a first-value moment (ops, launch)
-- [ ] Cut or hide modules that do not serve the chosen wedge (offer, ops)
-- [ ] Disclose team size, runway and budget (cfo)
+- [ ] Name one segment (retail or services) and one core job; count the buyers in it (competitors, consumer)
+- [ ] Write one outcome-led offer with a guarantee the CFO confirms is affordable (offer, cfo)
+- [ ] Hide or gate unbuilt voice and AI-call features until they work (offer, marketing)
+- [ ] Get at least 3 paying customers to give a measurable result or a reference, 2 to confirm what they use (launch)
+- [ ] Test the $89 Starter price on a buyer panel; test what buyers pay for amoCRM or Bitrix24 today (consumer, pricing, competitors)
+- [ ] Show a repeatable channel to the first 100 customers with a known acquisition cost (marketing, cfo)
+- [ ] Document the first five minutes, with Excel and amoCRM/Bitrix24 import (ops, launch)
+- [ ] Add off-server backups; get the personal-data rules reviewed by a lawyer; consider registering the trademark (ops)
+- [ ] Show one capability clearly better than the incumbents (competitors, offer)
 
 ## The strongest version of this business
 
-Not "a full CRM for everyone", which is what the repo describes. The strongest version the board can see is a **local-first, Telegram and Click/Payme-native CRM for one named type of Uzbek company that is leaving amoCRM**, sold with a done-for-you migration and a guarantee, using only features that work today. AI voice stays off the price list until it ships. Inventory, delivery and helpdesk stay as later plugins, not part of the pitch. This differs from the pitch in the repo, which is a broad suite with AI voice as a headline.
+Not "a full CRM for everyone", which is what the repo describes. The strongest version the board can see is a **local-first CRM for one named type of Uzbek small company** (retail or services) that is leaving Excel, Telegram chats or amoCRM and Bitrix24: Uzbek and Russian UI, Click and Payme in so'm, Telegram built in, sold on one measurable outcome, with a done-for-you data import and a guarantee, using only features that work today. Voice and AI calls stay off the price list until they ship; finance, helpdesk and the plugins wait until the first segment is won. This differs from the pitch in the repo, which is a four-plan broad suite with AI sales agents as the headline.
 
 ## Open questions the board could not answer
 
-Customer count, revenue, churn, CAC, team size, runway, price currency, exact segment. The founder has to supply these. The consumer panel, pricing and CFO skills will test the rest.
+Market size, what buyers pay for amoCRM or Bitrix24 today, acquisition cost, churn, revenue, runway, the income the founder needs. Skills that answer them: `/founder-competitors`, `/founder-consumer`, `/founder-cfo`.

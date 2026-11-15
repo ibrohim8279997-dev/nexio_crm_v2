@@ -4,6 +4,7 @@ import { ArrowRight, BarChart3, Building2, Check, Database, FileText, Gauge, Hea
 import { Badge, Button, Card, Grid, PageHeader, SectionCard } from '../../components/ui/core'
 import { useApi } from '../../lib/hooks'
 import { PublicHeader, PublicFooter } from './Landing'
+import CustomPlanBuilder from '../../components/billing/CustomPlanBuilder'
 
 interface Plan {
   id: string; code: string; name: string; tagline: string; price_monthly: number; price_yearly: number; currency: string
@@ -135,6 +136,9 @@ export default function Marketing({ page }: { page: 'pricing' | 'features' | 'se
         {page === 'pricing' && (
           <>
             <PlanCards />
+            <SectionCard className="mt-6" title="Custom tarif" subtitle="3 ta tarif mos kelmasa, o‘zingizga kerakli paketni yig‘ing. Narx avtomatik hisoblanadi.">
+              <CustomPlanBuilder />
+            </SectionCard>
             <Card className="mt-6 p-5">
               <h3 className="text-[15px] font-semibold text-ink">Как работает биллинг</h3>
               <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

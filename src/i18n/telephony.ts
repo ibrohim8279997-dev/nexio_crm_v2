@@ -1,0 +1,43 @@
+import type { Dict } from '../lib/i18n'
+
+export const telephonyDict: Dict = {
+  uz: {
+    title: 'Telefoniyani ulash', subtitle: 'Telefoniyani har bir kompaniya o‘zi sozlaydi: provayderdan raqam yoki SIP-trank sotib olasiz va ma’lumotlarini shu yerga kiritasiz. Nexio telefoniya sotmaydi.',
+    status: 'Holat', st_connected: 'Ulangan', st_sandbox: 'Sinov rejimi', st_not_configured: 'Sozlanmagan', st_error: 'Xato', st_revoked: 'Bekor qilingan',
+    type: 'Ulanish turi', t_http: 'HTTP API (REST)', t_sip: 'SIP / ATS (PBX)',
+    t_http_hint: 'Provayderingiz HTTPS API orqali qo‘ng‘iroq qilishga ruxsat bersa — shu variant to‘liq ishlaydi.', t_sip_hint: 'SIP ma’lumotlari xavfsiz saqlanadi. Eslatma: bevosita SIP orqali qo‘ng‘iroq qilish uchun provayder HTTP-shlyuzi yoki adapter plagin kerak — shu tayyor bo‘lguncha qo‘ng‘iroqlar yuborilmaydi.',
+    connName: 'Ulanish nomi', connNameDefault: 'Asosiy ulanish',
+    apiUrl: 'API manzili (HTTPS)', apiUrlPh: 'https://api.provayder.uz/v1', apiToken: 'API kalit / token', tokenSaved: '•••• saqlangan — o‘zgartirish uchun yangisini kiriting', tokenHint: 'Kalit serverda shifrlanadi va qaytarib ko‘rsatilmaydi.',
+    advanced: 'Qo‘shimcha (ixtiyoriy)', numbersPath: 'Raqamlar yo‘li', callPath: 'Qo‘ng‘iroq yo‘li',
+    sipServer: 'SIP server', sipPort: 'Port', sipTransport: 'Transport', sipUser: 'SIP login', sipPass: 'SIP parol', callerId: 'Chiquvchi raqam (Caller ID)',
+    save: 'Saqlash va tekshirish', saved: 'Telefoniya sozlamalari saqlandi', savedConnected: 'Telefoniya ulandi', savedNotConnected: 'Saqlandi, lekin provayder hali tasdiqlamadi',
+    needUrl: 'HTTPS API manzilini kiriting', needToken: 'API kalitni kiriting', needSip: 'SIP server va loginni kiriting', noRights: 'Sozlash uchun plaginlarni boshqarish huquqi kerak.',
+    howTitle: 'Nima qilish kerak', how1: 'Provayderdan (yoki o‘z ATSingizdan) raqam, API kalit yoki SIP ma’lumotlarini oling.', how2: 'Ularni shu yerga kiriting — boshqa kompaniyalar ularni ko‘rmaydi va ishlata olmaydi.', how3: 'Xodimlarga raqamlarni pastdagi «Xodimlar raqamlari» bo‘limida biriktiring.',
+  },
+  ru: {
+    title: 'Подключение телефонии', subtitle: 'Телефонию каждая компания настраивает сама: вы покупаете у провайдера номер или SIP-транк и вносите его данные здесь. Nexio телефонию не продаёт.',
+    status: 'Состояние', st_connected: 'Подключено', st_sandbox: 'Тестовый режим', st_not_configured: 'Не настроено', st_error: 'Ошибка', st_revoked: 'Отозвано',
+    type: 'Тип подключения', t_http: 'HTTP API (REST)', t_sip: 'SIP / АТС (PBX)',
+    t_http_hint: 'Если провайдер позволяет совершать звонки через HTTPS API — этот вариант работает полностью.', t_sip_hint: 'SIP-данные хранятся безопасно. Важно: для звонков напрямую по SIP нужен HTTP-шлюз провайдера или плагин-адаптер — пока их нет, звонки не отправляются.',
+    connName: 'Название подключения', connNameDefault: 'Основное подключение',
+    apiUrl: 'Адрес API (HTTPS)', apiUrlPh: 'https://api.provider.uz/v1', apiToken: 'API-ключ / токен', tokenSaved: '•••• сохранён — введите новый, чтобы заменить', tokenHint: 'Ключ шифруется на сервере и больше не показывается.',
+    advanced: 'Дополнительно (необязательно)', numbersPath: 'Путь списка номеров', callPath: 'Путь создания звонка',
+    sipServer: 'SIP-сервер', sipPort: 'Порт', sipTransport: 'Транспорт', sipUser: 'SIP-логин', sipPass: 'SIP-пароль', callerId: 'Исходящий номер (Caller ID)',
+    save: 'Сохранить и проверить', saved: 'Настройки телефонии сохранены', savedConnected: 'Телефония подключена', savedNotConnected: 'Сохранено, но провайдер пока не подтвердил подключение',
+    needUrl: 'Укажите HTTPS-адрес API', needToken: 'Укажите API-ключ', needSip: 'Укажите SIP-сервер и логин', noRights: 'Для настройки нужно право управления плагинами.',
+    howTitle: 'Что нужно сделать', how1: 'Получите у провайдера (или на своей АТС) номер, API-ключ или SIP-данные.', how2: 'Внесите их здесь — другие компании их не видят и не могут использовать.', how3: 'Назначьте номера сотрудникам в разделе «Номера сотрудников» ниже.',
+  },
+  en: {
+    title: 'Connect telephony', subtitle: 'Each company sets up its own telephony: you buy a number or SIP trunk from a provider and enter its details here. Nexio does not sell telephony.',
+    status: 'Status', st_connected: 'Connected', st_sandbox: 'Test mode', st_not_configured: 'Not configured', st_error: 'Error', st_revoked: 'Revoked',
+    type: 'Connection type', t_http: 'HTTP API (REST)', t_sip: 'SIP / PBX',
+    t_http_hint: 'If your provider lets you place calls through an HTTPS API, this option works end to end.', t_sip_hint: 'SIP details are stored securely. Note: placing calls directly over SIP needs a provider HTTP gateway or an adapter plugin — until one exists, calls are not sent.',
+    connName: 'Connection name', connNameDefault: 'Main connection',
+    apiUrl: 'API address (HTTPS)', apiUrlPh: 'https://api.provider.com/v1', apiToken: 'API key / token', tokenSaved: '•••• saved — enter a new one to replace it', tokenHint: 'The key is encrypted on the server and never shown again.',
+    advanced: 'Advanced (optional)', numbersPath: 'Numbers path', callPath: 'Place-call path',
+    sipServer: 'SIP server', sipPort: 'Port', sipTransport: 'Transport', sipUser: 'SIP username', sipPass: 'SIP password', callerId: 'Outgoing number (Caller ID)',
+    save: 'Save and verify', saved: 'Telephony settings saved', savedConnected: 'Telephony connected', savedNotConnected: 'Saved, but the provider has not confirmed the connection yet',
+    needUrl: 'Enter the HTTPS API address', needToken: 'Enter the API key', needSip: 'Enter the SIP server and username', noRights: 'You need the plugin-management permission to set this up.',
+    howTitle: 'What to do', how1: 'Get a number, API key or SIP details from your provider (or your own PBX).', how2: 'Enter them here — other companies cannot see or use them.', how3: 'Assign numbers to staff in the “Staff numbers” section below.',
+  },
+}

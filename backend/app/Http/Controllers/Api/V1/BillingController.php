@@ -8,6 +8,7 @@ use App\Support\SqlDialect;
 use Illuminate\Support\Facades\DB;
 use App\Services\CbuExchangeRateService;
 use App\Services\SubscriptionEntitlementService;
+use App\Services\CustomPlanService;
 use App\Services\CardBillingService;
 use App\Services\ClickCardService;
 use App\Services\InvoiceSettlement;
@@ -64,6 +65,32 @@ class BillingController
         ], $plans)]);
     }
 
+    /** Public: unit prices, bounds, modules and plugins the custom-plan builder offers. */
+    public function customOptions(Ctx $ctx)
+    {
+        return H::json((new CustomPlanService())->options());
+    }
+
+    /** Public: server-side price for a configuration (nothing is stored). */
+    public function customQuote(Ctx $ctx)
+    {
+        $q = (new CustomPlanService())->quote(H::body($ctx));
+        return H::json(['config' => $q['config'], 'monthly' => $q['monthly'], 'yearly' => $q['yearly'], 'lines' => $q['lines'], 'currency' => $q['currency']]);
+    }
+
+    /** Stores the tenant's private custom plan; the client then buys it through POST /billing/plan with the returned code. */
+    public function customCreate(Ctx $ctx)
+    {
+        $ctx->auth();
+        H::requirePermission($ctx, 'billing.write');
+        H::requireTenant($ctx);
+        $svc = new CustomPlanService();
+        $q = $svc->quote(H::body($ctx));
+        $code = $svc->createForTenant($ctx->tenantId, $q);
+        H::audit($ctx, 'billing.custom_plan_created', 'plan', $code, ['monthly' => $q['monthly'], 'config' => $q['config']]);
+        return H::json(['code' => $code, 'monthly' => $q['monthly'], 'yearly' => $q['yearly'], 'currency' => $q['currency'], 'lines' => $q['lines']], 201);
+    }
+
     public function subscription(Ctx $ctx)
     {
         $ctx->auth();
@@ -71,7 +98,7 @@ class BillingController
         $t = $ctx->tenantId;
         $sub = DB::selectOne(
             'SELECT s.*, p.name AS plan_name, p.code AS plan_code, p.seats AS plan_seats, p.api_requests, p.ai_minutes,
-                    p.storage_gb, p.modules, p.tagline
+                    p.storage_gb, p.max_contacts, p.modules, p.tagline
                FROM subscriptions s JOIN plans p ON p.id = s.plan_id
               WHERE s.tenant_id = ? ORDER BY s.created_at DESC LIMIT 1',
             [$t]
@@ -108,6 +135,7 @@ class BillingController
                 'portal_users' => ['used' => \App\Support\Seats::portal($t)],   // no limit
                 'api' => $latestUsage('api_requests') ?? ['quantity' => 0, 'limit_value' => $sub->api_requests ?? 0],
                 'ai_minutes' => $latestUsage('ai_minutes') ?? ['quantity' => 0, 'limit_value' => $sub->ai_minutes ?? 0],
+                'contacts' => ['used' => (int) DB::table('contacts')->where('tenant_id', $t)->count(), 'limit' => $sub->max_contacts ?? null],
                 'storage' => $latestUsage('storage_gb') ?? ['quantity' => 0, 'limit_value' => $sub->storage_gb ?? 0],
             ],
             'totals' => ['unpaid' => $unpaid->v ?? 0, 'unpaidInvoices' => (int) ($unpaid->c ?? 0), 'paidYtd' => $paidYtd->v ?? 0],
@@ -124,9 +152,13 @@ class BillingController
         H::requirePermission($ctx, 'billing.write');
         $t = $ctx->tenantId;
         $b = H::body($ctx);
-        $code = H::oneOf($b['plan'] ?? null, 'plan', ['starter', 'business', 'enterprise']);
+        $code = (string) ($b['plan'] ?? '');
+        if (!in_array($code, ['starter', 'business', 'enterprise'], true) && !str_starts_with($code, CustomPlanService::CODE_PREFIX)) {
+            throw new ApiException(400, 'Поле «plan» имеет недопустимое значение', 'bad_request');
+        }
         $plan = DB::selectOne('SELECT * FROM plans WHERE code = ?', [$code]);
-        if (!$plan) throw new ApiException(404, 'Тариф не найден', 'not_found');
+        // A custom plan is private: only the tenant that configured it may buy it.
+        if (!$plan || ($plan->owner_tenant_id !== null && $plan->owner_tenant_id !== $t)) throw new ApiException(404, 'Тариф не найден', 'not_found');
         $current = DB::selectOne(
             'SELECT s.*, p.price_monthly AS current_price, p.code AS current_code
                FROM subscriptions s JOIN plans p ON p.id = s.plan_id WHERE s.tenant_id = ? ORDER BY s.created_at DESC LIMIT 1',

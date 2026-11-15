@@ -1,6 +1,6 @@
-# Buyer panel: Nexio CRM (cloud CRM for small Uzbek companies)
+# Buyer panel: Nexio CRM (a cloud CRM for small Uzbek companies)
 
-**0 buy · 20 pass** (0% buy) out of 20 simulated buyers. Seed 672231, so the same cards can be dealt again.
+**0 buy · 20 pass** (0% buy) out of 20 simulated buyers. Seed 876453, so the same cards can be dealt again.
 
 These are simulated buyers, not customers. Use this to find objections and weak spots, then confirm the big ones with real people before you spend.
 
@@ -8,37 +8,36 @@ These are simulated buyers, not customers. Use this to find objections and weak 
 
 | group | buyers | buy rate |
 | --- | ---: | ---: |
-| Owner of a small shop or service business (3 to 6 staff) | 8 | 0% |
-| Head of sales at a larger firm (15 to 50 staff) | 4 | 0%  (thin) |
-| Owner or sales head of a growing company (7 to 15 staff) | 8 | 0% |
+| Sales manager at a growing company | 5 | 0%  (thin) |
+| Small shop or retail owner | 8 | 0% |
+| Service business owner | 7 | 0%  (thin) |
 
 ## By buying behaviour
 
 | group | buyers | buy rate |
 | --- | ---: | ---: |
-| Wants it set up for them | 2 | 0%  (thin) |
-| Spreadsheet and Telegram user | 5 | 0%  (thin) |
+| Excel keeper | 4 | 0%  (thin) |
+| Wants it done for them | 2 | 0%  (thin) |
 | Price comparer | 3 | 0%  (thin) |
-| Unhappy amoCRM user | 3 | 0%  (thin) |
-| Needs local payments | 2 | 0%  (thin) |
-| Bitrix24 user | 3 | 0%  (thin) |
-| Trusts a recommendation | 2 | 0%  (thin) |
+| Runs it from Telegram | 4 | 0%  (thin) |
+| Asks other owners | 3 | 0%  (thin) |
+| Bitrix24 or amoCRM user | 4 | 0%  (thin) |
 
 ## By income
 
 | group | buyers | buy rate |
 | --- | ---: | ---: |
-| under $10,000 | 6 | 0%  (thin) |
-| $24,000 and up | 7 | 0%  (thin) |
-| $10,000 to $24,000 | 7 | 0%  (thin) |
+| under $8,000 | 6 | 0%  (thin) |
+| $8,000 to $10,000 | 4 | 0%  (thin) |
+| $10,000 and up | 10 | 0% |
 
 ## Why they pass
 
 | reason | buyers | in their words |
 | --- | ---: | --- |
-| price | 10 | "89 dollars a month is more than 1,000 a year, and I earn about 6,000. That is a sixth of my income for a program, and my notebook and Telegram chats work for free." (P001) · "89 dollars a month is almost a fifth of what I earn in a month. Excel and Telegram cost me nothing and they work well enough." (P006) |
-| habit | 5 | "We run on Excel and Telegram and it works well enough, and I have never paid for a CRM. I might open the free trial, but $199 a month for my team is a lot to commit to when I'd have to move everything over myself." (P002) · "My team already keeps everything in a spreadsheet and it works well enough. I would open the trial to look, but I will not pay 89 dollars a month when I have to move all my data myself." (P003) |
-| trust | 5 | "I do not know this company and there are no customers I can ask. 89 dollars a month is a lot when I earn about 580 a month, and moving my data off amoCRM by myself is a headache I do not have time for." (P004) · "My team has 7 to 15 people so I would need Business at 199 dollars a month, and that is a lot next to what I earn when a spreadsheet costs nothing. I might open the free trial, but I would not pay in the first month." (P005) |
+| price | 13 | "$89 a month is more than a whole month of what I take home for some weeks, and Bitrix24 has a free plan. I would only try the free trial if someone sets it up for me, and I would not pay after." (P002) · "$89 a month is more than an eighth of what I earn in a month, and I would only pay for a CRM that is cheap. I would take the free trial, but I would not pay after it." (P003) |
+| trust | 5 | "I make $7,000 a year, so $89 a month is a big bite, and I run everything from Telegram and a notebook just fine. I don't know a single company that uses Nexio and my friends haven't mentioned it." (P004) · "I only buy software after a friend or another owner says they use it, and here I see no customers I can ask. $89 a month is almost a tenth of what I earn, so I will not risk it on something nobody I know uses." (P005) |
+| habit | 2 | "My Excel works and I know every row of it. $89 a month is more than a tenth of what I earn in a year, for something that makes me move everything and retrain people." (P001) · "My Excel sheet works, I built it and it costs me nothing. $89 a month is a lot next to what I earn, and I can't even tell which plan I would need." (P016) |
 
 ## Why they buy
 
@@ -47,17 +46,17 @@ These are simulated buyers, not customers. Use this to find objections and weak 
 
 ## What would flip a no
 
-- A price near 15 to 20 dollars a month, plus their team moving my clients from Excel or amoCRM for me for free.
-- They import my Excel and Telegram clients for me for free, and I see my own team using it during the trial.
-- Free data migration from my spreadsheet, plus a price near 30 to 40 dollars a month, with the trial running long enough for my team to really use it.
-- Two or three shops like mine that I can call and who say it works, plus someone moving my amoCRM data for free during the trial.
-- Free data migration done for us, a few local companies I know using it for a year or more, and a lower price or a monthly so'm price that I can stop any time.
-- A plan around 15 to 20 dollars a month, plus a shop owner I know who already uses it and says it saves time.
-- A much cheaper plan for 3 to 6 people, around 15 to 20 dollars a month, plus someone importing my Excel and Telegram clients for me for free.
-- A price under about 30 dollars a month, a long free trial with my own clients, and proof the Telegram connection works in real use.
-- A much cheaper small plan, around 15 to 20 dollars a month, plus free help moving my clients over and proof the company has been around and has other shops like mine using it.
-- Free done-for-you migration from amoCRM plus a clearly lower total than my current bill at my real team size, with a proper trial on the Business plan.
-- Free import of my Bitrix24 and spreadsheet data, a trial where my team actually uses it for two weeks, and a price under about 100 dollars for my whole team.
-- A friend or another company I know recommending it, plus free data migration from amoCRM or Excel and a Starter price nearer 40 to 50 dollars.
+- A friend who runs a similar business using it for months and telling me it saved him money, plus someone from Nexio importing my Excel for free and a price near $20 a month.
+- A price around $20 a month, plus your people moving my client list from Excel and Telegram for me for free.
+- A price under $25 a month, plus a few Uzbek companies I know that use it.
+- A friend who runs a shop like mine tells me he uses it and it works, plus a much lower price like $15 to $20 a month.
+- A friend who runs a business like mine telling me they use it and it works, plus a cheaper plan for 1 or 2 people that is clearly the one for me.
+- A price around $15 to $20 a month, or a free plan that works. A company I know in Tashkent showing me it brought them more sales would also help.
+- A price near $15 to $20 a month, plus a friend who runs a shop telling me he uses it and that it saved him time. Also if they moved my Excel list in for me.
+- A free plan or a price under $15 a month that handles my Telegram chats, plus a shop owner I know who uses it and says it works.
+- A written backup and data-safety guarantee, a free import of my amoCRM data, and a shop owner I can call who already uses it.
+- A shop owner I know and trust tells me he uses it and it saves him time, plus a much lower price (around $15 to $20) and help moving my clients over from Telegram.
+- Two or three shops or service businesses I know in my city using it for a few months, plus a free plan or a price around $20 to $25 that I can try with my own clients from Telegram.
+- A friend who runs a business telling me he uses it and it works, plus a much lower price, around $25 a month, and help moving my clients over from Bitrix24.
 
 20 buyers gave all four price answers. Run founder-pricing's van_westendorp.py on the answers folder.

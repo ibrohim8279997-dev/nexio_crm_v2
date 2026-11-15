@@ -1,5 +1,5 @@
-Nexio CRM is a cloud CRM in Uzbek, Russian and English for small and growing companies. It keeps contacts, leads, deals, tasks, quotes and invoices in one place, works on the web and on Android and iOS, and connects to Telegram.
-You pay in so'm through Click or Payme, or by card.
-Starter: 89 USD a month for up to 5 users. Business: 199 USD a month for up to 15 users, with client portal, finance, helpdesk and automations. Enterprise: from 349 USD a month for up to 50 users.
-Every plan is a flat price per month, not per user. Yearly billing is ten times the monthly price.
-Every new account starts with a Starter trial. There is no done-for-you data migration included yet.
+Nexio CRM keeps your clients, deals, tasks and invoices in one place, in Uzbek or Russian, on your phone and computer.
+Starter is $89 a month for up to 5 people (Business $199 for up to 15, Enterprise from $349 for up to 50). The monthly price is charged in so'm through Click, Payme or card; a year costs 10 months.
+You start with a free trial. Telegram is connected, and you can pay with Click or Payme.
+AI voice calls are coming later and are not included yet.
+Currently 1 to 5 companies pay for Nexio. We do not have public customer references yet.

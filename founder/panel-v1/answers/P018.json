@@ -3,11 +3,11 @@
   "buys": false,
   "purchases_first_month": 0,
   "reason_code": "price",
-  "reason": "89 dollars a month is more than a fifth of what I earn in a whole year. Excel and Telegram cost me nothing and my people already know them.",
-  "objection": "Moving my clients out of Excel and Telegram will take weeks, nobody does it for me, and I would pay 89 dollars a month for something I never paid for before.",
-  "would_change_my_mind": "A price around 10 to 15 dollars a month, plus someone who moves my Excel data for free and shows my staff how to use it.",
+  "reason": "$89 a month is more than a tenth of what I earn in a month. I would use the free trial at most, and stay with Excel and Telegram, which cost me nothing.",
+  "objection": "Too expensive for what I earn, and I would be paying for a product with only a few paying companies and no references. The AI calls are not even working yet.",
+  "would_change_my_mind": "A free plan that works for me, or a paid plan around $10 to $15 a month, plus a friend who runs a business telling me it works.",
   "price_too_cheap": 3,
   "price_cheap": 8,
   "price_expensive": 20,
-  "price_too_expensive": 35
+  "price_too_expensive": 40
 }

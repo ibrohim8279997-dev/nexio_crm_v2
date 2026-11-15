@@ -8,6 +8,9 @@ import { api } from '../../lib/api'
 import { dateTime } from '../../lib/format'
 import { useCan } from '../../lib/auth'
 import { useToast } from '../../components/ui/toast'
+import { Link } from 'react-router-dom'
+import { useTr } from '../../lib/i18n'
+import { aiAccessDict } from '../../i18n/aiAccess'
 
 interface Key { id: string; name: string; prefix: string; scopes: string[]; status: 'active' | 'revoked' | 'expired'; last_used_at: string | null; expires_at: string | null; created_at: string }
 const SCOPE_LABELS: Record<string, string> = {
@@ -18,6 +21,7 @@ const SCOPE_LABELS: Record<string, string> = {
 /** Scoped bearer tokens for integrations. The token is shown once; only its hash is stored. */
 export default function ApiKeysPage() {
   const can = useCan()
+  const tr = useTr(aiAccessDict)
   const toast = useToast()
   const list = useApi<{ data: Key[]; available_scopes: string[] }>(['api-keys'], '/api/v1/api-keys')
   const [open, setOpen] = useState(false)
@@ -36,6 +40,7 @@ export default function ApiKeysPage() {
       <PageHeader title="API-ключи" subtitle="Доступ внешних систем к данным вашей компании. Передавайте ключ в заголовке Authorization: Bearer …"
         breadcrumbs={[{ label: 'Nexio CRM', to: '/app' }, { label: 'API-ключи' }]}
         actions={can('integrations.write') ? <Button onClick={() => setOpen(true)}><Plus className="size-4" /> Создать ключ</Button> : undefined} />
+      <p className="rounded-xl border border-line bg-surface px-3 py-2 text-[12px] text-muted">{tr('keysNote')} <Link to="/app/ai-policies" className="font-semibold text-primary hover:underline">{tr('keysLink')}</Link></p>
       <SectionCard title="Ключи" subtitle="Лимит — 120 запросов в минуту на ключ. Ключам недоступны команда, биллинг и настройки." padded={false}>
         <QueryState loading={list.isLoading} error={list.error} empty={rows.length === 0} emptyTitle="Ключей нет" emptyDescription="Создайте ключ для интеграции с сайтом, 1С или другой системой." onRetry={() => list.refetch()}>
           <ul className="divide-y divide-line">{rows.map((k) => (

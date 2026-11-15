@@ -6,6 +6,7 @@ import { Field, Input, Select } from '../../components/ui/form'
 import { useApi, useApiMutation } from '../../lib/hooks'
 import { api } from '../../lib/api'
 import { useCan } from '../../lib/auth'
+import { AiCrmAccessCard } from './AiCrmAccessCard'
 
 interface Agent { id: string; name: string; status: string; autonomy: string; budget_limit: number; policy: Record<string, unknown> }
 
@@ -42,6 +43,7 @@ export default function AiPolicies() {
     <div className="space-y-4 sm:space-y-5">
       <PageHeader title="Политики AI-агентов" subtitle="Ограничения, которые агент не может обойти: скидки, расписание обзвона, запись, бюджет."
         breadcrumbs={[{ label: 'Nexio CRM', to: '/app' }, { label: 'AI Control Center', to: '/app/ai-agents' }, { label: 'Политики' }]} />
+      <AiCrmAccessCard />
       <QueryState loading={q.isLoading} error={q.error} empty={agents.length === 0} emptyTitle="Агентов нет" emptyDescription="Создайте агента в AI Control Center, чтобы настроить его политики." onRetry={() => q.refetch()}>
         {selected && (
           <div className="grid gap-4 xl:grid-cols-[260px_1fr]">

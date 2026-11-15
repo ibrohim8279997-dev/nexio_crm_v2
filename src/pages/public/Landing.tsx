@@ -7,6 +7,8 @@ import { PlanCards } from './Marketing'
 import { useI18n, type Locale } from '../../lib/i18n'
 import { ThemeToggle } from '../../components/ui/ThemeToggle'
 import { NexioMark } from '../../components/ui/NexioMark'
+import { BannerCarousel, type SiteBanner } from '../../components/site/BannerCarousel'
+import { useApi } from '../../lib/hooks'
 
 function LanguageSwitcher() {
   const { locale, setLocale, t } = useI18n()
@@ -108,9 +110,11 @@ const HIGHLIGHTS = [
 export default function Landing() {
   const { user } = useAuth()
   const { t } = useI18n()
+  const banners = useApi<{ data: SiteBanner[] }>(['site', 'banners'], '/api/v1/site/banners', { retry: false })
   return (
     <div className="min-h-dvh bg-bg">
       <PublicHeader />
+      <BannerCarousel banners={banners.data?.data ?? []} />
 
       {/* Hero */}
       <section className="relative overflow-hidden border-b border-line bg-gradient-to-b from-blue-50 via-white to-bg">

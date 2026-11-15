@@ -3,11 +3,11 @@
   "buys": false,
   "purchases_first_month": 0,
   "reason_code": "price",
-  "reason": "89 dollars a month is almost a tenth of what I earn in a year, and I already answer clients in Telegram for free. I would look at the trial and then go back to my notebook and spreadsheet.",
-  "objection": "Is the AI voice real or just a demo? And 89 dollars is far too much for a shop with 4 people, when I can get a cheaper tool or use free Telegram.",
-  "would_change_my_mind": "A price under about 30 dollars a month, a long free trial with my own clients, and proof the Telegram connection works in real use.",
-  "price_too_cheap": 8,
-  "price_cheap": 20,
-  "price_expensive": 40,
-  "price_too_expensive": 65
+  "reason": "I make about $500 a month and $89 is a big bite for a tool I have never needed. Telegram and my notebook work fine, and I would not pay for a CRM before I see it earn money.",
+  "objection": "AI calls and voice are not working yet, and only 1 to 5 companies pay. For $89 a month I am paying for promises with no references.",
+  "would_change_my_mind": "A free plan or a price under $15 a month that handles my Telegram chats, plus a shop owner I know who uses it and says it works.",
+  "price_too_cheap": 3,
+  "price_cheap": 8,
+  "price_expensive": 20,
+  "price_too_expensive": 40
 }

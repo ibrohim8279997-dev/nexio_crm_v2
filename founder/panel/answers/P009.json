@@ -3,11 +3,11 @@
   "buys": false,
   "purchases_first_month": 0,
   "reason_code": "trust",
-  "reason": "I make about $5,000 a year, so even 25 dollars a month is real money for me, and I have no proof this company will still be around next year. No customers to show me, so I would rather keep my chats and my notebook.",
-  "objection": "Will it still exist and be supported in a year? They have no references, and if they close I lose all my clients' data.",
-  "would_change_my_mind": "Two or three real shops like mine in Uzbekistan I can call who already use it, plus a cheaper plan paid in so'm through Click.",
-  "price_too_cheap": 4,
-  "price_cheap": 9,
-  "price_expensive": 22,
+  "reason": "I already pay for Bitrix24 and it works, even if it is slow. Moving all my clients to a company with 1 to 5 customers and no references is a big risk for me, and $29 is a real amount on my income.",
+  "objection": "Is my customer data safe on your server, and are there backups? You are new, nobody I know uses you, and if you disappear I lose my clients.",
+  "would_change_my_mind": "A shop owner I know who uses it and shows me it running, plus proof the backup is already copied outside the main server, and a month free alongside my current CRM.",
+  "price_too_cheap": 5,
+  "price_cheap": 12,
+  "price_expensive": 25,
   "price_too_expensive": 40
 }

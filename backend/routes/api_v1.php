@@ -1,7 +1,9 @@
 <?php
 use App\Http\Controllers\Api\V1\AdminMarketplaceController;
 use App\Http\Controllers\Api\V1\AiController;
+use App\Http\Controllers\Api\V1\AiCrmAccessController;
 use App\Http\Controllers\Api\V1\AiExtrasController;
+use App\Http\Controllers\Api\V1\DocumentFilesController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\BillingController;
 use App\Http\Controllers\Api\V1\CardsController;
@@ -17,6 +19,9 @@ use App\Http\Controllers\Api\V1\ModulesController;
 use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\OpsController;
 use App\Http\Controllers\Api\V1\PlatformController;
+use App\Http\Controllers\Api\V1\PlatformPricingController;
+use App\Http\Controllers\Api\V1\SiteAnalyticsController;
+use App\Http\Controllers\Api\V1\SiteBannersController;
 use App\Http\Controllers\Api\V1\PluginManagerController;
 use App\Http\Controllers\Api\V1\PluginOperationsController;
 use App\Http\Controllers\Api\V1\PortalController;
@@ -215,6 +220,9 @@ Route::prefix('v1')->group(function () use ($h) {
     Route::get('/documents', $h(ModulesController::class, 'listDocuments'));
     Route::get('/documents/{id}', $h(ModulesController::class, 'getDocument'));
     Route::post('/documents', $h(ModulesController::class, 'createDocument'));
+    Route::post('/documents/upload', $h(DocumentFilesController::class, 'upload'))->middleware('throttle:60,1');
+    Route::get('/documents/{id}/file', $h(DocumentFilesController::class, 'download'));
+    Route::delete('/documents/{id}', $h(DocumentFilesController::class, 'destroy'));
     Route::post('/documents/proposal-draft', $h(ModulesController::class, 'generateProposal'));
     Route::post('/documents/{id}/status', $h(ModulesController::class, 'setDocumentStatus'));
     Route::patch('/documents/{id}/content', $h(ModulesController::class, 'updateDocumentContent'));
@@ -243,6 +251,9 @@ Route::prefix('v1')->group(function () use ($h) {
 
     // ── billing & finance ──────────────────────────────────────────────────
     Route::get('/billing/plans', $h(BillingController::class, 'plans'));
+    Route::get('/billing/custom-plan/options', $h(BillingController::class, 'customOptions'));
+    Route::post('/billing/custom-plan/quote', $h(BillingController::class, 'customQuote'))->middleware('throttle:60,1');
+    Route::post('/billing/custom-plan', $h(BillingController::class, 'customCreate'))->middleware('throttle:20,1');
     Route::get('/billing', $h(BillingController::class, 'subscription'));
     Route::get('/billing/transactions', $h(BillingController::class, 'transactions'));
     Route::post('/billing/plan', $h(BillingController::class, 'changePlan'));
@@ -286,6 +297,10 @@ Route::prefix('v1')->group(function () use ($h) {
     Route::post('/ai/suppression', $h(AiController::class, 'addSuppression'));
     Route::get('/ai/analytics', $h(AiController::class, 'analytics'));
     Route::post('/ai/complete', $h(AiController::class, 'complete'));
+    Route::get('/ai/crm-access', $h(AiCrmAccessController::class, 'show'));
+    Route::post('/ai/crm-access', $h(AiCrmAccessController::class, 'connect'))->middleware('throttle:20,1');
+    Route::post('/ai/crm-access/generate', $h(AiCrmAccessController::class, 'generate'))->middleware('throttle:10,1');
+    Route::delete('/ai/crm-access', $h(AiCrmAccessController::class, 'disconnect'));
 
     // ── client portal ───────────────────────────────────────────────────────
     Route::get('/portal', $h(PortalController::class, 'overview'));
@@ -293,7 +308,21 @@ Route::prefix('v1')->group(function () use ($h) {
     Route::post('/portal/tickets', $h(PortalController::class, 'createTicket'));
     Route::post('/portal/messages', $h(PortalController::class, 'sendMessage'));
 
+    // ── public site: landing banners and first-party page-view tracking ────────
+    Route::get('/site/banners', $h(SiteBannersController::class, 'publicList'));
+    Route::get('/site/banners/{id}/image', $h(SiteBannersController::class, 'image'));
+    Route::post('/site/track', $h(SiteAnalyticsController::class, 'track'))->middleware('throttle:240,1');
+
     // ── Nexio Lab platform ─────────────────────────────────────────────────
+    Route::get('/platform/banners', $h(SiteBannersController::class, 'index'));
+    Route::post('/platform/banners', $h(SiteBannersController::class, 'store'))->middleware('throttle:30,1');
+    Route::post('/platform/banners/reorder', $h(SiteBannersController::class, 'reorder'));
+    Route::patch('/platform/banners/{id}', $h(SiteBannersController::class, 'update'));
+    Route::delete('/platform/banners/{id}', $h(SiteBannersController::class, 'destroy'));
+    Route::get('/platform/analytics/series', $h(SiteAnalyticsController::class, 'series'));
+    Route::get('/platform/analytics/details', $h(SiteAnalyticsController::class, 'details'));
+    Route::get('/platform/custom-plan-prices', $h(PlatformPricingController::class, 'show'));
+    Route::put('/platform/custom-plan-prices', $h(PlatformPricingController::class, 'update'));
     Route::get('/platform/overview', $h(PlatformController::class, 'overview'));
     Route::get('/platform/health', $h(\App\Http\Controllers\Api\V1\PlatformHealthController::class, 'show'));
     Route::get('/platform/tenants', $h(PlatformController::class, 'tenants'));

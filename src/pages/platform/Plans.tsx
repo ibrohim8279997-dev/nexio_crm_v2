@@ -6,6 +6,7 @@ import { Modal } from '../../components/ui/overlay'
 import { useApi, useApiMutation } from '../../lib/hooks'
 import { api } from '../../lib/api'
 import { num } from '../../lib/format'
+import CustomPlanPrices from './CustomPlanPrices'
 
 interface Feature { id: string; label: string; included: number }
 interface Plan { id: string; code: string; name: string; tagline: string; price_monthly: number; price_yearly: number; currency: string; seats: number; api_requests: number; ai_minutes: number; storage_gb: number; is_public: number; modules: string[]; features: Feature[]; tenants: number }
@@ -60,6 +61,7 @@ export default function PlatformPlans() {
         <Button size="sm" variant="secondary" className="mt-4 w-full" onClick={() => openEdit(plan)}><Pencil className="size-3.5" /> To‘liq tahrirlash</Button>
       </SectionCard>)}</div>
     </QueryState>
+    <CustomPlanPrices />
     <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={edit ? `Tarif: ${edit.name}` : 'Yangi tarif'} description="O‘zgarishlar serverdagi tarif va uning barcha imkoniyatlariga qo‘llanadi." footer={<><Button size="sm" variant="secondary" onClick={() => setModalOpen(false)}>Bekor qilish</Button><Button size="sm" loading={save.isPending} onClick={saveCurrent}>Saqlash</Button></>}>
       <div className="grid gap-3 sm:grid-cols-2">
         {!edit && <Field label="Kod"><Input value={form.code ?? ''} placeholder="business" onChange={(event) => setForm((state) => ({ ...state, code: event.target.value }))} /></Field>}

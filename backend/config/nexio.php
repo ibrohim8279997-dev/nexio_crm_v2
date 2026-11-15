@@ -93,4 +93,26 @@ return [
         'webhook_secret' => env('AI_VOICE_WEBHOOK_SECRET', ''),
         'tolerance_seconds' => 300,
     ],
+
+    /*
+     * Self-serve custom plan. Monthly price = base + sum of unit prices (USD). Yearly = monthly x months_billed_yearly
+     * (10 => 2 months free, ~17% off). Bounds are enforced server-side; above max the customer is sent to Enterprise.
+     */
+    'custom_plan' => [
+        'currency' => 'USD',
+        'base' => 9.0,
+        'months_billed_yearly' => 10,
+        'seat' => ['price' => 10.0, 'min' => 1, 'max' => 200],
+        'storage_gb' => ['price' => 0.4, 'min' => 1, 'max' => 1000],
+        'ai_minutes' => ['price' => 0.15, 'min' => 0, 'max' => 5000],
+        'contacts' => ['price_per_1000' => 5.0, 'step' => 100, 'min' => 100, 'max' => 1000000],
+        'api_requests_per_seat' => 2000,
+        'modules' => [   // crm is always included; the rest are priced per month
+            'crm' => ['price' => 0.0, 'always' => true],
+            'projects' => ['price' => 10.0], 'finance' => ['price' => 20.0], 'helpdesk' => ['price' => 20.0],
+            'analytics' => ['price' => 15.0], 'automations' => ['price' => 15.0], 'api' => ['price' => 15.0],
+            'portal' => ['price' => 10.0], 'documents' => ['price' => 5.0],
+            'ai_agents' => ['price' => 40.0], 'voice' => ['price' => 40.0],
+        ],
+    ],
 ];

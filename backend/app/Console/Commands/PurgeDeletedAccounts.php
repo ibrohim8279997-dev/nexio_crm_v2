@@ -26,6 +26,7 @@ class PurgeDeletedAccounts extends Command
                 DB::table('tenant_memberships')->where('user_id', $id)->update(['status' => 'suspended']);
                 DB::table('sessions')->where('user_id', $id)->delete();
                 DB::table('device_tokens')->where('user_id', $id)->delete();
+                DB::table('site_visits')->where('user_id', $id)->delete();
                 DB::table('user_telegram_links')->where('user_id', $id)->delete();
                 DB::table('audit_logs')->insert([
                     'id' => H::newId('aud'), 'tenant_id' => null, 'actor_id' => $id, 'actor_name' => 'Deleted user',

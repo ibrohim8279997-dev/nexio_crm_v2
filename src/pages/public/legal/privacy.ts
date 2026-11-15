@@ -12,6 +12,7 @@ export const privacy: LocalizedDoc = {
       { heading: "2. Qanday ma'lumotlarni qayta ishlaymiz", paragraphs: [
         "Hisob: ism, ish emaili, parol xeshi (parolning o'zi saqlanmaydi), rol, kompaniya nomi, til va mavzu sozlamalari, ikki bosqichli autentifikatsiya sirlari (shifrlangan).",
         "Texnik: IP-manzil, brauzer/qurilma turi (User-Agent), kirish vaqti, sessiya identifikatori, xavfsizlik jurnali (audit), push-bildirishnoma tokeni (mobil ilovada), rozilik tarixi (siyosat versiyasi, vaqt, IP).",
+        "Sayt va ilova statistikasi (o'zimizning analitika): ochilgan sahifa manzili (identifikator va tokenlarsiz), sana va soat, qurilma turi (kompyuter/telefon/planshet/ilova), qaysi saytdan kelganingiz va — tizimga kirgan bo'lsangiz — foydalanuvchi hamda kompaniya identifikatori. Bu yozuvlarda IP-manzil va User-Agent saqlanmaydi: tizimga kirmagan tashrifchilar faqat qaytarib bo'lmaydigan kalitli xesh bilan ajratiladi, cookie qo'yilmaydi. Brauzerda «Do Not Track» yoki «Global Privacy Control» yoqilgan bo'lsa, tashrif hisobga olinmaydi. Statistikani faqat Nexio Lab platforma administratorlari ko'radi; uchinchi tomonlarga uzatilmaydi.",
         "CRM ma'lumotlari: kompaniya kiritadigan kontaktlar, bitimlar, buyurtmalar, vazifalar, hujjatlar, yozishmalar. Ularning qonuniyligi uchun kompaniya javobgar.",
         "AI va telefoniya (faqat yoqilganda): agent sozlamalari, so'rovlar, bilimlar bazasi, telefon raqami, rozilik asosi, qo'ng'iroq natijasi, xulosa, transkript va (kompaniya yoqsa) yozuv.",
         "To'lov: to'lov holati va summasi. Avtomatik to'lov uchun karta qo'shsangiz, karta raqami va amal qilish muddati bir martalik SMS-tasdiqlash uchun Click'ga uzatiladi va bizda saqlanmaydi; biz faqat Click bergan token (shifrlangan), niqoblangan raqam (oxirgi 4 ta raqam) va amal qilish muddatini saqlaymiz. CVV/CVC so'ralmaydi va saqlanmaydi.",
@@ -19,7 +20,7 @@ export const privacy: LocalizedDoc = {
       { heading: "3. Maqsadlar va huquqiy asoslar", paragraphs: [
         "Xizmatni taqdim etish va himoya qilish, autentifikatsiya, kompaniyalar ma'lumotlarini bir-biridan ajratish, qo'llab-quvvatlash, hisob-kitob, suiiste'molning oldini olish. Asoslar: shartnomani bajarish, sizning roziligingiz, xavfsizlikdagi qonuniy manfaat va qonun talablari.",
         "Ro'yxatdan o'tishda Shartlar va ushbu siyosatga rozilik alohida belgilanadi va isbot uchun saqlanadi. Rozilikni istalgan vaqtda qaytarib olishingiz mumkin (hisobni o'chirish orqali yoki so'rov bilan); bu avvalgi ishlov berishning qonuniyligiga ta'sir qilmaydi.",
-        "Reklama va xatti-harakatlarni kuzatish uchun ma'lumotlaringizdan foydalanmaymiz va ularni sotmaymiz."] },
+        "Reklama uchun kuzatmaymiz va ma'lumotlaringizni sotmaymiz. Sayt va ilova statistikasi (2-band) faqat xizmatni yaxshilash, qaysi sahifalar ko'p ishlatilishini bilish va suiiste'molni aniqlash uchun ishlatiladi (qonuniy manfaat); unga e'tiroz bildirishingiz mumkin (8-band)."] },
       { heading: "4. Ma'lumotlar kimga uzatiladi", paragraphs: [
         "Faqat xizmat ishlashi uchun zarur bo'lgan hajmda: elektron pochta yuboruvchi xizmat (tasdiqlash va parolni tiklash xatlari); Google Firebase Cloud Messaging (mobil push — qurilma tokeni va xabar matni); Telegram (agar bildirishnomalarni Telegram'ga ulagan bo'lsangiz); Click va Payme (to'lovlar); kompaniya ulagan telefoniya va WhatsApp provayderlari.",
         "AI-provayder (hozir GroqCloud, AQSh) sukut bo'yicha o'chiq. Kompaniya administratori AI'ni yoqqandagina, kerakli minimal so'rov qismi unga yuboriladi; yoqishdan oldin tizim chet elga uzatish haqida ogohlantiradi. AI so'rovlariga alohida toifadagi ma'lumotlarni kiritmang.",
@@ -28,7 +29,7 @@ export const privacy: LocalizedDoc = {
         "Asosiy ma'lumotlar bazasi, zaxira nusxalar va bot serveri O'zbekiston hududidagi serverlarda joylashgan. Fuqarolarning shaxsga doir ma'lumotlarini mahalliy serverlarda saqlash talabiga amal qilamiz.",
         "Faqat 4-bandda sanalgan xizmatlar (pochta, push, Telegram, AI) ma'lumotning cheklangan qismini chet elda qayta ishlashi mumkin. Biz ularni shartnoma va texnik choralar bilan cheklaymiz va faqat zarur minimumni yuboramiz."] },
       { heading: "6. Saqlash muddatlari", paragraphs: [
-        "Faol ma'lumotlar hisob yoki shartnoma amal qilguncha saqlanadi. Sessiya — 14 kungacha (chiqishda yoki parol almashtirilganda o'chiriladi); parolni tiklash havolasi — 1 soat; xavfsizlik jurnali — 12 oygacha.",
+        "Faol ma'lumotlar hisob yoki shartnoma amal qilguncha saqlanadi. Sessiya — 14 kungacha (chiqishda yoki parol almashtirilganda o'chiriladi); parolni tiklash havolasi — 1 soat; xavfsizlik jurnali — 12 oygacha; sahifa ko'rishlar statistikasi — 24 oygacha (hisobingiz o'chirilganda unga bog'langan yozuvlar ham o'chiriladi).",
         "Hisobni o'chirishni so'raganingizda shaxsiy hisobingiz 30 kun ichida anonimlashtiriladi (shu muddat ichida tizimga kirsangiz, o'chirish bekor bo'ladi). Zaxira nusxalar 90 kun ichida aylanishdan chiqariladi. Majburiy buxgalteriya yozuvlari qonun talab qilgan muddat saqlanadi.",
         "CRM ma'lumotlari va qo'ng'iroq yozuvlarining saqlash muddatini kompaniya-mijoz belgilaydi (tavsiya: yozuvlar uchun 90 kun); kompaniya so'roviga ko'ra ular o'chiriladi."] },
       { heading: "7. Xavfsizlik", paragraphs: [
@@ -53,6 +54,7 @@ export const privacy: LocalizedDoc = {
       { heading: '2. Какие данные мы обрабатываем', paragraphs: [
         'Аккаунт: имя, рабочий email, хеш пароля (сам пароль не хранится), роль, название компании, настройки языка и темы, секреты двухфакторной аутентификации (в зашифрованном виде).',
         'Технические: IP-адрес, тип браузера/устройства (User-Agent), время входа, идентификатор сессии, журнал безопасности (аудит), токен push-уведомлений (в мобильном приложении), история согласий (версия политики, время, IP).',
+        'Статистика сайта и приложения (собственная аналитика): адрес открытой страницы (без идентификаторов и токенов), дата и час, тип устройства (компьютер/телефон/планшет/приложение), с какого сайта вы пришли и — если вы вошли в систему — идентификатор пользователя и компании. IP-адрес и User-Agent в этих записях не сохраняются: посетители без входа различаются только необратимым хешем с секретным ключом, cookie не устанавливаются. Если в браузере включён «Do Not Track» или «Global Privacy Control», визит не учитывается. Статистику видят только администраторы платформы Nexio Lab; третьим лицам она не передаётся.',
         'CRM-данные: контакты, сделки, заказы, задачи, документы, переписка, которые вносит компания. За законность их внесения отвечает компания.',
         'AI и телефония (только если включены): настройки агента, запросы, база знаний, номер телефона, основание согласия, результат звонка, резюме, транскрипт и (если включила компания) запись.',
         'Платежи: статус и сумма платежа. Если вы добавляете карту для автоплатежа, номер и срок действия передаются в Click для разового SMS-подтверждения и у нас не сохраняются; мы храним только токен Click (в зашифрованном виде), маскированный номер (последние 4 цифры) и срок действия. CVV/CVC не запрашивается и не хранится.',
@@ -60,7 +62,7 @@ export const privacy: LocalizedDoc = {
       { heading: '3. Цели и правовые основания', paragraphs: [
         'Предоставление и защита сервиса, аутентификация, изоляция данных компаний, поддержка, биллинг, предотвращение злоупотреблений. Основания: исполнение договора, ваше согласие, законный интерес в безопасности и требования закона.',
         'При регистрации согласие с Условиями и настоящей политикой отмечается отдельно и сохраняется как доказательство. Вы можете отозвать согласие в любой момент (удалением аккаунта или запросом); это не влияет на законность прежней обработки.',
-        'Мы не используем ваши данные для рекламы и слежки за поведением и не продаём их.'] },
+        'Мы не используем ваши данные для рекламы и не продаём их. Статистика сайта и приложения (п. 2) применяется только для улучшения сервиса, понимания, какие страницы используются чаще всего, и выявления злоупотреблений (законный интерес); вы можете возразить против неё (п. 8).'] },
       { heading: '4. Кому передаются данные', paragraphs: [
         'Только в объёме, необходимом для работы сервиса: почтовый сервис (письма подтверждения и сброса пароля); Google Firebase Cloud Messaging (мобильные push — токен устройства и текст уведомления); Telegram (если вы подключили уведомления в Telegram); Click и Payme (платежи); телефония и WhatsApp-провайдеры, которых подключила компания.',
         'AI-провайдер (сейчас GroqCloud, США) по умолчанию выключен. Только когда администратор компании включает AI, ему передаётся минимально необходимая часть запроса; перед включением система предупреждает о передаче за рубеж. Не помещайте в AI-запросы специальные категории данных.',
@@ -69,7 +71,7 @@ export const privacy: LocalizedDoc = {
         'Основная база данных, резервные копии и сервер бота находятся на серверах на территории Узбекистана. Мы соблюдаем требование о хранении персональных данных граждан на локальных серверах.',
         'Только сервисы из раздела 4 (почта, push, Telegram, AI) могут обрабатывать ограниченную часть данных за рубежом. Мы ограничиваем их договорами и техническими мерами и передаём только необходимый минимум.'] },
       { heading: '6. Сроки хранения', paragraphs: [
-        'Активные данные хранятся, пока действует аккаунт или договор. Сессия — до 14 дней (удаляется при выходе или смене пароля); ссылка сброса пароля — 1 час; журнал безопасности — до 12 месяцев.',
+        'Активные данные хранятся, пока действует аккаунт или договор. Сессия — до 14 дней (удаляется при выходе или смене пароля); ссылка сброса пароля — 1 час; журнал безопасности — до 12 месяцев; статистика просмотров страниц — до 24 месяцев (при удалении аккаунта связанные с ним записи также удаляются).',
         'После запроса на удаление личный аккаунт обезличивается в течение 30 дней (вход в этот срок отменяет удаление). Резервные копии выводятся из ротации в течение 90 дней. Обязательные бухгалтерские записи хранятся столько, сколько требует закон.',
         'Сроки хранения CRM-данных и записей звонков определяет компания-клиент (рекомендуемый срок для записей — 90 дней); по запросу компании они удаляются.'] },
       { heading: '7. Безопасность', paragraphs: [
@@ -94,6 +96,7 @@ export const privacy: LocalizedDoc = {
       { heading: '2. Data we process', paragraphs: [
         'Account: name, work email, password hash (the password itself is never stored), role, company name, language and theme settings, two-factor secrets (encrypted).',
         'Technical: IP address, browser/device type (User-Agent), sign-in time, session identifier, security (audit) log, push-notification token (mobile app), consent history (policy version, time, IP).',
+        'Site and app statistics (our own analytics): the address of the page opened (without ids or tokens), date and hour, device type (computer/phone/tablet/app), the website you came from and — if you are signed in — your user and company identifiers. These records do not store your IP address or User-Agent: visitors who are not signed in are told apart only by an irreversible keyed hash, and no cookie is set. If Do Not Track or Global Privacy Control is on in your browser, the visit is not counted. Only Nexio Lab platform administrators can see the statistics; they are not shared with third parties.',
         'CRM data: contacts, deals, orders, tasks, documents and messages entered by the company, which is responsible for their lawfulness.',
         'AI and telephony (only when enabled): agent settings, prompts, knowledge base, phone number, consent basis, call outcome, summary, transcript and, if the company enables it, a recording.',
         'Payments: payment status and amount. If you add a card for automatic payments, the card number and expiry are forwarded to Click for a one-time SMS confirmation and are not stored by us; we keep only the Click token (encrypted), the masked number (last 4 digits) and the expiry. The CVV/CVC is never requested or stored.',
@@ -101,7 +104,7 @@ export const privacy: LocalizedDoc = {
       { heading: '3. Purposes and legal bases', paragraphs: [
         'Providing and protecting the service, authentication, isolating company data, support, billing, preventing abuse. Bases: performance of the contract, your consent, legitimate interest in security, and legal obligations.',
         'At sign-up, consent to the Terms and to this policy is ticked separately and stored as proof. You can withdraw consent at any time (by deleting your account or by request); this does not affect the lawfulness of earlier processing.',
-        'We do not use your data for advertising or behavioural tracking, and we do not sell it.'] },
+        'We do not use your data for advertising and we do not sell it. Site and app statistics (section 2) are used only to improve the service, to see which pages are used most and to detect abuse (legitimate interest); you can object to them (section 8).'] },
       { heading: '4. Who receives data', paragraphs: [
         'Only as far as needed to run the service: an email delivery service (verification and password-reset emails); Google Firebase Cloud Messaging (mobile push: device token and notification text); Telegram (if you connected Telegram notifications); Click and Payme (payments); telephony and WhatsApp providers connected by the company.',
         'The AI provider (currently GroqCloud, USA) is off by default. Only when a company administrator turns AI on is the minimum necessary part of a request sent to it, and the system warns about the transfer abroad before it is enabled. Do not put special categories of data into AI prompts.',
@@ -110,7 +113,7 @@ export const privacy: LocalizedDoc = {
         "The primary database, backups and the bot server are located on servers in Uzbekistan. We comply with the requirement to store citizens' personal data on local servers.",
         'Only the services in section 4 (email, push, Telegram, AI) may process a limited part of the data abroad. We bind them by contract and technical measures and send only the necessary minimum.'] },
       { heading: '6. Retention', paragraphs: [
-        'Active data is kept while the account or contract is active. Sessions last up to 14 days (removed on sign-out or password change); password-reset links, 1 hour; the security log, up to 12 months.',
+        'Active data is kept while the account or contract is active. Sessions last up to 14 days (removed on sign-out or password change); password-reset links, 1 hour; the security log, up to 12 months; page-view statistics, up to 24 months (when you delete your account, the records linked to it are deleted too).',
         'After a deletion request your personal account is anonymised within 30 days (signing in during that time cancels the deletion). Backups leave rotation within 90 days. Mandatory accounting records are kept as long as the law requires.',
         "The customer company decides how long CRM data and call recordings are kept (recommended for recordings: 90 days); they are deleted on the company's request."] },
       { heading: '7. Security', paragraphs: [

@@ -2,7 +2,7 @@ import { useState, type ReactNode } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import {
   Activity, ArrowLeft, BarChart3, Building2, CreditCard, Gauge, LayoutDashboard, LogOut, Menu, Settings,
-  ShieldCheck, Sparkles, Store, Blocks, X,
+  ShieldCheck, Sparkles, Store, Blocks, Image as ImageIcon, LineChart, X,
 } from 'lucide-react'
 import { cn } from '../../lib/cn'
 import { useAuth } from '../../lib/auth'
@@ -25,12 +25,15 @@ const NAV = [
   { to: '/platform/security', label: 'Безопасность', icon: <ShieldCheck className={ICON} /> },
   { to: '/platform/settings', label: 'Настройки платформы', icon: <Settings className={ICON} /> },
   { to: '/platform/marketplace', label: 'Marketplace', icon: <Blocks className={ICON} /> },
+  { to: '/platform/banners', label: 'Sayt bannerlari', icon: <ImageIcon className={ICON} /> },
+  { to: '/platform/site-analytics', label: 'Sayt analitikasi', icon: <LineChart className={ICON} /> },
 ]
 
 const PLATFORM_LABELS: Record<string, string> = {
   '/platform': 'dashboard', '/platform/tenants': 'companies', '/platform/plans': 'pricing', '/platform/subscriptions': 'billing',
   '/platform/usage': 'analytics', '/platform/nexio-orders': 'orders', '/platform/support': 'helpdesk', '/platform/ai-ops': 'aiControl',
   '/platform/security': 'security', '/platform/settings': 'settings', '/platform/marketplace': 'marketplace',
+  '/platform/banners': 'siteBanners', '/platform/site-analytics': 'siteAnalytics',
 }
 
 function Nav({ onNavigate }: { onNavigate?: () => void }) {

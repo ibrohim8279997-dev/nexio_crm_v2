@@ -196,6 +196,10 @@ class CrmController
         H::requirePermission($ctx, 'crm.write');
         H::requireTenant($ctx);
         $b = H::body($ctx);
+        $cap = \App\Services\CustomPlanService::contactLimit($ctx->tenantId);
+        if ($cap !== null && DB::table('contacts')->where('tenant_id', $ctx->tenantId)->count() >= $cap) {
+            throw new ApiException(402, "Tarifdagi kontaktlar limiti ($cap) tugadi. Tarifni kengaytiring.", 'limit_reached');
+        }
         $orgId = H::tenantRef($ctx, $b['org_id'] ?? null, 'organizations', 'kompaniya');
         $ownerId = H::memberRef($ctx, $b['owner_id'] ?? null, 'mas’ul xodim') ?? $user['id'];
         $id = H::newId('con');

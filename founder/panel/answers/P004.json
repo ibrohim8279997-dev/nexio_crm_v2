@@ -3,11 +3,11 @@
   "buys": false,
   "purchases_first_month": 0,
   "reason_code": "trust",
-  "reason": "I do not know this company and there is not one customer I can call and ask. Moving my whole client base to a new system nobody vouches for is a big risk for me, even if amoCRM annoys me.",
-  "objection": "No customers to ask, no track record. If they disappear in a year, my clients and deals go with them.",
-  "would_change_my_mind": "Two or three real shops like mine in Uzbekistan that I can phone, who have used it for months, plus the free move of my data from amoCRM done and shown to me before I pay anything.",
-  "price_too_cheap": 8,
-  "price_cheap": 15,
-  "price_expensive": 30,
-  "price_too_expensive": 50
+  "reason": "I run everything from Telegram and a notebook and it works. I have never used a CRM, and $29 a month is a big bite out of what I earn. I don't know anyone who uses this, so I'm not paying for an unknown tool.",
+  "objection": "Who else uses it? I cannot find any company I know. They say 1 to 5 companies pay, and I don't want to be the one who tests it with my clients.",
+  "would_change_my_mind": "Seeing a shop owner I know, one of my friends, using it and telling me it saves them time, plus a free trial month with no card where they move my Telegram clients over.",
+  "price_too_cheap": 3,
+  "price_cheap": 8,
+  "price_expensive": 18,
+  "price_too_expensive": 30
 }
