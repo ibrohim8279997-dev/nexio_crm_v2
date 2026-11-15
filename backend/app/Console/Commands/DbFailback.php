@@ -15,7 +15,7 @@ class DbFailback extends Command
     {
         if (!DbReplica::failedOver()) { $this->line('Failover rejimi yoqilmagan.'); return self::SUCCESS; }
         if (!DbReplica::ping(DbReplica::primary())) { $this->error('Asosiy baza javob bermayapti.'); return self::FAILURE; }
-        $diff = DbReplica::differing(DbReplica::NAME, DbReplica::primary());
+        $diff = DbReplica::differingDeep(DbReplica::NAME, DbReplica::primary());   // row by row: a changed value must not go unnoticed
         if ($diff && !$this->option('force')) {
             $this->error('Asosiy baza zaxiradan farq qiladi (' . implode(', ', array_slice($diff, 0, 8)) . '). Avval: nexio:db:restore --yes (yoki --force).');
             return self::FAILURE;

@@ -13,7 +13,8 @@ class BackupDecrypt extends Command
 
     public function handle(): int
     {
-        $files = (array) $this->argument('files');
+        $files = array_values(array_filter((array) $this->argument('files')));
+        if (!$files) { $this->error('Fayllar ko‘rsatilmagan: .enc yoki barcha .partNNN fayllarni bering.'); return self::FAILURE; }
         sort($files, SORT_NATURAL);
         foreach ($files as $f) if (!is_file($f)) { $this->error("Fayl topilmadi: {$f}"); return self::FAILURE; }
         $key = (string) config('backup.telegram.key') ?: (string) $this->secret('Backup shifrlash kaliti (BACKUP_ENCRYPTION_KEY)');

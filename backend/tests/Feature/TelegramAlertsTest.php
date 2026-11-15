@@ -34,7 +34,7 @@ class TelegramAlertsTest extends PluginTestCase
     {
         Http::fake();
         $this->linkChat('usr_ops', '9001');
-        $this->postJson('/api/v1/auth/register', ['name' => 'Newbie', 'email' => 'new@co.test', 'password' => 'password123', 'company' => 'NewCo'])->assertStatus(201);
+        $this->postJson('/api/v1/auth/register', ['name' => 'Newbie', 'email' => 'new@co.test', 'password' => 'password123', 'company' => 'NewCo', 'accepted_terms' => true, 'accepted_privacy' => true])->assertStatus(201);
         $texts = $this->sentTo('9001');
         $this->assertNotEmpty($texts);
         $this->assertStringContainsString('NewCo', implode("\n", $texts));

@@ -9,17 +9,16 @@ use Illuminate\Support\Facades\Http;
 /** Capacitor app support: session in a header instead of a cross-site cookie, mobile origins, FCM device tokens. */
 class MobileAppTest extends PluginTestCase
 {
-    private function register(array $headers = []): \Illuminate\Testing\TestResponse
+    private function register(array $headers = [], string $email = 'mob@co.test'): \Illuminate\Testing\TestResponse
     {
-        return $this->withHeaders($headers)->postJson('/api/v1/auth/register', ['name' => 'Mob', 'email' => 'mob@co.test', 'password' => 'password123', 'company' => 'MobCo']);
+        return $this->withHeaders($headers)->postJson('/api/v1/auth/register', ['name' => 'Mob', 'email' => $email, 'password' => 'password123', 'company' => 'MobCo', 'accepted_terms' => true, 'accepted_privacy' => true]);
     }
 
     public function test_native_client_gets_the_session_in_the_body_and_can_use_it_as_a_header_only(): void
     {
-        $web = $this->register()->assertStatus(201);
+        $web = $this->register([], 'web@co.test')->assertStatus(201);
         $this->assertArrayNotHasKey('session', $web->json());   // the web keeps cookie-only behaviour
         DB::table('sessions')->delete();
-        DB::table('users')->where('email', 'mob@co.test')->delete();
 
         $sid = $this->register(['X-Nexio-Client' => 'capacitor'])->assertStatus(201)->json('session');
         $this->assertNotEmpty($sid);
@@ -33,7 +32,7 @@ class MobileAppTest extends PluginTestCase
 
     public function test_mobile_app_origins_pass_the_csrf_check_and_others_do_not(): void
     {
-        $body = ['name' => 'X', 'email' => 'x@co.test', 'password' => 'password123', 'company' => 'XCo'];
+        $body = ['name' => 'X', 'email' => 'x@co.test', 'password' => 'password123', 'company' => 'XCo', 'accepted_terms' => true, 'accepted_privacy' => true];
         $this->withHeader('Origin', 'https://evil.example')->postJson('/api/v1/auth/register', $body)->assertStatus(403);
         $this->withHeader('Origin', 'capacitor://localhost')->postJson('/api/v1/auth/register', $body)->assertStatus(201);
     }

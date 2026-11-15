@@ -100,6 +100,37 @@ final class DbReplica
         return array_values(array_filter(self::tables($from), fn ($t) => !isset($have[$t]) || self::fingerprint($from, $t) !== self::fingerprint($to, $t)));
     }
 
+    /** Row-level checksum of a table over the given columns (order-independent). */
+    private static function checksum(string $connection, string $table, array $cols): string
+    {
+        $q = DB::connection($connection)->table($table)->select($cols);
+        $hash = hash_init('sha256');
+        if (in_array('id', $cols, true)) {
+            foreach ($q->lazyById(1000, 'id') as $row) hash_update($hash, json_encode(self::norm((array) $row)) . "\n");
+        } else {
+            $lines = $q->get()->map(fn ($r) => json_encode(self::norm((array) $r)))->sort()->values()->all();
+            foreach ($lines as $l) hash_update($hash, $l . "\n");
+        }
+        return hash_final($hash);
+    }
+
+    /**
+     * Tables whose CONTENT differs, found by reading every row on both sides (the fingerprint above misses edits that do not
+     * change the row count or timestamps). Slow: used before switching back to the main database, where being wrong loses data.
+     * @return string[]
+     */
+    public static function differingDeep(string $from, string $to): array
+    {
+        $have = array_flip(self::tables($to));
+        $out = [];
+        foreach (self::tables($from) as $t) {
+            if (!isset($have[$t])) { $out[] = $t; continue; }
+            $cols = array_values(array_intersect(Schema::connection($from)->getColumnListing($t), Schema::connection($to)->getColumnListing($t)));
+            if ($cols && self::checksum($from, $t, $cols) !== self::checksum($to, $t, $cols)) $out[] = $t;
+        }
+        return $out;
+    }
+
     /**
      * Makes $table on $to identical to $from. Returns the number of rows written.
      * Order matters: rows missing at the source are removed first, so a row that was deleted and re-created

@@ -75,8 +75,11 @@ class AiActionsTest extends PluginTestCase
 
         $this->assertStringContainsString('✅', $out['content']);
         $this->assertSame(1, DB::table('contacts')->where('tenant_id', 'tnt_a')->where('first_name', 'Aziz')->count());
-        Http::assertSent(fn ($r) => isset($r['tools']) && $r['tools'][0]['function']['name'] === 'create_contact');   // only what the key allows is offered
-        Http::assertSent(fn ($r) => str_contains(json_encode($r['messages']), '"leads"') && str_contains(json_encode($r['messages']), '"projects"'));
+        Http::assertSent(function ($r) {   // only what the key allows is offered: contacts and leads (crm.write), not tasks or projects
+            $names = array_map(fn ($t) => $t['function']['name'], (array) ($r['tools'] ?? []));
+            return in_array('create_contact', $names, true) && in_array('create_lead', $names, true) && !in_array('create_task', $names, true) && !in_array('create_project', $names, true);
+        });
+        Http::assertSent(fn ($r) => str_contains((string) $r['messages'][1]['content'], '"leads"') && str_contains((string) $r['messages'][1]['content'], '"projects"'));
     }
 
     public function test_health_check_reports_provider_key_and_allowance(): void

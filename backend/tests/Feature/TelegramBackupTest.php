@@ -14,7 +14,8 @@ class TelegramBackupTest extends PluginTestCase
     {
         parent::setUp();
         $this->db = sys_get_temp_dir() . '/nexio-bk-' . bin2hex(random_bytes(4)) . '.sqlite';
-        file_put_contents($this->db, str_repeat("INSERT INTO t VALUES ('customer data');\n", 400));
+        // Incompressible content (so the encrypted copy really needs several 1000-byte parts), with a marker to look for.
+        file_put_contents($this->db, "customer data\n" . base64_encode(random_bytes(12000)));
         config(['database.connections.sqlite.database' => $this->db, 'backup.telegram.enabled' => true, 'backup.telegram.key' => 'a-long-secret-passphrase-2026',
             'backup.telegram.chat_ids' => ['555'], 'backup.telegram.part_bytes' => 1000, 'telegram.bot_token' => '123:abc']);
         DB::table('user_telegram_links')->insert(['id' => 'tgl_ops', 'user_id' => 'usr_ops', 'chat_id' => '9001', 'link_token' => 'tok_ops', 'created_at' => '2026-01-01 00:00:00']);
@@ -41,7 +42,8 @@ class TelegramBackupTest extends PluginTestCase
         $this->assertSame([], glob(storage_path('app/backups/tgbackup-*')) ?: [], 'no dump may stay on disk');
 
         // Disaster recovery from the received parts, with the key only.
-        $one = $docs->filter(fn ($p) => str_contains(json_encode($p[0]->data()), '"chat_id"') && (collect($p[0]->data())->firstWhere('name', 'chat_id')['contents'] ?? '') === '555')->values();
+        $one = $docs->filter(fn ($p) => (collect($p[0]->data())->firstWhere('name', 'chat_id')['contents'] ?? '') === '555')->values();
+        $this->assertGreaterThan(1, $one->count());
         $dir = sys_get_temp_dir() . '/nexio-restore-' . bin2hex(random_bytes(4));
         mkdir($dir);
         $paths = [];

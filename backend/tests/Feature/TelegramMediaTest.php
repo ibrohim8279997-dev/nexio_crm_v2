@@ -80,7 +80,7 @@ class TelegramMediaTest extends PluginTestCase
         $this->fake();
         (new TelegramBot())->handleMessage(['chat' => ['id' => 9999], 'voice' => ['file_id' => 'f1', 'duration' => 3]]);
         Http::assertNotSent(fn ($r) => str_contains($r->url(), 'groq.com'));
-        $this->assertStringContainsString('ulang', implode(' ', $this->texts()));
+        $this->assertStringContainsString('ulash', implode(' ', $this->texts()));
 
         DB::table('plans')->where('id', 'plan_business')->update(['ai_minutes' => 0]);
         (new TelegramBot())->handleMessage(['chat' => ['id' => 7001], 'voice' => ['file_id' => 'f1', 'duration' => 3]]);
@@ -132,7 +132,6 @@ class TelegramMediaTest extends PluginTestCase
 
     public function test_long_english_answer_is_spoken_in_several_valid_requests(): void
     {
-        $this->fake();
         Http::fake([
             'api.groq.com/openai/v1/audio/speech' => Http::response($this->wav('1234')),
             'api.groq.com/openai/v1/chat/completions' => Http::response(['choices' => [['message' => ['content' => str_repeat('You have three new leads this month. ', 15)]]], 'model' => 'm', 'usage' => ['total_tokens' => 50]]),
