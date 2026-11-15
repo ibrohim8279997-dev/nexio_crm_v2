@@ -4,7 +4,7 @@ Built from `founder/panel-v1/` (the 20 buyers who saw the old pitch), the compet
 
 ## Offer name
 
-**The Founding 50: we move you in, you pay $29 to $49, you can leave in 30 days.**
+**The Founding 50: we move you in, you pay from $19 (custom plan) or $89 (Starter), you can leave in 30 days.**
 
 ## The problem list (buyer's words, where possible)
 
@@ -33,11 +33,11 @@ After
 
 | Problem | Solution | Value | Cost | Keep |
 | --- | --- | ---: | ---: | --- |
-| 1 | Lean $29 (3 users) and Team $49 (5 users) | 5 | 3 (margin, CFO to check) | yes |
+| 1 | Self-serve custom plan from $19 (1 user) / $29 (2 users), and Starter $89 (5 users): no new plan to build | 5 | 1 (custom plan already built) | yes |
 | 2, 15 | Founding customers named as references after 60 days; buyers may call them; 30-day refund | 4 | 1 | yes |
 | 3, 9, 10 | Free migration by the Nexio team plus a first-use call in Uzbek or Russian | 5 | 3 (staff hours) | yes, capped at 50 customers |
 | 4 | Two cards on the page, picked by headcount | 3 | 1 | yes |
-| 5 | Daily backup copied off-server (the repo's runbook says to) | 4 | 2 | **yes, must be live before the first founding customer** |
+| 5 | Encrypted copy of the whole database sent off the server (to Telegram) every 90 minutes, plus a standby database: built | 4 | 2 | **yes: built; rehearse a restore before the first founding customer** |
 | 6 | Take AI voice off every plan and say so | 3 | 1 | yes |
 | 7 | Run Excel and Nexio side by side during the first 2 weeks (the migration team does the first import) | 3 | 2 | yes |
 | 8, 13 | 30-day refund of the first month | 4 | 2 (claim rate unknown) | yes |
@@ -54,9 +54,9 @@ Dropped: AI voice and AI minutes in the pitch (not built); "export all data" (th
 **Bonuses (each kills one objection)**
 1. Free migration of your client list from Excel, Telegram, amoCRM or Bitrix24 (objection 3, 9).
 2. Price locked for 12 months at the founding rate (objection 14, 1).
-3. Daily backup copied off-server, in writing (objection 5).
+3. Encrypted copies of the whole database outside the server (Telegram) every 90 minutes, in writing (objection 5).
 
-**Guarantee:** if it does not work for you, the first month's money back within 30 days, no questions. *Cost to model:* at $29 to $49, one refund is at most $49 plus about 2 to 3 hours of migration time per claim (an estimate to confirm). The CFO must set a claim rate before this is promised publicly.
+**Guarantee:** if it does not work for you, the first month's money back within 30 days, no questions. *Cost to model:* at $19 to $89, one refund is at most $89 plus about 2 to 3 hours of migration time per claim (an estimate to confirm). The CFO must set a claim rate before this is promised publicly.
 
 **Urgency (true):** a cap of 50 founding companies and an end date, 31 Jan 2027. The cap is real only if the team can migrate 50 customers; say 50 only if that is true.
 
@@ -73,7 +73,7 @@ Dropped: AI voice and AI minutes in the pitch (not built); "export all data" (th
 
 Same seed 876453, same 20 buyer cards, shown the new pitch (`founder/pitch.md`; old pitch kept as `founder/pitch-v1.md`; old results in `founder/panel-v1/`).
 
-| | Old pitch ($89 Starter) | New offer ($29 / $49, free migration, refund) |
+| | Old pitch ($89 Starter) | Tested offer ($29 / $49, free migration, refund; the founder kept Starter at $89 and did not add Lean or Team) |
 | --- | ---: | ---: |
 | Buy | 0 of 20 | **0 of 20** |
 | Passed on price | 13 | 4 |

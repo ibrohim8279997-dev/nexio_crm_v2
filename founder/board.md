@@ -31,7 +31,7 @@ Nobody funded outright. The Monopoly lens passed: it sees no durable edge yet an
 - [ ] Test the $89 Starter price on a buyer panel; test what buyers pay for amoCRM or Bitrix24 today (consumer, pricing, competitors)
 - [ ] Show a repeatable channel to the first 100 customers with a known acquisition cost (marketing, cfo)
 - [ ] Document the first five minutes, with Excel and amoCRM/Bitrix24 import (ops, launch)
-- [ ] Add off-server backups; get the personal-data rules reviewed by a lawyer; consider registering the trademark (ops)
+- [ ] Rehearse a restore from the off-server (Telegram) backup; get the personal-data rules reviewed by a lawyer; consider registering the trademark (ops)
 - [ ] Show one capability clearly better than the incumbents (competitors, offer)
 
 ## The strongest version of this business

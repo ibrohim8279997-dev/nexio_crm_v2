@@ -22,32 +22,30 @@ Nexio is the dearest at 5 users. At 15 users Nexio Business is $199; Bitrix24 St
 
 ## The price
 
-**Do not sell Starter at $89 as the entry price.** Evidence: it is 2.2 times the panel's top of range and above every competitor at the same size. Nothing in the research says Nexio is worth a premium: no references, voice not built.
+**Founder decision (15 Nov 2026): Starter stays at $89 for 5 users.** No Lean or Team plan is added. The research still says $89 is the dearest 5-user entry plan and above the panel's range (2.2 times its top), so this is a known risk the founder accepts. It is softened, not removed, by the self-serve custom plan, which already exists in the product:
 
-Recommended to test (inside the buyers' range and level with the market):
-
-- **Entry: $29 a month for up to 3 users, CRM only.** This is inside the panel range, close to the $30 "getting expensive" median, and the repo's self-serve custom plan already prices 2 users at $29 ($9 base + $10 per user) and 1 user at $19. So the entry plan needs no new pricing engine, only a visible plan card. (Founder to confirm that the custom plan's CRM-only price is what the CFO can afford.)
-- **Starter: test $49 for 5 users**, level with Bitrix24 Basic, instead of $89. The founder earlier chose to keep $89 and not test $39 to $49; the panel and the competitor prices say this is the biggest barrier, so it is the first thing to test with real buyers.
-- Business ($199, 15 users) and Enterprise ($349, 50 users): leave until the entry price is proven; they are not yet comparable to Bitrix24's $99 for 50 users and need a reason (finance, helpdesk, portal included) to be believed.
+- **Small teams: the self-serve custom plan, not a new plan.** The customer builds a plan from unit prices (USD 9 base + 10 per user + 0.4 per GB + 0.15 per AI minute + 5 per 1,000 contacts + per-module prices). One user costs $19 and two users $29, which is inside the panel's range, so no Lean or Team card is needed. The superadmin can also set a price per company or grant a plan without payment (for the founder's own and partner companies).
+- **Starter ($89, 5 users):** unchanged. It must be justified by what it includes (projects, tasks, quotes, invoices, Telegram, Uzbek/Russian/English, Click and Payme), because nothing in the research says Nexio is worth a premium: no references yet, voice not built.
+- Business ($199, 15 users) and Enterprise ($349, 50 users): leave until the entry price is proven; they are not yet comparable to Bitrix24's $99 for 50 users and need a reason (finance, helpdesk, portal included) to be believed. The founder is not changing them.
 
 ## The ladder
 
 | Rung | For | Price to test | Reason to step up |
 | --- | --- | --- | --- |
-| Lean | 1 to 3 people, owners leaving Excel and Telegram | $29 | Starts where the buyer is; migration included |
-| Team | up to 5 people | $49 | More users, projects, Telegram inbox |
-| Business | up to 15 | $199 (unchanged for now) | Finance, helpdesk, automations, client portal |
+| Custom plan (self-serve) | 1 to about 5 people who need only some modules | from $19 (1 user, CRM only), $29 (2 users) | Pays only for what it uses; migration included for the Founding 50 |
+| Starter | up to 5 people | $89 (kept) | Projects, tasks, quotes, invoices, Telegram inbox in one price |
+| Business | up to 15 | $199 (unchanged) | Finance, helpdesk, automations, client portal |
 | Enterprise | 25 to 50 | from $349 | SSO, API, voice when built |
 
 Voice and AI calls stay off every rung until they work.
 
 ## The opening offer
 
-**Founding 50**, ends **31 Jan 2027**: the first 50 companies get the Lean or Team price locked for 12 months, free data migration from Excel, Telegram or amoCRM/Bitrix24 by the Nexio team, and a 30-day money-back refund. In return each agrees in writing to be named as a reference after 60 days. No "was" price; the locked price is the real price.
+**Founding 50**, ends **31 Jan 2027**: the first 50 companies get the Starter price or their custom-plan price locked for 12 months, free data migration from Excel, Telegram or amoCRM/Bitrix24 by the Nexio team, and a 30-day money-back refund. In return each agrees in writing to be named as a reference after 60 days. No "was" price; the locked price is the real price.
 
 ## What to test with real buyers
 
-Run two prices for the same entry plan to 20 owners each from the founder's own contacts: **$19 versus $29** (Lean), then **$49 versus $89** for 5 users. Method: a one-page price sheet or Telegram message with a pre-sale link (first month paid through Click or Payme, refundable). Success bar to set before testing: for example 5 paid out of 20 contacts at one price.
+Run two prices for the same entry plan to 20 owners each from the founder's own contacts: **$19 versus $29** (custom plan quoted for 1 user), then the **custom plan for the buyer's own team versus Starter $89**. Method: a one-page price sheet or Telegram message with a pre-sale link (first month paid through Click or Payme, refundable). Success bar to set before testing: for example 5 paid out of 20 contacts at one price.
 
 ## The panel's top three price objections (verbatim)
 
@@ -57,7 +55,7 @@ Run two prices for the same entry plan to 20 owners each from the founder's own 
 
 ## CFO check (added after `/founder-cfo`)
 
-At a $45 blended price (estimates): contribution $40.40 per account (90%), break-even 20 accounts. At a $29 blended price break-even is 32 accounts and year 1 loses $4,360; at $55 break-even is 16 and year 1 earns $840. So $29 works only as an entry door to the $49 plan, not as the whole business. The buyers' range ($8 to $25 once $29 was shown) and the CFO's floor do not overlap: price alone cannot close this gap; trust and volume must.
+At a $45 blended price (estimates): contribution $40.40 per account (90%), break-even 20 accounts. At a $29 blended price break-even is 32 accounts and year 1 loses $4,360; at $55 break-even is 16 and year 1 earns $840. So a $29 custom plan works only as an entry door to Starter or Business, not as the whole business. The buyers' range ($8 to $25 once $29 was shown) and the CFO's floor do not overlap: price alone cannot close this gap; trust and volume must.
 
 ## Open
 

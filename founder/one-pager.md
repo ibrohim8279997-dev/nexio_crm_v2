@@ -1,12 +1,18 @@
 # Nexio CRM: one page
 
+> **Update 15 Nov 2026: the founder's decisions, which override older text where they differ.**
+> 1. **Prices:** Starter stays at **$89**. No Lean or Team plan is added: the self-serve **custom plan** (from $19 for one user, $29 for two) already serves small teams. Business $199 and Enterprise from $349 are unchanged.
+> 2. **Mobile:** the Android and iOS apps are built in code (Capacitor) but the store builds are not yet assembled, signed or published.
+> 3. **Backups:** the whole database is now copied, encrypted (AES-256), to the superadmin in Telegram every 90 minutes, plus a standby database; a restore on a new server still has to be rehearsed.
+> **Not recomputed:** the CFO and panel figures below ($45 blended price, break-even, cash needed) were computed for the dropped Lean/Team mix. Re-run `/founder-cfo` with the real plan mix before relying on them.
+
 **Verdict: Not yet.** Year 1 loses money in the base case and 0 of 20 simulated buyers buy. The plan is a paid pilot to get proof, not a funding ask.
 
 **Problem.** Small shops and service businesses in Uzbekistan run clients from Excel and Telegram chats. The CRMs they know (Bitrix24, amoCRM) are called complicated or slow to support. Moving data and retraining staff is the main reason they don't switch.
 
 **Customer.** Owners and sales managers of companies with 3 to 25 staff in Uzbekistan. 1 to 5 companies pay today; none has agreed to be a reference.
 
-**Offer and price.** Nexio CRM in Uzbek or Russian with Click and Payme built in. Founding 50, until 31 Jan 2027: Lean $29 (up to 3 users) and Team $49 (up to 5), our team moves your clients in for free, price locked 12 months, 30-day refund, backups copied off-server. AI voice is not included.
+**Offer and price.** Nexio CRM in Uzbek or Russian with Click and Payme built in. Founding 50, until 31 Jan 2027: Starter $89 (up to 5 users) or a self-serve custom plan from $19 (1 user) / $29 (2 users), our team moves your clients in for free, price locked 12 months, 30-day refund, backups copied off-server. AI voice is not included.
 
 | Number | Value |
 | --- | --- |

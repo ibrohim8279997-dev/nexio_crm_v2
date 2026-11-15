@@ -10,7 +10,7 @@
   2. Volume +50% (60 accounts by month 12): year 1 profit +$2,920, cash need $5,419. This needs proof (trust), not marketing spend.
   3. Cut the $500 helper and run support yourself: break-even 7, year 1 profit +$4,840. This costs founder time that is not priced.
 - **The offer's guarantee.** At 10% of the 50 founding accounts claiming the 30-day refund, that is 5 refunds of at most $49, about **$245**, on top of the $1,500 of migration time already in startup. That is affordable; a 40% claim rate would be about $980, still small next to the other risks. Real claim rate is unknown.
-- **Price test:** at a $29 blended price, break-even is **32 accounts** and year 1 loses $4,360 (-$7,260 after startup). So the $29 entry plan cannot be the whole business: it only works as a door to the $49 plan or if the founder's time is free.
+- **Price test:** at a $29 blended price, break-even is **32 accounts** and year 1 loses $4,360 (-$7,260 after startup). So the $29 entry plan cannot be the whole business: it only works as a door to Starter or Business or if the founder's time is free.
 - **Board conditions about money.** "Disclose team size, runway and budget": **not met** (payroll and runway unknown). "A guarantee the CFO can afford": **met on paper** at the claim rates above. "Measured acquisition cost": **not met**; the model assumes no paid acquisition.
 
 *Not financial, tax or legal advice. An accountant should check the structure, payroll costs, VAT and tax before money moves. Revenue is shown before tax.*

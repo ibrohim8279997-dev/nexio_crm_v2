@@ -22,13 +22,13 @@ Three versions:
 | --- | --- | --- | --- |
 | **Founder's personal network and warm calls** (Telegram, phone) | Buyers want someone they know; this is the only channel the panel supports | founder time | 15 demos booked, 5 paid pilots |
 | **Telegram groups and channels for local shop owners and entrepreneurs** | Where these buyers already ask each other "what do you use?" | $0 to $100 for paid posts | demo requests per post |
-| **Referral from every customer** (one free month for a referral that pays) | "I buy after a friend says they use it" | 1 month ($29 to $49) per referral | referrals per customer |
+| **Referral from every customer** (one free month for a referral that pays) | "I buy after a friend says they use it" | 1 month ($19 to $89) per referral | referrals per customer |
 
 **Not doing, and why:** paid ads and Instagram/TikTok to strangers (no references yet, so ad money buys clicks that leave on trust); Google search (the buyers search "Bitrix24"); influencer deals until there are customers who will vouch; anything that promises AI voice.
 
 ## The 30-day calendar (L-14 to L+16)
 
-Pre-launch condition: the off-server backup copy is live and tested before **L-7**, otherwise the offer's backup promise is false and must be removed.
+Pre-launch condition: the encrypted Telegram backup is live and a restore has been tested before **L-7**, otherwise the offer's backup promise is false and must be removed.
 
 | Date | Day | What | Channel | Message |
 | --- | --- | --- | --- | --- |
@@ -39,7 +39,7 @@ Pre-launch condition: the off-server backup copy is live and tested before **L-7
 | 4 Dec Fri | L-10 | First demos, import one real Excel file live | calls | show their own list in Nexio |
 | 5 Dec Sat | L-9 | Post in 3 owner groups: a how-to on moving Excel to a CRM (no pitch) | Telegram groups | Hook 3 |
 | 6 Dec Sun | L-8 | Rest; fix demo problems found | n/a | n/a |
-| 7 Dec Mon | L-7 | Backup copy verified; publish the Founding 50 sheet (Lean $29, Team $49, free migration, 30-day refund) | landing page / PDF | Hook 4 |
+| 7 Dec Mon | L-7 | Backup copy verified; publish the Founding 50 sheet (Starter $89 or a custom plan from $19, free migration, 30-day refund) | landing page / PDF | Hook 4 |
 | 8 Dec Tue | L-6 | Demos 3 and 4; ask each: "Would you pay the first month now, refundable?" | calls | Hook 5 |
 | 9 Dec Wed | L-5 | Post: "What a done-for-you setup looks like" (behind the scenes of one migration, with permission) | Telegram | Hook 6 |
 | 10 Dec Thu | L-4 | Demos 5 and 6 | calls | n/a |
@@ -73,7 +73,7 @@ Each answers one panel objection or reason. Written as the first line of a messa
 1. "Send me your Excel. I'll put it in a CRM for you this week, free." (switching effort / habit)
 2. "Paying for Bitrix24 or amoCRM and don't use half of it? We move your clients over, free." (existing CRM users)
 3. "How to move a client list from Excel to a CRM in one evening (and what to keep in Excel)." (habit, no pitch)
-4. "Founding 50: $29 to $49 a month, price locked for 12 months, first month refunded if it doesn't suit. Until 31 January." (price, risk)
+4. "Founding 50: from $19 (custom plan) or $89 (Starter) a month, price locked for 12 months, first month refunded if it doesn't suit. Until 31 January." (price, risk)
 5. "Try it with your own clients before you decide. If it doesn't fit, you get the first month back." (risk)
 6. "This is what we moved for one shop owner, and what changed for him." (proof; only with real permission)
 7. "Here is what Bitrix24, Kommo and shamCRM charge, and what we charge. You decide." (honesty, price)

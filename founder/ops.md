@@ -11,7 +11,7 @@ A SaaS runs differently from a shop, so the usual sections are adapted: "supplie
 | 3. Onboarding | Founding customers: receive Excel / Telegram / amoCRM / Bitrix24 data, import it, check it, show it to the owner | Yes |
 | 4. Billing | Hourly renewals (`nexio:billing:renew`); watch failed Click / Payme charges; send receipts | Yes |
 | 5. Build and deploy | `./deploy.sh` on the server; backup first for any migration | Sometimes (maintenance) |
-| 6. Backup | `nexio:backup` at 02:00; copy the folder off-server (not yet set up per the founder) | No |
+| 6. Backup | `nexio:backup` at 02:00; encrypted whole-database copy to Telegram every 90 minutes (`nexio:backup:telegram`) | No |
 | 7. Review | Weekly numbers: demos, pre-sales, refunds, churn, support time | No |
 
 ## 2. The services Nexio depends on
@@ -19,7 +19,7 @@ A SaaS runs differently from a shop, so the usual sections are adapted: "supplie
 | Need | Option | Price / how to get it | Status |
 | --- | --- | --- | --- |
 | **Hosting** | The founder's own server (CloudPanel on the Uzbekistan server per `docs/ARCHITECTURE.md`) | Monthly cost **not given**. Ask the hosting provider for the invoice | Open; CFO uses an estimate |
-| **Off-server backup** | A second location: S3-compatible storage (e.g. Cloudflare R2, Backblaze B2) or a second VPS via rsync | Public price pages on the provider's site; a few dollars a month for small data (estimate, not checked) | **Must be live before the first founding customer** |
+| **Off-server backup** | A second location: S3-compatible storage (e.g. Cloudflare R2, Backblaze B2) or a second VPS via rsync | Public price pages on the provider's site; a few dollars a month for small data (estimate, not checked) | **Optional now: the Telegram copy is live; add this when the database outgrows Telegram's limit (400 MB) or a longer history is needed** |
 | **Payments** | Click and Payme merchant accounts | No verified online merchant rate found. A third-party listing says Click 1% on Uzcard/Humo and 1.5 to 2.5% on Visa ([source](https://paymentproviders.io/providers/click-uzb.md)); national QR payments cost merchants 0.65% ([source](https://kun.uz/en/news/2026/06/23/uzbekistan-rolls-out-mandatory-qr-payment-system-charging-merchants-on-each-transaction-a21a28)). Rates are negotiated: ask both for the merchant tariff | The CFO's 2.5% is the high end, so conservative |
 | **Telegram bot / notifications** | Telegram Bot API | Free | Exists in the product |
 | **Email / SMS** | Any transactional email service; a local SMS gateway | Prices not researched | Open |
@@ -63,7 +63,7 @@ Open: whether these are existing salaried staff (a cost the model leaves out) or
 
 **D. Weekly backup check**
 1. Confirm `last.json` is under 36 hours old.
-2. Confirm the off-server copy exists and its size is sane.
+2. Confirm the last Telegram backup arrived (at most 2 hours old) and its size is sane.
 3. Once a month, restore the latest backup into a staging database and open it (restore runbook is in `docs/OPERATIONS.md`).
 
 **E. Close the week**
@@ -87,7 +87,7 @@ Smallest stack: the product itself as the CRM (use Nexio to track its own custom
 
 | # | Risk | Likelihood | Impact | Plan |
 | --- | --- | --- | --- | --- |
-| 1 | The server or its disk fails and the only backup is on it | Medium | **Critical** (customers' client lists lost) | Off-server backup before launch; monthly restore test; standby database exists but is on the same server |
+| 1 | The server or its disk fails and the only backup is on it | Medium | **Critical** (customers' client lists lost) | Encrypted Telegram copy every 90 minutes (built); monthly restore test; standby database exists but is on the same server |
 | 2 | A founding customer's data import goes wrong and trust is lost | Medium | High | Import to a test account first; check counts; keep the original file |
 | 3 | A key person is ill and support goes quiet | Medium | Medium | Two people can answer; auto-reply with the expected time |
 | 4 | Click or Payme changes fees or pauses a merchant | Low | Medium | Card as a second route; keep merchant contacts |

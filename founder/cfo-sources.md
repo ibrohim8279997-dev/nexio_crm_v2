@@ -3,7 +3,7 @@
 **Nothing here is a real cost.** No invoices, payroll, hosting bill, customer count or conversion data exist in the repo or in the conversation. Every number in `numbers.json` is an estimate by the model, marked "est." in its label. Replace them with real figures before relying on the result.
 
 - **Unit.** One paying account for one month. `days_per_month` is 1, so the tool's "a day" means "a month": "break-even per day" = break-even accounts per month.
-- **Price $45.** A blended price per account, a guessed mix of about 60% Lean ($29), 35% Team ($49) and 5% Business ($199) from `founder/pricing.md`. The mix is a guess and the prices are still under test.
+- **Price $45 (needs a re-run).** A blended price per account, a guessed mix of about 60% Lean ($29), 35% Team ($49) and 5% Business ($199). **That mix is no longer valid:** the founder kept Starter at $89 and did not add Lean or Team (small teams use the self-serve custom plan). Re-run `/founder-cfo` with the real mix (Starter $89, custom plans from $19, Business $199, Enterprise from $349) before using any figure that depends on the $45 blended price.
 - **Variable $4.60.** Payment fee 2.5% (guess; check Click and Payme merchant rates), a server share per account (production is the founder's own server; the real bill is mostly fixed and unknown, so this understates cost at low volume), support and AI tokens.
 - **Fixed $770.** Helper $500, tools $150, accountant $100, off-server backup $20: all guesses. **Founder and team pay is an open input, set to 0**, although the founder reports 4 to 10 people.
 - **Startup $2,900.** Free migrations (50 accounts x 3 h x $10, both guesses) $1,500; demos and content $500; registration, trademark and legal review $700; backup setup $200.

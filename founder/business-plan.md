@@ -1,5 +1,11 @@
 # Nexio CRM (by Nexio Lab) · Business plan
 
+> **Update 15 Nov 2026: the founder's decisions, which override older text where they differ.**
+> 1. **Prices:** Starter stays at **$89**. No Lean or Team plan is added: the self-serve **custom plan** (from $19 for one user, $29 for two) already serves small teams. Business $199 and Enterprise from $349 are unchanged.
+> 2. **Mobile:** the Android and iOS apps are built in code (Capacitor) but the store builds are not yet assembled, signed or published.
+> 3. **Backups:** the whole database is now copied, encrypted (AES-256), to the superadmin in Telegram every 90 minutes, plus a standby database; a restore on a new server still has to be rehearsed.
+> **Not recomputed:** the CFO and panel figures below ($45 blended price, break-even, cash needed) were computed for the dropped Lean/Team mix. Re-run `/founder-cfo` with the real plan mix before relying on them.
+
 **Verdict: Not yet**
 
 - ✓ Each paying account-month earns $40.40 before fixed costs (90% contribution).
@@ -19,7 +25,7 @@
 
 ## The idea
 
-- What it is: A multi-tenant SaaS CRM (web, plus Android/iOS apps via Capacitor) with contacts, leads, deals, tasks and projects, finance and invoices, helpdesk/SLA, client portals, automation, API/webhooks, plugins (inventory, delivery, telephony, AI assistant) and AI sales agents/calls.
+- What it is: A multi-tenant SaaS CRM (web, plus Android/iOS apps via Capacitor: the code is ready, the store builds are not yet assembled or published) with contacts, leads, deals, tasks and projects, finance and invoices, helpdesk/SLA, client portals, automation, API/webhooks, plugins (inventory, delivery, telephony, AI assistant) and AI sales agents/calls.
 - Who it is for: Small and growing companies in Uzbekistan (Uzbek/Russian/English UI, Click and Payme payments, CBU exchange rates, Telegram integration) that now keep clients in Excel, Telegram chats, amoCRM or Bitrix24. Segments named by the founder: retail and shops, plus services.
 - What it sells, at what price (USD per month, converted to so'm for Click/Payme; yearly = 10x monthly, i.e. 2 months free):
   - Starter 89: up to 5 users, no AI minutes, 5 GB, CRM and projects
@@ -38,12 +44,12 @@
 - AI voice: real-time voice is expected within 3 months. Until then it is labelled "coming soon", not removed.
 - Name and domains: the founder owns the domains; the "Nexio" trademark is not registered.
 - Servers and law: servers are in Uzbekistan; no lawyer has reviewed the personal-data rules.
-- Backups: only on the same server, nothing off-server.
+- Backups: a standby database and a daily dump on the same server, plus an encrypted copy of the whole database sent to the superadmin in Telegram every 90 minutes (AES-256; the key is kept off the server). A full restore on a new server has not been rehearsed yet.
 - Not answered: real prices paid today for amoCRM or Bitrix24, the real monthly server price, the income the founder needs, whether the founder knows shamCRM.
 
 ## Summary
 
-**The business.** Nexio CRM is a cloud CRM (web, Android, iOS) in Uzbek, Russian and English for small Uzbek companies, mainly shops and service businesses, that keep clients in Excel, Telegram chats, amoCRM or Bitrix24. It takes payment in so'm through Click and Payme. The founder reports 1 to 5 paying customers and a team of 4 to 10.
+**The business.** Nexio CRM is a cloud CRM (web; Android and iOS apps are built in code but not yet in the stores) in Uzbek, Russian and English for small Uzbek companies, mainly shops and service businesses, that keep clients in Excel, Telegram chats, amoCRM or Bitrix24. It takes payment in so'm through Click and Payme. The founder reports 1 to 5 paying customers and a team of 4 to 10.
 
 **Verdict: Not yet.** Computed by `compile.py`, not written by hand.
 
@@ -57,8 +63,8 @@ The first line rests on estimated inputs (no real costs, hosting bill or payroll
 
 **What has to change, and which skill changes it.**
 1. **Trust.** 11 of 20 simulated buyers passed on trust: they know no company that uses Nexio. Almost all said the same thing would flip a no: an owner they know and can call who uses it, plus their own clients moved in for free. That is the paid founding-member pilot in `launch.md`, not another skill run.
-2. **Price.** The old $89 Starter was above 19 of 20 buyers' "too expensive" point (acceptable range $8 to $40). A new $29/$49 offer cut price-based passes from 13 to 4 but the buy rate stayed at 0 of 20. At a $29 blended price the CFO's break-even rises to 32 accounts, so price alone cannot close the gap (`pricing.md`, `cfo.md`).
-3. **Unmet board conditions.** One niche is only partly named; no references; revenue, churn, payroll, runway and acquisition cost are unknown; off-server backup is not set up; personal-data rules have not been reviewed by a lawyer; AI voice is not built.
+2. **Price.** The old $89 Starter was above 19 of 20 buyers' "too expensive" point (acceptable range $8 to $40). A tested $29/$49 offer cut price-based passes from 13 to 4 but the buy rate stayed at 0 of 20. At a $29 blended price the CFO's break-even rises to 32 accounts, so price alone cannot close the gap (`pricing.md`, `cfo.md`).
+3. **Unmet board conditions.** One niche is only partly named; no references; revenue, churn, payroll, runway and acquisition cost are unknown; the off-server backup is built (encrypted Telegram copies every 90 minutes) but a restore has not been rehearsed; personal-data rules have not been reviewed by a lawyer; AI voice is not built.
 
 **What the board, the competitors and the panel agreed on.** The board voted 2 fund-if and 1 pass (average 3.7 of 10) and all three raised no proof, no niche and selling unbuilt AI voice. The panel agreed on proof first, then price and switching effort. The members differ on breadth: Offers sees it as assets to bundle, Monopoly and Product see a focus problem. The competitor map found one defensible gap, a hands-on setup plus fast support, not price: Nexio is dearer than Bitrix24, Zoho, Pipedrive and shamCRM at the same size, and shamCRM targets the same region.
 
@@ -66,7 +72,7 @@ The first line rests on estimated inputs (no real costs, hosting bill or payroll
 
 **What the founder needs to start.** About $6,270 in the CFO's base case (an estimate), $7,550 if the entry price is $29. Founder and team pay are assumed 0.
 
-**One thing to do this week.** Set up the off-server backup copy and test a restore (the offer promises it), then list 60 owners you know and book the first 5 demos. Do not spend on ads and do not promise AI voice.
+**One thing to do this week.** Rehearse a full restore from the encrypted Telegram backup on a spare server (the offer promises it), then list 60 owners you know and book the first 5 demos. Do not spend on ads and do not promise AI voice.
 
 *The buyers in the panel are simulated and the numbers are projections built on estimates. Real customers and real quotes confirm or overturn them. This is not financial, legal or tax advice.*
 
@@ -103,7 +109,7 @@ Nobody funded outright. The Monopoly lens passed: it sees no durable edge yet an
 - [ ] Test the $89 Starter price on a buyer panel; test what buyers pay for amoCRM or Bitrix24 today (consumer, pricing, competitors)
 - [ ] Show a repeatable channel to the first 100 customers with a known acquisition cost (marketing, cfo)
 - [ ] Document the first five minutes, with Excel and amoCRM/Bitrix24 import (ops, launch)
-- [ ] Add off-server backups; get the personal-data rules reviewed by a lawyer; consider registering the trademark (ops)
+- [ ] Rehearse a restore from the off-server (Telegram) backup; get the personal-data rules reviewed by a lawyer; consider registering the trademark (ops)
 - [ ] Show one capability clearly better than the incumbents (competitors, offer)
 
 ### The strongest version of this business
@@ -283,32 +289,30 @@ Nexio is the dearest at 5 users. At 15 users Nexio Business is $199; Bitrix24 St
 
 ### The price
 
-**Do not sell Starter at $89 as the entry price.** Evidence: it is 2.2 times the panel's top of range and above every competitor at the same size. Nothing in the research says Nexio is worth a premium: no references, voice not built.
+**Founder decision (15 Nov 2026): Starter stays at $89 for 5 users.** No Lean or Team plan is added. The research still says $89 is the dearest 5-user entry plan and above the panel's range (2.2 times its top), so this is a known risk the founder accepts. It is softened, not removed, by the self-serve custom plan, which already exists in the product:
 
-Recommended to test (inside the buyers' range and level with the market):
-
-- **Entry: $29 a month for up to 3 users, CRM only.** This is inside the panel range, close to the $30 "getting expensive" median, and the repo's self-serve custom plan already prices 2 users at $29 ($9 base + $10 per user) and 1 user at $19. So the entry plan needs no new pricing engine, only a visible plan card. (Founder to confirm that the custom plan's CRM-only price is what the CFO can afford.)
-- **Starter: test $49 for 5 users**, level with Bitrix24 Basic, instead of $89. The founder earlier chose to keep $89 and not test $39 to $49; the panel and the competitor prices say this is the biggest barrier, so it is the first thing to test with real buyers.
-- Business ($199, 15 users) and Enterprise ($349, 50 users): leave until the entry price is proven; they are not yet comparable to Bitrix24's $99 for 50 users and need a reason (finance, helpdesk, portal included) to be believed.
+- **Small teams: the self-serve custom plan, not a new plan.** The customer builds a plan from unit prices (USD 9 base + 10 per user + 0.4 per GB + 0.15 per AI minute + 5 per 1,000 contacts + per-module prices). One user costs $19 and two users $29, which is inside the panel's range, so no Lean or Team card is needed. The superadmin can also set a price per company or grant a plan without payment (for the founder's own and partner companies).
+- **Starter ($89, 5 users):** unchanged. It must be justified by what it includes (projects, tasks, quotes, invoices, Telegram, Uzbek/Russian/English, Click and Payme), because nothing in the research says Nexio is worth a premium: no references yet, voice not built.
+- Business ($199, 15 users) and Enterprise ($349, 50 users): leave until the entry price is proven; they are not yet comparable to Bitrix24's $99 for 50 users and need a reason (finance, helpdesk, portal included) to be believed. The founder is not changing them.
 
 ### The ladder
 
 | Rung | For | Price to test | Reason to step up |
 | --- | --- | --- | --- |
-| Lean | 1 to 3 people, owners leaving Excel and Telegram | $29 | Starts where the buyer is; migration included |
-| Team | up to 5 people | $49 | More users, projects, Telegram inbox |
-| Business | up to 15 | $199 (unchanged for now) | Finance, helpdesk, automations, client portal |
+| Custom plan (self-serve) | 1 to about 5 people who need only some modules | from $19 (1 user, CRM only), $29 (2 users) | Pays only for what it uses; migration included for the Founding 50 |
+| Starter | up to 5 people | $89 (kept) | Projects, tasks, quotes, invoices, Telegram inbox in one price |
+| Business | up to 15 | $199 (unchanged) | Finance, helpdesk, automations, client portal |
 | Enterprise | 25 to 50 | from $349 | SSO, API, voice when built |
 
 Voice and AI calls stay off every rung until they work.
 
 ### The opening offer
 
-**Founding 50**, ends **31 Jan 2027**: the first 50 companies get the Lean or Team price locked for 12 months, free data migration from Excel, Telegram or amoCRM/Bitrix24 by the Nexio team, and a 30-day money-back refund. In return each agrees in writing to be named as a reference after 60 days. No "was" price; the locked price is the real price.
+**Founding 50**, ends **31 Jan 2027**: the first 50 companies get the Starter price or their custom-plan price locked for 12 months, free data migration from Excel, Telegram or amoCRM/Bitrix24 by the Nexio team, and a 30-day money-back refund. In return each agrees in writing to be named as a reference after 60 days. No "was" price; the locked price is the real price.
 
 ### What to test with real buyers
 
-Run two prices for the same entry plan to 20 owners each from the founder's own contacts: **$19 versus $29** (Lean), then **$49 versus $89** for 5 users. Method: a one-page price sheet or Telegram message with a pre-sale link (first month paid through Click or Payme, refundable). Success bar to set before testing: for example 5 paid out of 20 contacts at one price.
+Run two prices for the same entry plan to 20 owners each from the founder's own contacts: **$19 versus $29** (custom plan quoted for 1 user), then the **custom plan for the buyer's own team versus Starter $89**. Method: a one-page price sheet or Telegram message with a pre-sale link (first month paid through Click or Payme, refundable). Success bar to set before testing: for example 5 paid out of 20 contacts at one price.
 
 ### The panel's top three price objections (verbatim)
 
@@ -318,7 +322,7 @@ Run two prices for the same entry plan to 20 owners each from the founder's own 
 
 ### CFO check (added after `/founder-cfo`)
 
-At a $45 blended price (estimates): contribution $40.40 per account (90%), break-even 20 accounts. At a $29 blended price break-even is 32 accounts and year 1 loses $4,360; at $55 break-even is 16 and year 1 earns $840. So $29 works only as an entry door to the $49 plan, not as the whole business. The buyers' range ($8 to $25 once $29 was shown) and the CFO's floor do not overlap: price alone cannot close this gap; trust and volume must.
+At a $45 blended price (estimates): contribution $40.40 per account (90%), break-even 20 accounts. At a $29 blended price break-even is 32 accounts and year 1 loses $4,360; at $55 break-even is 16 and year 1 earns $840. So a $29 custom plan works only as an entry door to Starter or Business, not as the whole business. The buyers' range ($8 to $25 once $29 was shown) and the CFO's floor do not overlap: price alone cannot close this gap; trust and volume must.
 
 ### Open
 
@@ -330,7 +334,7 @@ Built from `founder/panel-v1/` (the 20 buyers who saw the old pitch), the compet
 
 ### Offer name
 
-**The Founding 50: we move you in, you pay $29 to $49, you can leave in 30 days.**
+**The Founding 50: we move you in, you pay from $19 (custom plan) or $89 (Starter), you can leave in 30 days.**
 
 ### The problem list (buyer's words, where possible)
 
@@ -359,11 +363,11 @@ After
 
 | Problem | Solution | Value | Cost | Keep |
 | --- | --- | ---: | ---: | --- |
-| 1 | Lean $29 (3 users) and Team $49 (5 users) | 5 | 3 (margin, CFO to check) | yes |
+| 1 | Self-serve custom plan from $19 (1 user) / $29 (2 users), and Starter $89 (5 users): no new plan to build | 5 | 1 (custom plan already built) | yes |
 | 2, 15 | Founding customers named as references after 60 days; buyers may call them; 30-day refund | 4 | 1 | yes |
 | 3, 9, 10 | Free migration by the Nexio team plus a first-use call in Uzbek or Russian | 5 | 3 (staff hours) | yes, capped at 50 customers |
 | 4 | Two cards on the page, picked by headcount | 3 | 1 | yes |
-| 5 | Daily backup copied off-server (the repo's runbook says to) | 4 | 2 | **yes, must be live before the first founding customer** |
+| 5 | Encrypted copy of the whole database sent off the server (to Telegram) every 90 minutes, plus a standby database: built | 4 | 2 | **yes: built; rehearse a restore before the first founding customer** |
 | 6 | Take AI voice off every plan and say so | 3 | 1 | yes |
 | 7 | Run Excel and Nexio side by side during the first 2 weeks (the migration team does the first import) | 3 | 2 | yes |
 | 8, 13 | 30-day refund of the first month | 4 | 2 (claim rate unknown) | yes |
@@ -380,9 +384,9 @@ Dropped: AI voice and AI minutes in the pitch (not built); "export all data" (th
 **Bonuses (each kills one objection)**
 1. Free migration of your client list from Excel, Telegram, amoCRM or Bitrix24 (objection 3, 9).
 2. Price locked for 12 months at the founding rate (objection 14, 1).
-3. Daily backup copied off-server, in writing (objection 5).
+3. Encrypted copies of the whole database outside the server (Telegram) every 90 minutes, in writing (objection 5).
 
-**Guarantee:** if it does not work for you, the first month's money back within 30 days, no questions. *Cost to model:* at $29 to $49, one refund is at most $49 plus about 2 to 3 hours of migration time per claim (an estimate to confirm). The CFO must set a claim rate before this is promised publicly.
+**Guarantee:** if it does not work for you, the first month's money back within 30 days, no questions. *Cost to model:* at $19 to $89, one refund is at most $89 plus about 2 to 3 hours of migration time per claim (an estimate to confirm). The CFO must set a claim rate before this is promised publicly.
 
 **Urgency (true):** a cap of 50 founding companies and an end date, 31 Jan 2027. The cap is real only if the team can migrate 50 customers; say 50 only if that is true.
 
@@ -399,7 +403,7 @@ Dropped: AI voice and AI minutes in the pitch (not built); "export all data" (th
 
 Same seed 876453, same 20 buyer cards, shown the new pitch (`founder/pitch.md`; old pitch kept as `founder/pitch-v1.md`; old results in `founder/panel-v1/`).
 
-| | Old pitch ($89 Starter) | New offer ($29 / $49, free migration, refund) |
+| | Old pitch ($89 Starter) | Tested offer ($29 / $49, free migration, refund; the founder kept Starter at $89 and did not add Lean or Team) |
 | --- | ---: | ---: |
 | Buy | 0 of 20 | **0 of 20** |
 | Passed on price | 13 | 4 |
@@ -426,7 +430,7 @@ What this means:
   2. Volume +50% (60 accounts by month 12): year 1 profit +$2,920, cash need $5,419. This needs proof (trust), not marketing spend.
   3. Cut the $500 helper and run support yourself: break-even 7, year 1 profit +$4,840. This costs founder time that is not priced.
 - **The offer's guarantee.** At 10% of the 50 founding accounts claiming the 30-day refund, that is 5 refunds of at most $49, about **$245**, on top of the $1,500 of migration time already in startup. That is affordable; a 40% claim rate would be about $980, still small next to the other risks. Real claim rate is unknown.
-- **Price test:** at a $29 blended price, break-even is **32 accounts** and year 1 loses $4,360 (-$7,260 after startup). So the $29 entry plan cannot be the whole business: it only works as a door to the $49 plan or if the founder's time is free.
+- **Price test:** at a $29 blended price, break-even is **32 accounts** and year 1 loses $4,360 (-$7,260 after startup). So the $29 entry plan cannot be the whole business: it only works as a door to Starter or Business or if the founder's time is free.
 - **Board conditions about money.** "Disclose team size, runway and budget": **not met** (payroll and runway unknown). "A guarantee the CFO can afford": **met on paper** at the claim rates above. "Measured acquisition cost": **not met**; the model assumes no paid acquisition.
 
 *Not financial, tax or legal advice. An accountant should check the structure, payroll costs, VAT and tax before money moves. Revenue is shown before tax.*
@@ -514,13 +518,13 @@ Three versions:
 | --- | --- | --- | --- |
 | **Founder's personal network and warm calls** (Telegram, phone) | Buyers want someone they know; this is the only channel the panel supports | founder time | 15 demos booked, 5 paid pilots |
 | **Telegram groups and channels for local shop owners and entrepreneurs** | Where these buyers already ask each other "what do you use?" | $0 to $100 for paid posts | demo requests per post |
-| **Referral from every customer** (one free month for a referral that pays) | "I buy after a friend says they use it" | 1 month ($29 to $49) per referral | referrals per customer |
+| **Referral from every customer** (one free month for a referral that pays) | "I buy after a friend says they use it" | 1 month ($19 to $89) per referral | referrals per customer |
 
 **Not doing, and why:** paid ads and Instagram/TikTok to strangers (no references yet, so ad money buys clicks that leave on trust); Google search (the buyers search "Bitrix24"); influencer deals until there are customers who will vouch; anything that promises AI voice.
 
 ### The 30-day calendar (L-14 to L+16)
 
-Pre-launch condition: the off-server backup copy is live and tested before **L-7**, otherwise the offer's backup promise is false and must be removed.
+Pre-launch condition: the encrypted Telegram backup is live and a restore has been tested before **L-7**, otherwise the offer's backup promise is false and must be removed.
 
 | Date | Day | What | Channel | Message |
 | --- | --- | --- | --- | --- |
@@ -531,7 +535,7 @@ Pre-launch condition: the off-server backup copy is live and tested before **L-7
 | 4 Dec Fri | L-10 | First demos, import one real Excel file live | calls | show their own list in Nexio |
 | 5 Dec Sat | L-9 | Post in 3 owner groups: a how-to on moving Excel to a CRM (no pitch) | Telegram groups | Hook 3 |
 | 6 Dec Sun | L-8 | Rest; fix demo problems found | n/a | n/a |
-| 7 Dec Mon | L-7 | Backup copy verified; publish the Founding 50 sheet (Lean $29, Team $49, free migration, 30-day refund) | landing page / PDF | Hook 4 |
+| 7 Dec Mon | L-7 | Backup copy verified; publish the Founding 50 sheet (Starter $89 or a custom plan from $19, free migration, 30-day refund) | landing page / PDF | Hook 4 |
 | 8 Dec Tue | L-6 | Demos 3 and 4; ask each: "Would you pay the first month now, refundable?" | calls | Hook 5 |
 | 9 Dec Wed | L-5 | Post: "What a done-for-you setup looks like" (behind the scenes of one migration, with permission) | Telegram | Hook 6 |
 | 10 Dec Thu | L-4 | Demos 5 and 6 | calls | n/a |
@@ -565,7 +569,7 @@ Each answers one panel objection or reason. Written as the first line of a messa
 1. "Send me your Excel. I'll put it in a CRM for you this week, free." (switching effort / habit)
 2. "Paying for Bitrix24 or amoCRM and don't use half of it? We move your clients over, free." (existing CRM users)
 3. "How to move a client list from Excel to a CRM in one evening (and what to keep in Excel)." (habit, no pitch)
-4. "Founding 50: $29 to $49 a month, price locked for 12 months, first month refunded if it doesn't suit. Until 31 January." (price, risk)
+4. "Founding 50: from $19 (custom plan) or $89 (Starter) a month, price locked for 12 months, first month refunded if it doesn't suit. Until 31 January." (price, risk)
 5. "Try it with your own clients before you decide. If it doesn't fit, you get the first month back." (risk)
 6. "This is what we moved for one shop owner, and what changed for him." (proof; only with real permission)
 7. "Here is what Bitrix24, Kommo and shamCRM charge, and what we charge. You decide." (honesty, price)
@@ -683,7 +687,7 @@ A SaaS runs differently from a shop, so the usual sections are adapted: "supplie
 | 3. Onboarding | Founding customers: receive Excel / Telegram / amoCRM / Bitrix24 data, import it, check it, show it to the owner | Yes |
 | 4. Billing | Hourly renewals (`nexio:billing:renew`); watch failed Click / Payme charges; send receipts | Yes |
 | 5. Build and deploy | `./deploy.sh` on the server; backup first for any migration | Sometimes (maintenance) |
-| 6. Backup | `nexio:backup` at 02:00; copy the folder off-server (not yet set up per the founder) | No |
+| 6. Backup | `nexio:backup` at 02:00; encrypted whole-database copy to Telegram every 90 minutes (`nexio:backup:telegram`) | No |
 | 7. Review | Weekly numbers: demos, pre-sales, refunds, churn, support time | No |
 
 ### 2. The services Nexio depends on
@@ -691,7 +695,7 @@ A SaaS runs differently from a shop, so the usual sections are adapted: "supplie
 | Need | Option | Price / how to get it | Status |
 | --- | --- | --- | --- |
 | **Hosting** | The founder's own server (CloudPanel on the Uzbekistan server per `docs/ARCHITECTURE.md`) | Monthly cost **not given**. Ask the hosting provider for the invoice | Open; CFO uses an estimate |
-| **Off-server backup** | A second location: S3-compatible storage (e.g. Cloudflare R2, Backblaze B2) or a second VPS via rsync | Public price pages on the provider's site; a few dollars a month for small data (estimate, not checked) | **Must be live before the first founding customer** |
+| **Off-server backup** | A second location: S3-compatible storage (e.g. Cloudflare R2, Backblaze B2) or a second VPS via rsync | Public price pages on the provider's site; a few dollars a month for small data (estimate, not checked) | **Optional now: the Telegram copy is live; add this when the database outgrows Telegram's limit (400 MB) or a longer history is needed** |
 | **Payments** | Click and Payme merchant accounts | No verified online merchant rate found. A third-party listing says Click 1% on Uzcard/Humo and 1.5 to 2.5% on Visa ([source](https://paymentproviders.io/providers/click-uzb.md)); national QR payments cost merchants 0.65% ([source](https://kun.uz/en/news/2026/06/23/uzbekistan-rolls-out-mandatory-qr-payment-system-charging-merchants-on-each-transaction-a21a28)). Rates are negotiated: ask both for the merchant tariff | The CFO's 2.5% is the high end, so conservative |
 | **Telegram bot / notifications** | Telegram Bot API | Free | Exists in the product |
 | **Email / SMS** | Any transactional email service; a local SMS gateway | Prices not researched | Open |
@@ -735,7 +739,7 @@ Open: whether these are existing salaried staff (a cost the model leaves out) or
 
 **D. Weekly backup check**
 1. Confirm `last.json` is under 36 hours old.
-2. Confirm the off-server copy exists and its size is sane.
+2. Confirm the last Telegram backup arrived (at most 2 hours old) and its size is sane.
 3. Once a month, restore the latest backup into a staging database and open it (restore runbook is in `docs/OPERATIONS.md`).
 
 **E. Close the week**
@@ -759,7 +763,7 @@ Smallest stack: the product itself as the CRM (use Nexio to track its own custom
 
 | # | Risk | Likelihood | Impact | Plan |
 | --- | --- | --- | --- | --- |
-| 1 | The server or its disk fails and the only backup is on it | Medium | **Critical** (customers' client lists lost) | Off-server backup before launch; monthly restore test; standby database exists but is on the same server |
+| 1 | The server or its disk fails and the only backup is on it | Medium | **Critical** (customers' client lists lost) | Encrypted Telegram copy every 90 minutes (built); monthly restore test; standby database exists but is on the same server |
 | 2 | A founding customer's data import goes wrong and trust is lost | Medium | High | Import to a test account first; check counts; keep the original file |
 | 3 | A key person is ill and support goes quiet | Medium | Medium | Two people can answer; auto-reply with the expected time |
 | 4 | Click or Payme changes fees or pauses a merchant | Low | Medium | Card as a second route; keep merchant contacts |
@@ -782,7 +786,7 @@ Written 13 Nov 2026. **Launch day L = Monday 14 Dec 2026** (the earliest date th
 
 The business is a subscription, so the test is a paid founding offer: real owners pay the first month up front (refundable for 30 days). The panel said 0 buy out of 20, twice, so the real test matters more than anything in this pack.
 
-**Test:** show the Founding 50 sheet (Lean $29, Team $49, free migration, 30-day refund, price locked 12 months) to **60 owners the founder knows or can be introduced to**, hold at least 15 demos, and ask each to pay the first month.
+**Test:** show the Founding 50 sheet (Starter $89 or a custom plan from $19, free migration, 30-day refund, price locked 12 months) to **60 owners the founder knows or can be introduced to**, hold at least 15 demos, and ask each to pay the first month.
 
 **Success line, written before the test:**
 - **Pass:** at least **5 paid first months** by 31 Dec, of which **at least 3 agree in writing to be references**. That is above the CFO's month-1 ramp of 1 account and would be the first real proof.
@@ -797,12 +801,12 @@ Owners: **F** = founder, **D** = developer, **S** = support/onboarding, **A** = 
 
 | Week | Dates | Task | Owner | Deadline |
 | --- | --- | --- | --- | --- |
-| 1 | 16 to 22 Nov | **CP** Set up the off-server backup copy (rsync/S3), run a restore test | D | 22 Nov |
+| 1 | 16 to 22 Nov | **CP** Turn on the encrypted Telegram backup (`BACKUP_ENCRYPTION_KEY` stored off the server) and run a restore test | D | 22 Nov |
 | 1 | | **CP** Ask a lawyer to review personal-data duties, database registration and a customer data-processing agreement | F, A | brief sent 18 Nov; answer by 4 Dec |
 | 1 | | Write the terms of service and privacy policy (Uzbek, Russian) from the lawyer's template | F | 27 Nov |
 | 1 | | Confirm company status; ask the accountant about IT Park eligibility and VAT | F, A | 22 Nov |
 | 2 | 23 to 29 Nov | **CP** Apply for Click and Payme merchant accounts; ask for the merchant tariff (also feeds the CFO) | F | applied 23 Nov; live by 10 Dec |
-| 2 | | Build the Lean and Team plan cards in the product (the custom plan already prices 1 to 3 users) and remove voice from every price sheet | D | 29 Nov |
+| 2 | | Show the self-serve custom plan on the price sheet (no new Lean or Team plan: the custom plan already prices 1 to 3 users) and remove voice from every price sheet | D | 29 Nov |
 | 2 | | Fix the page title / tagline; reserve the Telegram handle; file the name in Uzbekistan if the lawyer says go | F | 29 Nov |
 | 2 | | Build the 60-name contact list; draft the Founding 50 sheet (Uzbek, Russian) | F | 29 Nov |
 | 3 | 30 Nov to 6 Dec | Marketing calendar L-14 to L-8 (see `marketing.md`): outreach to 60 owners, first demos | F | daily |
@@ -819,7 +823,7 @@ If the lawyer's review is not back by 4 Dec, launch without any claim about data
 
 | Time | What | Who |
 | --- | --- | --- |
-| 08:30 | Health check: `/up`, health endpoint, last backup under 36 h, off-server copy present | D |
+| 08:30 | Health check: `/up`, health endpoint, last backup under 36 h, latest encrypted copy received in Telegram (under 2 h) | D |
 | 09:00 | Open the Founding 50 sheet with live payment links (Click, Payme); post in 3 owner groups | F |
 | 09:30 | Message every demo contact personally: "Founding 50 is open until 31 Jan" | F |
 | 10:00 to 13:00 | Demos and calls | F |

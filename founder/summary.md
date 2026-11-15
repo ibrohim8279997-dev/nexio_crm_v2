@@ -1,6 +1,12 @@
 # Summary: Nexio CRM
 
-**The business.** Nexio CRM is a cloud CRM (web, Android, iOS) in Uzbek, Russian and English for small Uzbek companies, mainly shops and service businesses, that keep clients in Excel, Telegram chats, amoCRM or Bitrix24. It takes payment in so'm through Click and Payme. The founder reports 1 to 5 paying customers and a team of 4 to 10.
+> **Update 15 Nov 2026: the founder's decisions, which override older text where they differ.**
+> 1. **Prices:** Starter stays at **$89**. No Lean or Team plan is added: the self-serve **custom plan** (from $19 for one user, $29 for two) already serves small teams. Business $199 and Enterprise from $349 are unchanged.
+> 2. **Mobile:** the Android and iOS apps are built in code (Capacitor) but the store builds are not yet assembled, signed or published.
+> 3. **Backups:** the whole database is now copied, encrypted (AES-256), to the superadmin in Telegram every 90 minutes, plus a standby database; a restore on a new server still has to be rehearsed.
+> **Not recomputed:** the CFO and panel figures below ($45 blended price, break-even, cash needed) were computed for the dropped Lean/Team mix. Re-run `/founder-cfo` with the real plan mix before relying on them.
+
+**The business.** Nexio CRM is a cloud CRM (web; Android and iOS apps are built in code but not yet in the stores) in Uzbek, Russian and English for small Uzbek companies, mainly shops and service businesses, that keep clients in Excel, Telegram chats, amoCRM or Bitrix24. It takes payment in so'm through Click and Payme. The founder reports 1 to 5 paying customers and a team of 4 to 10.
 
 **Verdict: Not yet.** Computed by `compile.py`, not written by hand.
 
@@ -14,8 +20,8 @@ The first line rests on estimated inputs (no real costs, hosting bill or payroll
 
 **What has to change, and which skill changes it.**
 1. **Trust.** 11 of 20 simulated buyers passed on trust: they know no company that uses Nexio. Almost all said the same thing would flip a no: an owner they know and can call who uses it, plus their own clients moved in for free. That is the paid founding-member pilot in `launch.md`, not another skill run.
-2. **Price.** The old $89 Starter was above 19 of 20 buyers' "too expensive" point (acceptable range $8 to $40). A new $29/$49 offer cut price-based passes from 13 to 4 but the buy rate stayed at 0 of 20. At a $29 blended price the CFO's break-even rises to 32 accounts, so price alone cannot close the gap (`pricing.md`, `cfo.md`).
-3. **Unmet board conditions.** One niche is only partly named; no references; revenue, churn, payroll, runway and acquisition cost are unknown; off-server backup is not set up; personal-data rules have not been reviewed by a lawyer; AI voice is not built.
+2. **Price.** The old $89 Starter was above 19 of 20 buyers' "too expensive" point (acceptable range $8 to $40). A tested $29/$49 offer cut price-based passes from 13 to 4 but the buy rate stayed at 0 of 20. At a $29 blended price the CFO's break-even rises to 32 accounts, so price alone cannot close the gap (`pricing.md`, `cfo.md`).
+3. **Unmet board conditions.** One niche is only partly named; no references; revenue, churn, payroll, runway and acquisition cost are unknown; the off-server backup is built (encrypted Telegram copies every 90 minutes) but a restore has not been rehearsed; personal-data rules have not been reviewed by a lawyer; AI voice is not built.
 
 **What the board, the competitors and the panel agreed on.** The board voted 2 fund-if and 1 pass (average 3.7 of 10) and all three raised no proof, no niche and selling unbuilt AI voice. The panel agreed on proof first, then price and switching effort. The members differ on breadth: Offers sees it as assets to bundle, Monopoly and Product see a focus problem. The competitor map found one defensible gap, a hands-on setup plus fast support, not price: Nexio is dearer than Bitrix24, Zoho, Pipedrive and shamCRM at the same size, and shamCRM targets the same region.
 
@@ -23,6 +29,6 @@ The first line rests on estimated inputs (no real costs, hosting bill or payroll
 
 **What the founder needs to start.** About $6,270 in the CFO's base case (an estimate), $7,550 if the entry price is $29. Founder and team pay are assumed 0.
 
-**One thing to do this week.** Set up the off-server backup copy and test a restore (the offer promises it), then list 60 owners you know and book the first 5 demos. Do not spend on ads and do not promise AI voice.
+**One thing to do this week.** Rehearse a full restore from the encrypted Telegram backup on a spare server (the offer promises it), then list 60 owners you know and book the first 5 demos. Do not spend on ads and do not promise AI voice.
 
 *The buyers in the panel are simulated and the numbers are projections built on estimates. Real customers and real quotes confirm or overturn them. This is not financial, legal or tax advice.*

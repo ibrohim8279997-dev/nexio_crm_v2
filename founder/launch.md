@@ -6,7 +6,7 @@ Written 13 Nov 2026. **Launch day L = Monday 14 Dec 2026** (the earliest date th
 
 The business is a subscription, so the test is a paid founding offer: real owners pay the first month up front (refundable for 30 days). The panel said 0 buy out of 20, twice, so the real test matters more than anything in this pack.
 
-**Test:** show the Founding 50 sheet (Lean $29, Team $49, free migration, 30-day refund, price locked 12 months) to **60 owners the founder knows or can be introduced to**, hold at least 15 demos, and ask each to pay the first month.
+**Test:** show the Founding 50 sheet (Starter $89 or a custom plan from $19, free migration, 30-day refund, price locked 12 months) to **60 owners the founder knows or can be introduced to**, hold at least 15 demos, and ask each to pay the first month.
 
 **Success line, written before the test:**
 - **Pass:** at least **5 paid first months** by 31 Dec, of which **at least 3 agree in writing to be references**. That is above the CFO's month-1 ramp of 1 account and would be the first real proof.
@@ -21,12 +21,12 @@ Owners: **F** = founder, **D** = developer, **S** = support/onboarding, **A** = 
 
 | Week | Dates | Task | Owner | Deadline |
 | --- | --- | --- | --- | --- |
-| 1 | 16 to 22 Nov | **CP** Set up the off-server backup copy (rsync/S3), run a restore test | D | 22 Nov |
+| 1 | 16 to 22 Nov | **CP** Turn on the encrypted Telegram backup (`BACKUP_ENCRYPTION_KEY` stored off the server) and run a restore test | D | 22 Nov |
 | 1 | | **CP** Ask a lawyer to review personal-data duties, database registration and a customer data-processing agreement | F, A | brief sent 18 Nov; answer by 4 Dec |
 | 1 | | Write the terms of service and privacy policy (Uzbek, Russian) from the lawyer's template | F | 27 Nov |
 | 1 | | Confirm company status; ask the accountant about IT Park eligibility and VAT | F, A | 22 Nov |
 | 2 | 23 to 29 Nov | **CP** Apply for Click and Payme merchant accounts; ask for the merchant tariff (also feeds the CFO) | F | applied 23 Nov; live by 10 Dec |
-| 2 | | Build the Lean and Team plan cards in the product (the custom plan already prices 1 to 3 users) and remove voice from every price sheet | D | 29 Nov |
+| 2 | | Show the self-serve custom plan on the price sheet (no new Lean or Team plan: the custom plan already prices 1 to 3 users) and remove voice from every price sheet | D | 29 Nov |
 | 2 | | Fix the page title / tagline; reserve the Telegram handle; file the name in Uzbekistan if the lawyer says go | F | 29 Nov |
 | 2 | | Build the 60-name contact list; draft the Founding 50 sheet (Uzbek, Russian) | F | 29 Nov |
 | 3 | 30 Nov to 6 Dec | Marketing calendar L-14 to L-8 (see `marketing.md`): outreach to 60 owners, first demos | F | daily |
@@ -43,7 +43,7 @@ If the lawyer's review is not back by 4 Dec, launch without any claim about data
 
 | Time | What | Who |
 | --- | --- | --- |
-| 08:30 | Health check: `/up`, health endpoint, last backup under 36 h, off-server copy present | D |
+| 08:30 | Health check: `/up`, health endpoint, last backup under 36 h, latest encrypted copy received in Telegram (under 2 h) | D |
 | 09:00 | Open the Founding 50 sheet with live payment links (Click, Payme); post in 3 owner groups | F |
 | 09:30 | Message every demo contact personally: "Founding 50 is open until 31 Jan" | F |
 | 10:00 to 13:00 | Demos and calls | F |
